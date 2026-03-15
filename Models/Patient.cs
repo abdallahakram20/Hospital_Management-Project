@@ -25,5 +25,6 @@ namespace Hospital_Management_Project.Models
             Male,
             Female
         }
+
     }
 }
