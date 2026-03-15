@@ -6,7 +6,8 @@ namespace Hospital_Management_Project.Models
     {
         [Key]
         [MaxLength(20)]
-        public string patientId { get; set; }
+        public string PatientId { get; set; }
+
         [Required]
         [MaxLength(50)]
         public string FName { get; set; }
