@@ -4,25 +4,25 @@ namespace Hospital_Management_Project.Models
 {
     public class Appointment
     {
-        [key]
+        [Key,MaxLength(20)]
         public string Appointment_ID { get; set; }
 
-        [Required]
-        public string Patient_ID { get; set; }
-
-        [Required]
-        public string Staff_ID { get; set; }
-
-        [Required]
+        [Required,DataType(DataType.DateTime)]
         public DateTime Appointment_Date { get; set; }
-        public string Status { get; set; }  
-        public string Reason { get; set; }
+        [StringLength(50)]
+        public string? Status { get; set; } ="Scheduled";
+        [StringLength(500)]
+        public string? Reason { get; set; }
 
         // Relation Between Patient & Appointment (1 Patient to Many Appointment) [Many]
-        public string DeptID { get; set; }
+        [Required]
+        public string PatientID { get; set; }
+        public Patient Patient { get; set; }
 
         // Relation Between Staff & Appointment (1 Staff to Many Appointment) [Many]
+        [Required]
         public string StaffID { get; set; }
+        public Staff Staff { get; set; }
 
 
     }
