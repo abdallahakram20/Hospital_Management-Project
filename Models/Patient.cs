@@ -27,5 +27,9 @@ namespace Hospital_Management_Project.Models
             Female
         }
 
+        // Relation Between Patient & Appointment (1 Patient many Appointment) [One]
+        public ICollection<Appointment> Appointments { get; set; }
+
+
     }
 }
