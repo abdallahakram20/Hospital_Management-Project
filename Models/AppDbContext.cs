@@ -14,6 +14,11 @@ namespace Hospital_Management_Project.Models
         }
 
         public DbSet<Appointment> Appointment { get; set; }
+        public DbSet<Medical_Record> Medical_Recoreds { get; set; }
+        public DbSet<Patient> Patient { get; set; }
+        public DbSet<Staff> Staff { get; set; }
+
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -32,6 +37,31 @@ namespace Hospital_Management_Project.Models
                 .HasMany(s => s.Appointments) // Patient has Many Appointments
                 .WithOne(a => a.Staff) // Appointment has One Patients
                 .HasForeignKey(a => a.StaffID); // Foreign Key in Appointment
+
+
+
+            //Relationship between Appointment and Medical_Record ( 1 Appointment TO Many Medical_Record)
+            modelBuilder.Entity<Appointment>()
+                .HasMany(a => a.Medical_Records)
+                .WithOne(m => m.Appointment)
+                .HasForeignKey(m => m.Appointment_ID);)
+
+             //Relationship between Staff and Medical_Record ( 1 Staff TO Many Medical_Record)
+             modelBuilder.Entity<Staff>()
+                .HasMany(s => s.Medical_Records)
+                .WithOne(m => m.Staff)
+                .HasForeignKey(m => m.Staff_ID);
+
+
+            //Relationship between Patient and Medical_Record ( 1 Patient TO Many Medical_Record)
+            modelBuilder.Entity<Patient>()
+                .HasMany(p => p.Medical_Records)
+                .WithOne(m => m.Patient)
+                .HasForeignKey(m => m.PatientId)
+
+
+
+
 
         }
     }

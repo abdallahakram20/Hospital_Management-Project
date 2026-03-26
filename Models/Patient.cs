@@ -29,6 +29,7 @@ namespace Hospital_Management_Project.Models
 
         // Relation Between Patient & Appointment (1 Patient many Appointment) 
         public ICollection<Appointment> Appointments { get; set; } // [One]
+        // Relation Between Patient & Medical_Record  (1 Patient many Medical_Record)
         public ICollection<Medical_Record> Medical_Records { get; set; } //[One]
 
 

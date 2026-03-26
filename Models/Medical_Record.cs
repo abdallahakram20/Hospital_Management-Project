@@ -27,14 +27,19 @@ namespace Hospital_Management_Project.Models
 
 
         //                        Relation
-        
+
+        // relation between  Appointment & Medical_Record (1 Appointment Meny Medical_Record)
+        [Required]
+        [MaxLength(20)]
+        public string Appointment_id { get; set; }
+        public Appointment Appointment { get; set; }
 
         // relation between  Patient & Medical_Record (1 Patient Meny Medical_Record)
 
         [Required]
         [MaxLength(20)]
-        public Patient Patient { get; set; }
         public string Patient_id { get; set; }
+        public Patient Patient { get; set; }
 
         //relation between Staff & Medical_Record (1 Staff Meny Medical_Record)
 

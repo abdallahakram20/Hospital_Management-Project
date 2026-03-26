@@ -25,5 +25,8 @@ namespace Hospital_Management_Project.Models
         public Staff Staff { get; set; }
 
 
+        // Relation Between Medical_Record & Appointment (1 Appointment to Many Medical_Record ) [one]
+        public ICollection<Medical_Record> Medical_Records { get; set; }
+
     }
 }
