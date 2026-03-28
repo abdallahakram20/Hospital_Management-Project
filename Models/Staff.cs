@@ -6,15 +6,15 @@ namespace Hospital_Management_Project.Models
     {
 
 
+        public string Staff_ID { get; set; }
+        public string Dept_ID { get; set; }
+        public string Position { get; set; }
+        public string Fname { get; set; }
+        public string Lname { get; set; }
 
-
-
-
-
-
-
-
-
+        public Department Department { get; set; }
+        public ICollection<Appointment> Appointments { get; set; }
+        public ICollection<MedicalRecord> MedicalRecords { get; set; }
 
 
 

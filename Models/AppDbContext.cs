@@ -59,6 +59,15 @@ namespace Hospital_Management_Project.Models
                 .WithOne(m => m.Patient)
                 .HasForeignKey(m => m.PatientId);
 
+
+            //Relationship between STAFF and DEPARTMENT (  ONE    DEPARTMENT   TO  MANY  STAFF  )
+
+           modelBuilder.Entity<Staff>()
+               .HasOne(s => s.Department)
+               .WithMany(d => d.Staffs)
+               .HasForeignKey(s => s.DepartmentId);
+
+
         }
     }
 }
