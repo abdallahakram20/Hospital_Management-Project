@@ -5,7 +5,6 @@ namespace Hospital_Management_Project.Models
     public class Patient
     {
         [Key]
-        [MaxLength(20)]
         public string PatientId { get; set; }
 
         [Required]

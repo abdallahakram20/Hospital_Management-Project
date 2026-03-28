@@ -28,7 +28,7 @@ namespace Hospital_Management_Project.Models
             modelBuilder.Entity<Patient>()
                 .HasMany(p => p.Appointments) // Patient has Many Appointments
                 .WithOne(a => a.Patient) // Appointment has One Patients
-                .HasForeignKey(a => a.PatientID); // Foreign Key in Appointment
+                .HasForeignKey(a => a.PatientId); // Foreign Key in Appointment
 
 
 
@@ -36,7 +36,7 @@ namespace Hospital_Management_Project.Models
             modelBuilder.Entity<Staff>()
                 .HasMany(s => s.Appointments) // Patient has Many Appointments
                 .WithOne(a => a.Staff) // Appointment has One Patients
-                .HasForeignKey(a => a.StaffID); // Foreign Key in Appointment
+                .HasForeignKey(a => a.StaffId); // Foreign Key in Appointment
 
 
 
@@ -44,24 +44,20 @@ namespace Hospital_Management_Project.Models
             modelBuilder.Entity<Appointment>()
                 .HasMany(a => a.Medical_Records)
                 .WithOne(m => m.Appointment)
-                .HasForeignKey(m => m.Appointment_ID);)
+                .HasForeignKey(m => m.AppointmentId);
 
              //Relationship between Staff and Medical_Record ( 1 Staff TO Many Medical_Record)
              modelBuilder.Entity<Staff>()
                 .HasMany(s => s.Medical_Records)
                 .WithOne(m => m.Staff)
-                .HasForeignKey(m => m.Staff_ID);
+                .HasForeignKey(m => m.StaffId);
 
 
             //Relationship between Patient and Medical_Record ( 1 Patient TO Many Medical_Record)
             modelBuilder.Entity<Patient>()
                 .HasMany(p => p.Medical_Records)
                 .WithOne(m => m.Patient)
-                .HasForeignKey(m => m.PatientId)
-
-
-
-
+                .HasForeignKey(m => m.PatientId);
 
         }
     }
