@@ -6,20 +6,14 @@ namespace Hospital_Management_Project.Models
     {
 
         [Key]
-        public string Staff_ID { get; set; }
-        public string Dept_ID { get; set; }
+        public string StaffID { get; set; }
         public string Position { get; set; }
         public string Fname { get; set; }
         public string Lname { get; set; }
 
-        public Department Department { get; set; }
-        public ICollection<Appointment> Appointments { get; set; }
-        public ICollection<Medical_Record> Medical_Records { get; set; }
-
-
-
-        //                  Relation
-
+        // Relation Between Department & Staff (1 Department to Many Staff) [Many]
+        public string DeptID { get; set; }
+        public virtual Department Department { get; set; }
 
         // Relation Between Staff & Appointment (1 Staff many Appointment) 
         public ICollection<Appointment> Appointments { get; set; } //[One]

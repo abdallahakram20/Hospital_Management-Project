@@ -16,13 +16,13 @@ namespace Hospital_Management_Project.Models
 
         // Relation Between Patient & Appointment (1 Patient to Many Appointment) [Many]
         
-        public string PatientId { get; set; }
-        public Patient Patient { get; set; }
+        public string PatientID { get; set; }
+        public virtual Patient Patient { get; set; }
 
         // Relation Between Staff & Appointment (1 Staff to Many Appointment) [Many]
-        
-        public string StaffId { get; set; }
-        public Staff Staff { get; set; }
+
+        public string StaffID { get; set; }
+        public virtual Staff Staff { get; set; }
 
 
         // Relation Between Medical_Record & Appointment (1 Appointment to Many Medical_Record ) [one]

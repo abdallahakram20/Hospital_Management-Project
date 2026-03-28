@@ -26,17 +26,18 @@ namespace Hospital_Management_Project.Models
 
         // relation between  Appointment & Medical_Record (1 Appointment Meny Medical_Record)
 
-        public string AppointmentId { get; set; }
-        public Appointment Appointment { get; set; }
-
+        public string AppointmentID { get; set; }
+        
+        public virtual Appointment Appointment { get; set; }
         // relation between  Patient & Medical_Record (1 Patient Meny Medical_Record)
 
-        public string PatientId { get; set; }
-        public Patient Patient { get; set; }
+        public string PatientID { get; set; }
+        public virtual Patient Patient { get; set; }
+
 
         //relation between Staff & Medical_Record (1 Staff Meny Medical_Record)
 
-        public string StaffId { get; set; }
+        public string StaffID { get; set; }
         public Staff Staff { get; set; }
 
 
