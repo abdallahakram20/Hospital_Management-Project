@@ -5,7 +5,7 @@ namespace Hospital_Management_Project.Models
     public class Staff
     {
 
-
+        [Key]
         public string Staff_ID { get; set; }
         public string Dept_ID { get; set; }
         public string Position { get; set; }
@@ -14,7 +14,7 @@ namespace Hospital_Management_Project.Models
 
         public Department Department { get; set; }
         public ICollection<Appointment> Appointments { get; set; }
-        public ICollection<MedicalRecord> MedicalRecords { get; set; }
+        public ICollection<Medical_Record> Medical_Records { get; set; }
 
 
 
