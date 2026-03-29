@@ -95,7 +95,7 @@ namespace Hospital_Management_Project.Migrations
                 {
                     Medical_RecordId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Visit_Date = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Bills = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Bills = table.Column<decimal>(type: "decimal(18,4)", nullable: false),
                     Diagnosis = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Medication = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Treatment_Plan = table.Column<string>(type: "nvarchar(max)", nullable: false),

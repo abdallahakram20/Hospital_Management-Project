@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Hospital_Management_Project.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260329002339_CreateDb")]
+    [Migration("20260329191309_CreateDb")]
     partial class CreateDb
     {
         /// <inheritdoc />
@@ -88,7 +88,7 @@ namespace Hospital_Management_Project.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<decimal>("Bills")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18, 4)");
 
                     b.Property<string>("Diagnosis")
                         .IsRequired()

@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Hospital_Management_Project.Models
 {
@@ -12,7 +14,7 @@ namespace Hospital_Management_Project.Models
         public DateTime Visit_Date { get; set; }
 
         [Required]
-
+        [Column(TypeName = "decimal(18, 4)")]
         public decimal Bills { get; set; }
 
         [Required]

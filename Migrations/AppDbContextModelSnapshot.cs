@@ -85,7 +85,7 @@ namespace Hospital_Management_Project.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<decimal>("Bills")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18, 4)");
 
                     b.Property<string>("Diagnosis")
                         .IsRequired()
