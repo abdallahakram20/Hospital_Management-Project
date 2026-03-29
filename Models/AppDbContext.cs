@@ -6,6 +6,7 @@ namespace Hospital_Management_Project.Models
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
+
         }
 
         protected AppDbContext()
@@ -23,6 +24,7 @@ namespace Hospital_Management_Project.Models
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
 
             // Relationship between Patient and Appointment (1 Patient To Many Appointment)
             modelBuilder.Entity<Patient>()

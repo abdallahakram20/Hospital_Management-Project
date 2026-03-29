@@ -12,6 +12,7 @@ namespace Hospital_Management_Project.Models
         public DateTime Visit_Date { get; set; }
 
         [Required]
+
         public decimal Bills { get; set; }
 
         [Required]
@@ -31,13 +32,13 @@ namespace Hospital_Management_Project.Models
         public virtual Appointment Appointment { get; set; }
         // relation between  Patient & Medical_Record (1 Patient Meny Medical_Record)
 
-        public string PatientID { get; set; }
+        public string? PatientID { get; set; }
         public virtual Patient Patient { get; set; }
 
 
         //relation between Staff & Medical_Record (1 Staff Meny Medical_Record)
 
-        public string StaffID { get; set; }
+        public string? StaffID { get; set; }
         public Staff Staff { get; set; }
 
 
