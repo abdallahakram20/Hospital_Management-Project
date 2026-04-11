@@ -62,6 +62,30 @@ namespace Hospital_Management_Project.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "PatientMedicalProfiles",
+                columns: table => new
+                {
+                    ProfileId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Blood_Type = table.Column<string>(type: "nvarchar(5)", maxLength: 5, nullable: false),
+                    Blood_Pressure = table.Column<bool>(type: "bit", nullable: false),
+                    Chronic_Disease = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    Allergies = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    Weight = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
+                    Diabets = table.Column<bool>(type: "bit", nullable: false),
+                    PatientID = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PatientMedicalProfiles", x => x.ProfileId);
+                    table.ForeignKey(
+                        name: "FK_PatientMedicalProfiles_Patient_PatientID",
+                        column: x => x.PatientID,
+                        principalTable: "Patient",
+                        principalColumn: "PatientId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Appointment",
                 columns: table => new
                 {
@@ -101,7 +125,8 @@ namespace Hospital_Management_Project.Migrations
                     Treatment_Plan = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     AppointmentID = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     PatientID = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    StaffID = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                    StaffID = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Patient_ProfileID = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -113,15 +138,23 @@ namespace Hospital_Management_Project.Migrations
                         principalColumn: "AppointmentId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
+                        name: "FK_Medical_Records_PatientMedicalProfiles_Patient_ProfileID",
+                        column: x => x.Patient_ProfileID,
+                        principalTable: "PatientMedicalProfiles",
+                        principalColumn: "ProfileId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
                         name: "FK_Medical_Records_Patient_PatientID",
                         column: x => x.PatientID,
                         principalTable: "Patient",
-                        principalColumn: "PatientId");
+                        principalColumn: "PatientId",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Medical_Records_Staff_StaffID",
                         column: x => x.StaffID,
                         principalTable: "Staff",
-                        principalColumn: "StaffID");
+                        principalColumn: "StaffID",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
@@ -140,6 +173,11 @@ namespace Hospital_Management_Project.Migrations
                 column: "AppointmentID");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Medical_Records_Patient_ProfileID",
+                table: "Medical_Records",
+                column: "Patient_ProfileID");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Medical_Records_PatientID",
                 table: "Medical_Records",
                 column: "PatientID");
@@ -148,6 +186,12 @@ namespace Hospital_Management_Project.Migrations
                 name: "IX_Medical_Records_StaffID",
                 table: "Medical_Records",
                 column: "StaffID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PatientMedicalProfiles_PatientID",
+                table: "PatientMedicalProfiles",
+                column: "PatientID",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Staff_DeptID",
@@ -165,10 +209,13 @@ namespace Hospital_Management_Project.Migrations
                 name: "Appointment");
 
             migrationBuilder.DropTable(
-                name: "Patient");
+                name: "PatientMedicalProfiles");
 
             migrationBuilder.DropTable(
                 name: "Staff");
+
+            migrationBuilder.DropTable(
+                name: "Patient");
 
             migrationBuilder.DropTable(
                 name: "Department");

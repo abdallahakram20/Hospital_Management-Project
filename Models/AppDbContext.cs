@@ -18,6 +18,7 @@ namespace Hospital_Management_Project.Models
         public DbSet<Patient> Patient { get; set; }
         public DbSet<Staff> Staff { get; set; }
         public DbSet<Department> Department { get; set; }
+        public DbSet<Patient_Medical_Profile> PatientMedicalProfiles { get; set; }
 
 
 
@@ -52,14 +53,16 @@ namespace Hospital_Management_Project.Models
             modelBuilder.Entity<Staff>()
                .HasMany(s => s.Medical_Records)
                .WithOne(m => m.Staff)
-               .HasForeignKey(m => m.StaffID);
+               .HasForeignKey(m => m.StaffID)
+               .OnDelete(DeleteBehavior.Restrict);
 
 
             //Relationship between Patient and Medical_Record ( 1 Patient TO Many Medical_Record)
             modelBuilder.Entity<Patient>()
                 .HasMany(p => p.Medical_Records)
                 .WithOne(m => m.Patient)
-                .HasForeignKey(m => m.PatientID);
+                .HasForeignKey(m => m.PatientID)
+                .OnDelete(DeleteBehavior.Restrict);
 
 
             //Relationship Between STAFF and DEPARTMENT (  ONE    DEPARTMENT   TO  MANY  STAFF  )
@@ -67,6 +70,20 @@ namespace Hospital_Management_Project.Models
                 .HasMany(d => d.Staff)
                 .WithOne(s => s.Department)
                 .HasForeignKey(s => s.DeptID);
+
+            //Relationship Between Pateint_Medical_Profile and Medical_Record (  ONE    Pateint_Medical_Profile   TO  MANY  Medical_Record  )
+            modelBuilder.Entity<Patient_Medical_Profile>()
+                .HasMany(pmp => pmp.Medical_Records)
+                .WithOne(m => m.Patient_Medical_Profile)
+                .HasForeignKey(m => m.Patient_ProfileID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Relation Between  Pateint & Pateint_Medical_Profile  (1  Pateint One Pateint_Medical_Profile)
+
+            modelBuilder.Entity<Patient>()
+                .HasOne(p => p.Patient_Medical_Profile)
+                .WithOne(mp => mp.Patient)
+                .HasForeignKey<Patient_Medical_Profile>(mp => mp.PatientID);
         }
     }
 }
