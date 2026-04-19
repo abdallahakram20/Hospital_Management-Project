@@ -19,15 +19,10 @@ namespace Hospital_Management_Project.Models
         public decimal Weight { get; set; }
         public bool Diabets { get; set; }
 
-        // Relation Between  Pateint_Medical_Profile & Medical_Record  (1  Pateint_Medical_Profile many Medical_Record)
-        public ICollection<Medical_Record> Medical_Records { get; set; }
-
 
         // Relation Between  Pateint & Pateint_Medical_Profile  (1  Pateint One Pateint_Medical_Profile)
         public string PatientID { get; set; }
-        public virtual Patient Patient { get; set; } // إضافة الملاحة للـ Patient
-
-
+        public virtual Patient Patient { get; set; } 
 
     }
 }

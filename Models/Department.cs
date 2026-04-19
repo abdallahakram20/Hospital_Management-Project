@@ -16,7 +16,7 @@ namespace Hospital_Management_Project.Models
         public string DeptFloor { get; set; }
 
         // Relation Between Department & Staff (1 Department many Staff) 
-        public ICollection<Staff> Staff { get; set; }
+        public ICollection<Staff> Staffs { get; set; }
     }
 
 }
