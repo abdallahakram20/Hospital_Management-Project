@@ -29,5 +29,6 @@ namespace Hospital_Management_Project.Models
         public string StaffID { get; set; }
         public virtual Staff Staff { get; set; }
 
+
     }
 }
