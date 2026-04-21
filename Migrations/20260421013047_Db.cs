@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Hospital_Management_Project.Migrations
 {
     /// <inheritdoc />
-    public partial class CreateDb : Migration
+    public partial class Db : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -33,7 +33,9 @@ namespace Hospital_Management_Project.Migrations
                     LName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Address = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     Phone = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    Gender = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Gender = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    user_name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Password = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -62,7 +64,7 @@ namespace Hospital_Management_Project.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "PatientMedicalProfiles",
+                name: "PatientMedicalProfile",
                 columns: table => new
                 {
                     ProfileId = table.Column<string>(type: "nvarchar(450)", nullable: false),
@@ -76,9 +78,9 @@ namespace Hospital_Management_Project.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PatientMedicalProfiles", x => x.ProfileId);
+                    table.PrimaryKey("PK_PatientMedicalProfile", x => x.ProfileId);
                     table.ForeignKey(
-                        name: "FK_PatientMedicalProfiles_Patient_PatientID",
+                        name: "FK_PatientMedicalProfile_Patient_PatientID",
                         column: x => x.PatientID,
                         principalTable: "Patient",
                         principalColumn: "PatientId",
@@ -90,9 +92,12 @@ namespace Hospital_Management_Project.Migrations
                 columns: table => new
                 {
                     AppointmentId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Appointment_Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Visit_Date = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     Reason = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    Diagnosis = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Medication = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Treatment_Plan = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PatientID = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     StaffID = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
@@ -113,54 +118,11 @@ namespace Hospital_Management_Project.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "Medical_Records",
-                columns: table => new
-                {
-                    Medical_RecordId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Visit_Date = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Bills = table.Column<decimal>(type: "decimal(18,4)", nullable: false),
-                    Diagnosis = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Medication = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Treatment_Plan = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    AppointmentID = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    PatientID = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    StaffID = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Patient_ProfileID = table.Column<string>(type: "nvarchar(450)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Medical_Records", x => x.Medical_RecordId);
-                    table.ForeignKey(
-                        name: "FK_Medical_Records_Appointment_AppointmentID",
-                        column: x => x.AppointmentID,
-                        principalTable: "Appointment",
-                        principalColumn: "AppointmentId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Medical_Records_PatientMedicalProfiles_Patient_ProfileID",
-                        column: x => x.Patient_ProfileID,
-                        principalTable: "PatientMedicalProfiles",
-                        principalColumn: "ProfileId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Medical_Records_Patient_PatientID",
-                        column: x => x.PatientID,
-                        principalTable: "Patient",
-                        principalColumn: "PatientId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Medical_Records_Staff_StaffID",
-                        column: x => x.StaffID,
-                        principalTable: "Staff",
-                        principalColumn: "StaffID",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
             migrationBuilder.CreateIndex(
                 name: "IX_Appointment_PatientID",
                 table: "Appointment",
-                column: "PatientID");
+                column: "PatientID",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Appointment_StaffID",
@@ -168,28 +130,8 @@ namespace Hospital_Management_Project.Migrations
                 column: "StaffID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Medical_Records_AppointmentID",
-                table: "Medical_Records",
-                column: "AppointmentID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Medical_Records_Patient_ProfileID",
-                table: "Medical_Records",
-                column: "Patient_ProfileID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Medical_Records_PatientID",
-                table: "Medical_Records",
-                column: "PatientID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Medical_Records_StaffID",
-                table: "Medical_Records",
-                column: "StaffID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PatientMedicalProfiles_PatientID",
-                table: "PatientMedicalProfiles",
+                name: "IX_PatientMedicalProfile_PatientID",
+                table: "PatientMedicalProfile",
                 column: "PatientID",
                 unique: true);
 
@@ -203,13 +145,10 @@ namespace Hospital_Management_Project.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Medical_Records");
-
-            migrationBuilder.DropTable(
                 name: "Appointment");
 
             migrationBuilder.DropTable(
-                name: "PatientMedicalProfiles");
+                name: "PatientMedicalProfile");
 
             migrationBuilder.DropTable(
                 name: "Staff");

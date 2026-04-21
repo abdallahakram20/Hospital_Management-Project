@@ -8,7 +8,7 @@ namespace Hospital_Management_Project.Models
         public string AppointmentId { get; set; }
 
         [Required, DataType(DataType.DateTime)]
-        public DateTime Appointment_Date { get; set; }
+        public DateTime Visit_Date { get; set; }
         [StringLength(50)]
         public string? Status { get; set; } 
         [StringLength(500)]

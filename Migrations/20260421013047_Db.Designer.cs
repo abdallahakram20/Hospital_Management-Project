@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Hospital_Management_Project.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260410223401_CreateDb")]
-    partial class CreateDb
+    [Migration("20260421013047_Db")]
+    partial class Db
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -30,8 +30,13 @@ namespace Hospital_Management_Project.Migrations
                     b.Property<string>("AppointmentId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<DateTime>("Appointment_Date")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("Diagnosis")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Medication")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PatientID")
                         .IsRequired()
@@ -49,9 +54,17 @@ namespace Hospital_Management_Project.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<string>("Treatment_Plan")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Visit_Date")
+                        .HasColumnType("datetime2");
+
                     b.HasKey("AppointmentId");
 
-                    b.HasIndex("PatientID");
+                    b.HasIndex("PatientID")
+                        .IsUnique();
 
                     b.HasIndex("StaffID");
 
@@ -78,57 +91,6 @@ namespace Hospital_Management_Project.Migrations
                     b.ToTable("Department");
                 });
 
-            modelBuilder.Entity("Hospital_Management_Project.Models.Medical_Record", b =>
-                {
-                    b.Property<string>("Medical_RecordId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("AppointmentID")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<decimal>("Bills")
-                        .HasColumnType("decimal(18, 4)");
-
-                    b.Property<string>("Diagnosis")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Medication")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PatientID")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Patient_ProfileID")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("StaffID")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Treatment_Plan")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("Visit_Date")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Medical_RecordId");
-
-                    b.HasIndex("AppointmentID");
-
-                    b.HasIndex("PatientID");
-
-                    b.HasIndex("Patient_ProfileID");
-
-                    b.HasIndex("StaffID");
-
-                    b.ToTable("Medical_Records");
-                });
-
             modelBuilder.Entity("Hospital_Management_Project.Models.Patient", b =>
                 {
                     b.Property<string>("PatientId")
@@ -146,17 +108,28 @@ namespace Hospital_Management_Project.Migrations
 
                     b.Property<string>("Gender")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<string>("LName")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<string>("Phone")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("user_name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("PatientId");
 
@@ -201,7 +174,7 @@ namespace Hospital_Management_Project.Migrations
                     b.HasIndex("PatientID")
                         .IsUnique();
 
-                    b.ToTable("PatientMedicalProfiles");
+                    b.ToTable("PatientMedicalProfile");
                 });
 
             modelBuilder.Entity("Hospital_Management_Project.Models.Staff", b =>
@@ -235,8 +208,8 @@ namespace Hospital_Management_Project.Migrations
             modelBuilder.Entity("Hospital_Management_Project.Models.Appointment", b =>
                 {
                     b.HasOne("Hospital_Management_Project.Models.Patient", "Patient")
-                        .WithMany("Appointments")
-                        .HasForeignKey("PatientID")
+                        .WithOne("Appointment")
+                        .HasForeignKey("Hospital_Management_Project.Models.Appointment", "PatientID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -247,40 +220,6 @@ namespace Hospital_Management_Project.Migrations
                         .IsRequired();
 
                     b.Navigation("Patient");
-
-                    b.Navigation("Staff");
-                });
-
-            modelBuilder.Entity("Hospital_Management_Project.Models.Medical_Record", b =>
-                {
-                    b.HasOne("Hospital_Management_Project.Models.Appointment", "Appointment")
-                        .WithMany("Medical_Records")
-                        .HasForeignKey("AppointmentID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Hospital_Management_Project.Models.Patient", "Patient")
-                        .WithMany("Medical_Records")
-                        .HasForeignKey("PatientID")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Hospital_Management_Project.Models.Patient_Medical_Profile", "Patient_Medical_Profile")
-                        .WithMany("Medical_Records")
-                        .HasForeignKey("Patient_ProfileID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Hospital_Management_Project.Models.Staff", "Staff")
-                        .WithMany("Medical_Records")
-                        .HasForeignKey("StaffID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Appointment");
-
-                    b.Navigation("Patient");
-
-                    b.Navigation("Patient_Medical_Profile");
 
                     b.Navigation("Staff");
                 });
@@ -299,7 +238,7 @@ namespace Hospital_Management_Project.Migrations
             modelBuilder.Entity("Hospital_Management_Project.Models.Staff", b =>
                 {
                     b.HasOne("Hospital_Management_Project.Models.Department", "Department")
-                        .WithMany("Staff")
+                        .WithMany("Staffs")
                         .HasForeignKey("DeptID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -307,36 +246,23 @@ namespace Hospital_Management_Project.Migrations
                     b.Navigation("Department");
                 });
 
-            modelBuilder.Entity("Hospital_Management_Project.Models.Appointment", b =>
-                {
-                    b.Navigation("Medical_Records");
-                });
-
             modelBuilder.Entity("Hospital_Management_Project.Models.Department", b =>
                 {
-                    b.Navigation("Staff");
+                    b.Navigation("Staffs");
                 });
 
             modelBuilder.Entity("Hospital_Management_Project.Models.Patient", b =>
                 {
-                    b.Navigation("Appointments");
-
-                    b.Navigation("Medical_Records");
+                    b.Navigation("Appointment")
+                        .IsRequired();
 
                     b.Navigation("Patient_Medical_Profile")
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Hospital_Management_Project.Models.Patient_Medical_Profile", b =>
-                {
-                    b.Navigation("Medical_Records");
-                });
-
             modelBuilder.Entity("Hospital_Management_Project.Models.Staff", b =>
                 {
                     b.Navigation("Appointments");
-
-                    b.Navigation("Medical_Records");
                 });
 #pragma warning restore 612, 618
         }
