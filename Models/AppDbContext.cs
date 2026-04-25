@@ -23,9 +23,10 @@ namespace Hospital_Management_Project.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
-
-
+            modelBuilder.Entity<Patient>()
+                .HasOne(p => p.Patient_Medical_Profile) // المريض له بروفايل واحد
+                .WithOne(mp => mp.Patient)             // والبروفايل له مريض واحد
+                .HasForeignKey<Patient_Medical_Profile>(mp => mp.PatientId); // تحديد البروفايل كطرف تابع
         }
     }
 }

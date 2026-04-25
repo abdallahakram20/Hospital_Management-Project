@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Hospital_Management_Project.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260421013047_Db")]
+    [Migration("20260425205410_Db")]
     partial class Db
     {
         /// <inheritdoc />
@@ -30,6 +30,11 @@ namespace Hospital_Management_Project.Migrations
                     b.Property<string>("AppointmentId")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("Common_tests")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
                     b.Property<string>("Diagnosis")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -37,6 +42,11 @@ namespace Hospital_Management_Project.Migrations
                     b.Property<string>("Medication")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("PatientID")
                         .IsRequired()
@@ -63,8 +73,7 @@ namespace Hospital_Management_Project.Migrations
 
                     b.HasKey("AppointmentId");
 
-                    b.HasIndex("PatientID")
-                        .IsUnique();
+                    b.HasIndex("PatientID");
 
                     b.HasIndex("StaffID");
 
@@ -162,7 +171,7 @@ namespace Hospital_Management_Project.Migrations
                     b.Property<bool>("Diabets")
                         .HasColumnType("bit");
 
-                    b.Property<string>("PatientID")
+                    b.Property<string>("PatientId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
@@ -171,7 +180,7 @@ namespace Hospital_Management_Project.Migrations
 
                     b.HasKey("ProfileId");
 
-                    b.HasIndex("PatientID")
+                    b.HasIndex("PatientId")
                         .IsUnique();
 
                     b.ToTable("PatientMedicalProfile");
@@ -182,53 +191,55 @@ namespace Hospital_Management_Project.Migrations
                     b.Property<string>("StaffID")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("DepartmentId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("DeptID")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Fname")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<string>("Lname")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<string>("Position")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("StaffID");
 
-                    b.HasIndex("DeptID");
+                    b.HasIndex("DepartmentId");
 
                     b.ToTable("Staff");
                 });
 
             modelBuilder.Entity("Hospital_Management_Project.Models.Appointment", b =>
                 {
-                    b.HasOne("Hospital_Management_Project.Models.Patient", "Patient")
-                        .WithOne("Appointment")
-                        .HasForeignKey("Hospital_Management_Project.Models.Appointment", "PatientID")
+                    b.HasOne("Hospital_Management_Project.Models.Patient", null)
+                        .WithMany("Appointments")
+                        .HasForeignKey("PatientID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Hospital_Management_Project.Models.Staff", "Staff")
+                    b.HasOne("Hospital_Management_Project.Models.Staff", null)
                         .WithMany("Appointments")
                         .HasForeignKey("StaffID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Patient");
-
-                    b.Navigation("Staff");
                 });
 
             modelBuilder.Entity("Hospital_Management_Project.Models.Patient_Medical_Profile", b =>
                 {
                     b.HasOne("Hospital_Management_Project.Models.Patient", "Patient")
                         .WithOne("Patient_Medical_Profile")
-                        .HasForeignKey("Hospital_Management_Project.Models.Patient_Medical_Profile", "PatientID")
+                        .HasForeignKey("Hospital_Management_Project.Models.Patient_Medical_Profile", "PatientId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -237,13 +248,9 @@ namespace Hospital_Management_Project.Migrations
 
             modelBuilder.Entity("Hospital_Management_Project.Models.Staff", b =>
                 {
-                    b.HasOne("Hospital_Management_Project.Models.Department", "Department")
+                    b.HasOne("Hospital_Management_Project.Models.Department", null)
                         .WithMany("Staffs")
-                        .HasForeignKey("DeptID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Department");
+                        .HasForeignKey("DepartmentId");
                 });
 
             modelBuilder.Entity("Hospital_Management_Project.Models.Department", b =>
@@ -253,8 +260,7 @@ namespace Hospital_Management_Project.Migrations
 
             modelBuilder.Entity("Hospital_Management_Project.Models.Patient", b =>
                 {
-                    b.Navigation("Appointment")
-                        .IsRequired();
+                    b.Navigation("Appointments");
 
                     b.Navigation("Patient_Medical_Profile")
                         .IsRequired();
