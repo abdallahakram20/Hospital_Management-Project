@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 
 namespace Hospital_Management_Project.Models
@@ -38,10 +38,10 @@ namespace Hospital_Management_Project.Models
             // Relation Between  Pateint & Pateint_Medical_Profile  (1  Pateint One Pateint_Medical_Profile)
             public virtual Patient_Medical_Profile Patient_Medical_Profile { get; set; }
 
-            // Relation Between  Pateint & Appointment  (1  Pateint One Appointment)
+            // Relation Between  Pateint & Appointment  (1  Pateint Many Appointment)
 
-            public virtual Appointment Appointment { get; set; }
+            public ICollection<Appointment> Appointments { get; set; }
 
 
-        }
+    }
 }
