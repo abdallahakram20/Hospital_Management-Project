@@ -23,5 +23,7 @@ namespace Hospital_Management_Project.Models
         // Relation Between  Pateint & Pateint_Medical_Profile  (1  Pateint One Pateint_Medical_Profile)
         public virtual Patient Patient { get; set; } 
 
+
+
     }
 }
