@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace Hospital_Management_Project.Models
 {
@@ -7,16 +7,21 @@ namespace Hospital_Management_Project.Models
 
         [Key]
         public string StaffID { get; set; }
+
+        [MaxLength(50)]
         public string Position { get; set; }
+
+        [MaxLength(10)]
         public string Fname { get; set; }
+
+        [MaxLength(10)]
         public string Lname { get; set; }
 
         // Relation Between Department & Staff (1 Department to Many Staff) [Many]
         public string DeptID { get; set; }
-        public virtual Department Department { get; set; }
 
         // Relation Between Staff & Appointment (1 Staff many Appointment) 
-        public ICollection<Appointment> Appointments { get; set; } //[One]
+        public ICollection<Appointment> Appointments { get; set; } 
 
     }
 }
