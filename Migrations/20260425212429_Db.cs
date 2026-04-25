@@ -48,6 +48,8 @@ namespace Hospital_Management_Project.Migrations
                 {
                     StaffID = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Position = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Fname = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
                     Lname = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
                     DeptID = table.Column<string>(type: "nvarchar(max)", nullable: false),
