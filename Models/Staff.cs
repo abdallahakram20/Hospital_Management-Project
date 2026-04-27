@@ -6,7 +6,7 @@ namespace Hospital_Management_Project.Models
     {
 
         [Key]
-        public string StaffID { get; set; }
+        public string StaffId { get; set; }
 
         [MaxLength(50)]
         public string Position { get; set; }
@@ -23,7 +23,7 @@ namespace Hospital_Management_Project.Models
         public string Lname { get; set; }
 
         // Relation Between Department & Staff (1 Department to Many Staff) [Many]
-        public string DeptID { get; set; }
+        public string DeptId { get; set; }
 
         // Relation Between Staff & Appointment (1 Staff many Appointment) 
         public ICollection<Appointment> Appointments { get; set; } 

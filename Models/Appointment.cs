@@ -26,11 +26,11 @@ namespace Hospital_Management_Project.Models
 
         // Relation Between Patient & Appointment (1 Patient With Many Appointment) 
 
-        public string PatientID { get; set; }
+        public string PatientId { get; set; }
 
         // Relation Between Staff & Appointment (1 Staff to Many Appointment) 
 
-        public string StaffID { get; set; }
+        public string StaffId { get; set; }
 
 
     }
