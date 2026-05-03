@@ -1,0 +1,60 @@
+﻿@model Hospital_Management_Project.Models.Patient_Medical_Profile
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>Patient_Medical_Profile</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Blood_Type)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Blood_Type)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Blood_Pressure)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Blood_Pressure)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Chronic_Disease)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Chronic_Disease)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Allergies)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Allergies)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Weight)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Weight)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Diabets)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Diabets)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Patient)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Patient.PatientId)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.ProfileId">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>
