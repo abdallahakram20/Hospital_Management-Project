@@ -20,13 +20,13 @@ namespace Hospital_Management_Project.Models
         public DbSet<Patient_Medical_Profile> PatientMedicalProfile { get; set; }
 
 
-
+        // Relation Beween Patient and Patient_Medical_Profile (One-to-One)
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Patient>()
-                .HasOne(p => p.Patient_Medical_Profile) // المريض له بروفايل واحد
-                .WithOne(mp => mp.Patient)             // والبروفايل له مريض واحد
-                .HasForeignKey<Patient_Medical_Profile>(mp => mp.PatientId); // تحديد البروفايل كطرف تابع
+                .HasOne(p => p.Patient_Medical_Profile) 
+                .WithOne(mp => mp.Patient)             
+                .HasForeignKey<Patient_Medical_Profile>(mp => mp.PatientId);
         }
     }
 }
