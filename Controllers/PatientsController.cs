@@ -25,7 +25,7 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // GET: Patients/Details/5
-        public async Task<IActionResult> Details(string id)
+        public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
             {
@@ -65,7 +65,7 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // GET: Patients/Edit/5
-        public async Task<IActionResult> Edit(string id)
+        public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
             {
@@ -85,7 +85,7 @@ namespace Hospital_Management_Project.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("PatientId,FName,LName,Address,Phone,Gender,user_name,Password")] Patient patient)
+        public async Task<IActionResult> Edit(int id, [Bind("PatientId,FName,LName,Address,Phone,Gender,user_name,Password")] Patient patient)
         {
             if (id != patient.PatientId)
             {
@@ -116,7 +116,7 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // GET: Patients/Delete/5
-        public async Task<IActionResult> Delete(string id)
+        public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
             {
@@ -136,7 +136,7 @@ namespace Hospital_Management_Project.Controllers
         // POST: Patients/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(string id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var patient = await _context.Patient.FindAsync(id);
             if (patient != null)
@@ -148,7 +148,7 @@ namespace Hospital_Management_Project.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private bool PatientExists(string id)
+        private bool PatientExists(int id)
         {
             return _context.Patient.Any(e => e.PatientId == id);
         }

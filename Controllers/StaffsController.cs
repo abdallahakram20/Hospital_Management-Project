@@ -25,7 +25,7 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // GET: Staffs/Details/5
-        public async Task<IActionResult> Details(string id)
+        public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
             {
@@ -45,6 +45,7 @@ namespace Hospital_Management_Project.Controllers
         // GET: Staffs/Create
         public IActionResult Create()
         {
+            ViewData["DepartmentId"] = new SelectList(_context.Department, "DepartmentId", "DeptName");
             return View();
         }
 
@@ -53,7 +54,7 @@ namespace Hospital_Management_Project.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("StaffId,Position,Email,Password,Fname,Lname,DeptId")] Staff staff)
+        public async Task<IActionResult> Create([Bind("StaffId,Position,Email,Password,Fname,Lname,DepartmentId")] Staff staff)
         {
             if (ModelState.IsValid)
             {
@@ -65,7 +66,7 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // GET: Staffs/Edit/5
-        public async Task<IActionResult> Edit(string id)
+        public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
             {
@@ -85,7 +86,7 @@ namespace Hospital_Management_Project.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("StaffId,Position,Email,Password,Fname,Lname,DeptId")] Staff staff)
+        public async Task<IActionResult> Edit(int id, [Bind("StaffId,Position,Email,Password,Fname,Lname,DeptId")] Staff staff)
         {
             if (id != staff.StaffId)
             {
@@ -116,7 +117,7 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // GET: Staffs/Delete/5
-        public async Task<IActionResult> Delete(string id)
+        public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
             {
@@ -136,7 +137,7 @@ namespace Hospital_Management_Project.Controllers
         // POST: Staffs/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(string id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var staff = await _context.Staff.FindAsync(id);
             if (staff != null)
@@ -148,7 +149,7 @@ namespace Hospital_Management_Project.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private bool StaffExists(string id)
+        private bool StaffExists(int id)
         {
             return _context.Staff.Any(e => e.StaffId == id);
         }

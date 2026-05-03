@@ -25,7 +25,7 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // GET: Departments/Details/5
-        public async Task<IActionResult> Details(string id)
+        public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
             {
@@ -65,7 +65,7 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // GET: Departments/Edit/5
-        public async Task<IActionResult> Edit(string id)
+        public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
             {
@@ -85,7 +85,7 @@ namespace Hospital_Management_Project.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("DepartmentId,DeptName,DeptFloor")] Department department)
+        public async Task<IActionResult> Edit(int id, [Bind("DepartmentId,DeptName,DeptFloor")] Department department)
         {
             if (id != department.DepartmentId)
             {
@@ -116,7 +116,7 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // GET: Departments/Delete/5
-        public async Task<IActionResult> Delete(string id)
+        public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
             {
@@ -136,7 +136,7 @@ namespace Hospital_Management_Project.Controllers
         // POST: Departments/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(string id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var department = await _context.Department.FindAsync(id);
             if (department != null)
@@ -148,7 +148,7 @@ namespace Hospital_Management_Project.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private bool DepartmentExists(string id)
+        private bool DepartmentExists(int id)
         {
             return _context.Department.Any(e => e.DepartmentId == id);
         }

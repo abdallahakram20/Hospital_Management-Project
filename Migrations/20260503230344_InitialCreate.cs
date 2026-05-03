@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Hospital_Management_Project.Migrations
 {
     /// <inheritdoc />
-    public partial class Db : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,7 +15,8 @@ namespace Hospital_Management_Project.Migrations
                 name: "Department",
                 columns: table => new
                 {
-                    DepartmentId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    DepartmentId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     DeptName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     DeptFloor = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
                 },
@@ -28,7 +29,8 @@ namespace Hospital_Management_Project.Migrations
                 name: "Patient",
                 columns: table => new
                 {
-                    PatientId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    PatientId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     FName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     LName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Address = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
@@ -46,18 +48,19 @@ namespace Hospital_Management_Project.Migrations
                 name: "Staff",
                 columns: table => new
                 {
-                    StaffID = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    StaffId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Position = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Fname = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
                     Lname = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
-                    DeptID = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    DepartmentId = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                    DeptId = table.Column<int>(type: "int", nullable: false),
+                    DepartmentId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Staff", x => x.StaffID);
+                    table.PrimaryKey("PK_Staff", x => x.StaffId);
                     table.ForeignKey(
                         name: "FK_Staff_Department_DepartmentId",
                         column: x => x.DepartmentId,
@@ -69,14 +72,15 @@ namespace Hospital_Management_Project.Migrations
                 name: "PatientMedicalProfile",
                 columns: table => new
                 {
-                    ProfileId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ProfileId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Blood_Type = table.Column<string>(type: "nvarchar(5)", maxLength: 5, nullable: false),
                     Blood_Pressure = table.Column<bool>(type: "bit", nullable: false),
                     Chronic_Disease = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
                     Allergies = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
                     Weight = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
                     Diabets = table.Column<bool>(type: "bit", nullable: false),
-                    PatientId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    PatientId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -93,7 +97,8 @@ namespace Hospital_Management_Project.Migrations
                 name: "Appointment",
                 columns: table => new
                 {
-                    AppointmentId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    AppointmentId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Visit_Date = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     Reason = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
@@ -102,35 +107,35 @@ namespace Hospital_Management_Project.Migrations
                     Treatment_Plan = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Notes = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     Common_tests = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    PatientID = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    StaffID = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    PatientId = table.Column<int>(type: "int", nullable: false),
+                    StaffId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Appointment", x => x.AppointmentId);
                     table.ForeignKey(
-                        name: "FK_Appointment_Patient_PatientID",
-                        column: x => x.PatientID,
+                        name: "FK_Appointment_Patient_PatientId",
+                        column: x => x.PatientId,
                         principalTable: "Patient",
                         principalColumn: "PatientId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Appointment_Staff_StaffID",
-                        column: x => x.StaffID,
+                        name: "FK_Appointment_Staff_StaffId",
+                        column: x => x.StaffId,
                         principalTable: "Staff",
-                        principalColumn: "StaffID",
+                        principalColumn: "StaffId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Appointment_PatientID",
+                name: "IX_Appointment_PatientId",
                 table: "Appointment",
-                column: "PatientID");
+                column: "PatientId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Appointment_StaffID",
+                name: "IX_Appointment_StaffId",
                 table: "Appointment",
-                column: "StaffID");
+                column: "StaffId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PatientMedicalProfile_PatientId",

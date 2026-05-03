@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Hospital_Management_Project.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260425212429_Db")]
-    partial class Db
+    [Migration("20260503231318_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,8 +27,11 @@ namespace Hospital_Management_Project.Migrations
 
             modelBuilder.Entity("Hospital_Management_Project.Models.Appointment", b =>
                 {
-                    b.Property<string>("AppointmentId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("AppointmentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AppointmentId"));
 
                     b.Property<string>("Common_tests")
                         .IsRequired()
@@ -48,17 +51,15 @@ namespace Hospital_Management_Project.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<string>("PatientID")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("PatientId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Reason")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<string>("StaffID")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("StaffId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Status")
                         .HasMaxLength(50)
@@ -73,17 +74,20 @@ namespace Hospital_Management_Project.Migrations
 
                     b.HasKey("AppointmentId");
 
-                    b.HasIndex("PatientID");
+                    b.HasIndex("PatientId");
 
-                    b.HasIndex("StaffID");
+                    b.HasIndex("StaffId");
 
                     b.ToTable("Appointment");
                 });
 
             modelBuilder.Entity("Hospital_Management_Project.Models.Department", b =>
                 {
-                    b.Property<string>("DepartmentId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("DepartmentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DepartmentId"));
 
                     b.Property<string>("DeptFloor")
                         .IsRequired()
@@ -102,8 +106,11 @@ namespace Hospital_Management_Project.Migrations
 
             modelBuilder.Entity("Hospital_Management_Project.Models.Patient", b =>
                 {
-                    b.Property<string>("PatientId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("PatientId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PatientId"));
 
                     b.Property<string>("Address")
                         .IsRequired()
@@ -147,8 +154,11 @@ namespace Hospital_Management_Project.Migrations
 
             modelBuilder.Entity("Hospital_Management_Project.Models.Patient_Medical_Profile", b =>
                 {
-                    b.Property<string>("ProfileId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("ProfileId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProfileId"));
 
                     b.Property<string>("Allergies")
                         .IsRequired()
@@ -171,9 +181,8 @@ namespace Hospital_Management_Project.Migrations
                     b.Property<bool>("Diabets")
                         .HasColumnType("bit");
 
-                    b.Property<string>("PatientId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("PatientId")
+                        .HasColumnType("int");
 
                     b.Property<decimal>("Weight")
                         .HasColumnType("decimal(5, 2)");
@@ -188,15 +197,14 @@ namespace Hospital_Management_Project.Migrations
 
             modelBuilder.Entity("Hospital_Management_Project.Models.Staff", b =>
                 {
-                    b.Property<string>("StaffID")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("StaffId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
-                    b.Property<string>("DepartmentId")
-                        .HasColumnType("nvarchar(450)");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("StaffId"));
 
-                    b.Property<string>("DeptID")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("DepartmentId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -221,7 +229,7 @@ namespace Hospital_Management_Project.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.HasKey("StaffID");
+                    b.HasKey("StaffId");
 
                     b.HasIndex("DepartmentId");
 
@@ -232,13 +240,13 @@ namespace Hospital_Management_Project.Migrations
                 {
                     b.HasOne("Hospital_Management_Project.Models.Patient", null)
                         .WithMany("Appointments")
-                        .HasForeignKey("PatientID")
+                        .HasForeignKey("PatientId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Hospital_Management_Project.Models.Staff", null)
                         .WithMany("Appointments")
-                        .HasForeignKey("StaffID")
+                        .HasForeignKey("StaffId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -258,7 +266,9 @@ namespace Hospital_Management_Project.Migrations
                 {
                     b.HasOne("Hospital_Management_Project.Models.Department", null)
                         .WithMany("Staffs")
-                        .HasForeignKey("DepartmentId");
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Hospital_Management_Project.Models.Department", b =>

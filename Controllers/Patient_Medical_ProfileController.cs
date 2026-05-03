@@ -26,7 +26,7 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // GET: Patient_Medical_Profile/Details/5
-        public async Task<IActionResult> Details(string id)
+        public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
             {
@@ -47,7 +47,7 @@ namespace Hospital_Management_Project.Controllers
         // GET: Patient_Medical_Profile/Create
         public IActionResult Create()
         {
-            ViewData["PatientId"] = new SelectList(_context.Patient, "PatientId", "PatientId");
+            ViewData["PatientId"] = new SelectList(_context.Patient, "PatientId", "FName");
             return View();
         }
 
@@ -64,12 +64,12 @@ namespace Hospital_Management_Project.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["PatientId"] = new SelectList(_context.Patient, "PatientId", "PatientId", patient_Medical_Profile.PatientId);
+            ViewData["PatientId"] = new SelectList(_context.Patient, "PatientId", "FName", patient_Medical_Profile.PatientId);
             return View(patient_Medical_Profile);
         }
 
         // GET: Patient_Medical_Profile/Edit/5
-        public async Task<IActionResult> Edit(string id)
+        public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
             {
@@ -81,7 +81,7 @@ namespace Hospital_Management_Project.Controllers
             {
                 return NotFound();
             }
-            ViewData["PatientId"] = new SelectList(_context.Patient, "PatientId", "PatientId", patient_Medical_Profile.PatientId);
+            ViewData["PatientId"] = new SelectList(_context.Patient, "PatientId", "FName", patient_Medical_Profile.PatientId);
             return View(patient_Medical_Profile);
         }
 
@@ -90,7 +90,7 @@ namespace Hospital_Management_Project.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("ProfileId,Blood_Type,Blood_Pressure,Chronic_Disease,Allergies,Weight,Diabets,PatientId")] Patient_Medical_Profile patient_Medical_Profile)
+        public async Task<IActionResult> Edit(int id, [Bind("ProfileId,Blood_Type,Blood_Pressure,Chronic_Disease,Allergies,Weight,Diabets,PatientId")] Patient_Medical_Profile patient_Medical_Profile)
         {
             if (id != patient_Medical_Profile.ProfileId)
             {
@@ -117,12 +117,12 @@ namespace Hospital_Management_Project.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["PatientId"] = new SelectList(_context.Patient, "PatientId", "PatientId", patient_Medical_Profile.PatientId);
+            ViewData["PatientId"] = new SelectList(_context.Patient, "PatientId", "FName", patient_Medical_Profile.PatientId);
             return View(patient_Medical_Profile);
         }
 
         // GET: Patient_Medical_Profile/Delete/5
-        public async Task<IActionResult> Delete(string id)
+        public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
             {
@@ -143,7 +143,7 @@ namespace Hospital_Management_Project.Controllers
         // POST: Patient_Medical_Profile/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(string id)
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var patient_Medical_Profile = await _context.PatientMedicalProfile.FindAsync(id);
             if (patient_Medical_Profile != null)
@@ -155,7 +155,7 @@ namespace Hospital_Management_Project.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private bool Patient_Medical_ProfileExists(string id)
+        private bool Patient_Medical_ProfileExists(int id)
         {
             return _context.PatientMedicalProfile.Any(e => e.ProfileId == id);
         }

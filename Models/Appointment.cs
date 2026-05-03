@@ -5,7 +5,7 @@ namespace Hospital_Management_Project.Models
     public class Appointment
     {
         [Key]
-        public string AppointmentId { get; set; }
+        public int AppointmentId { get; set; }
 
         [Required, DataType(DataType.DateTime)]
         public DateTime Visit_Date { get; set; }
@@ -26,11 +26,11 @@ namespace Hospital_Management_Project.Models
 
         // Relation Between Patient & Appointment (1 Patient With Many Appointment) 
 
-        public string PatientId { get; set; }
+        public int PatientId { get; set; }
 
         // Relation Between Staff & Appointment (1 Staff to Many Appointment) 
 
-        public string StaffId { get; set; }
+        public int StaffId { get; set; }
 
 
     }
