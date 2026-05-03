@@ -1,0 +1,71 @@
+﻿@model IEnumerable<Hospital_Management_Project.Models.Patient_Medical_Profile>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Blood_Type)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Blood_Pressure)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Chronic_Disease)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Allergies)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Weight)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Diabets)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Patient)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Blood_Type)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Blood_Pressure)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Chronic_Disease)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Allergies)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Weight)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Diabets)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Patient.PatientId)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.ProfileId">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.ProfileId">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.ProfileId">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
