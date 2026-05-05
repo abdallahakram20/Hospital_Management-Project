@@ -21,7 +21,8 @@ namespace Hospital_Management_Project.Controllers
         // GET: Staffs
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Staff.ToListAsync());
+            var staffs = await _context.Staff.Include(s => s.Department).ToListAsync();
+            return View(staffs);
         }
 
         // GET: Staffs/Details/5
@@ -33,6 +34,7 @@ namespace Hospital_Management_Project.Controllers
             }
 
             var staff = await _context.Staff
+                .Include(s => s.Department)
                 .FirstOrDefaultAsync(m => m.StaffId == id);
             if (staff == null)
             {
@@ -45,15 +47,14 @@ namespace Hospital_Management_Project.Controllers
         // GET: Staffs/Create
         public IActionResult Create()
         {
+            ViewData["DepartmentId"] = new SelectList(_context.Department, "DepartmentId", "DeptName");
             return View();
         }
 
         // POST: Staffs/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("StaffId,Position,Email,Password,Fname,Lname,DeptName")] Staff staff)
+        public async Task<IActionResult> Create([Bind("StaffId,Position,Email,Password,Fname,Lname,DepartmentId")] Staff staff)
         {
             if (ModelState.IsValid)
             {
@@ -61,6 +62,7 @@ namespace Hospital_Management_Project.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["DepartmentId"] = new SelectList(_context.Department, "DepartmentId", "DeptName", staff.DepartmentId);
             return View(staff);
         }
 
@@ -77,12 +79,11 @@ namespace Hospital_Management_Project.Controllers
             {
                 return NotFound();
             }
+            ViewData["DepartmentId"] = new SelectList(_context.Department, "DepartmentId", "DeptName", staff.DepartmentId);
             return View(staff);
         }
 
         // POST: Staffs/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("StaffId,Position,Email,Password,Fname,Lname,DepartmentId")] Staff staff)
@@ -112,6 +113,7 @@ namespace Hospital_Management_Project.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["DepartmentId"] = new SelectList(_context.Department, "DepartmentId", "DeptName", staff.DepartmentId);
             return View(staff);
         }
 
@@ -124,6 +126,7 @@ namespace Hospital_Management_Project.Controllers
             }
 
             var staff = await _context.Staff
+                .Include(s => s.Department)
                 .FirstOrDefaultAsync(m => m.StaffId == id);
             if (staff == null)
             {

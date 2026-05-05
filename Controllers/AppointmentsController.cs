@@ -21,7 +21,8 @@ namespace Hospital_Management_Project.Controllers
         // GET: Appointments
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Appointment.ToListAsync());
+            var appointments = _context.Appointment.Include(a => a.Patient).Include(a => a.Staff);
+            return View(await appointments.ToListAsync());
         }
 
         // GET: Appointments/Details/5
@@ -33,6 +34,8 @@ namespace Hospital_Management_Project.Controllers
             }
 
             var appointment = await _context.Appointment
+                .Include(a => a.Patient)
+                .Include(a => a.Staff)
                 .FirstOrDefaultAsync(m => m.AppointmentId == id);
             if (appointment == null)
             {
@@ -45,7 +48,20 @@ namespace Hospital_Management_Project.Controllers
         // GET: Appointments/Create
         public IActionResult Create()
         {
+            ViewData["StaffList"] = new SelectList(_context.Staff, "StaffId", "StaffName");
             return View();
+        }
+
+        // GET: Appointments/SearchPatients
+        [HttpGet]
+        public JsonResult SearchPatients(string term)
+        {
+            var patients = _context.Patient
+                .Where(p => (p.FName + " " + p.LName).Contains(term) || p.FName.Contains(term) || p.LName.Contains(term))
+                .Select(p => new { id = p.PatientId, name = p.FName + " " + p.LName })
+                .Take(10)
+                .ToList();
+            return Json(patients);
         }
 
         // POST: Appointments/Create
@@ -61,6 +77,8 @@ namespace Hospital_Management_Project.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
+            ViewData["StaffList"] = new SelectList(_context.Staff, "StaffId", "StaffName", appointment.StaffId);
             return View(appointment);
         }
 
@@ -77,6 +95,13 @@ namespace Hospital_Management_Project.Controllers
             {
                 return NotFound();
             }
+
+            var patients = _context.Patient
+                .Select(p => new { id = p.PatientId, name = p.FName + " " + p.LName })
+                .ToList();
+            ViewData["Patients"] = new SelectList(patients, "id", "name", appointment.PatientId);
+            ViewData["StaffList"] = new SelectList(_context.Staff, "StaffId", "StaffName", appointment.StaffId);
+
             return View(appointment);
         }
 
@@ -98,6 +123,7 @@ namespace Hospital_Management_Project.Controllers
                 {
                     _context.Update(appointment);
                     await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -110,8 +136,14 @@ namespace Hospital_Management_Project.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
             }
+
+            var patients = _context.Patient
+                .Select(p => new { id = p.PatientId, name = p.FName + " " + p.LName })
+                .ToList();
+            ViewData["Patients"] = new SelectList(patients, "id", "name", appointment.PatientId);
+            ViewData["StaffList"] = new SelectList(_context.Staff, "StaffId", "StaffName", appointment.StaffId);
+
             return View(appointment);
         }
 
@@ -124,6 +156,8 @@ namespace Hospital_Management_Project.Controllers
             }
 
             var appointment = await _context.Appointment
+                .Include(a => a.Patient)
+                .Include(a => a.Staff)
                 .FirstOrDefaultAsync(m => m.AppointmentId == id);
             if (appointment == null)
             {

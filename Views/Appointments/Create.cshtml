@@ -1,11 +1,8 @@
 ﻿@model Hospital_Management_Project.Models.Appointment
-
 @{
     ViewData["Title"] = "Create";
 }
-
 <h1>Create</h1>
-
 <h4>Appointment</h4>
 <hr />
 <div class="row">
@@ -52,25 +49,70 @@
                 <input asp-for="Common_tests" class="form-control" />
                 <span asp-validation-for="Common_tests" class="text-danger"></span>
             </div>
+
             <div class="form-group">
-                <label asp-for="PatientId" class="control-label"></label>
-                <select asp-for="PatientId" class ="form-control" asp-items="ViewBag.PatientId"></select>
+                <label class="control-label">Patient Name</label>
+                <input type="text" id="patientSearch" class="form-control" placeholder="Search patient by name..." autocomplete="off" />
+                <ul id="patientSuggestions" class="list-group mt-1" style="position:absolute; z-index:1000; width:100%;"></ul>
+                <input type="hidden" asp-for="PatientId" id="PatientId" />
+                <span asp-validation-for="PatientId" class="text-danger"></span>
             </div>
+
             <div class="form-group">
                 <label asp-for="StaffId" class="control-label"></label>
-                <select asp-for="StaffId" class ="form-control" asp-items="ViewBag.StaffId"></select>
+                <select asp-for="StaffId" class="form-control" asp-items="@(ViewBag.StaffList as SelectList)">
+                    <option value="">-- Select Doctor --</option>
+                </select>
+                <span asp-validation-for="StaffId" class="text-danger"></span>
             </div>
-            <div class="form-group">
+
+            <div class="form-group mt-3">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
         </form>
     </div>
 </div>
-
-<div>
+<div class="mt-3">
     <a asp-action="Index">Back to List</a>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        document.getElementById('patientSearch').addEventListener('input', function () {
+            const term = this.value;
+            if (term.length < 1) {
+                document.getElementById('patientSuggestions').innerHTML = '';
+                return;
+            }
+
+            fetch(`/Appointments/SearchPatients?term=${encodeURIComponent(term)}`)
+                .then(res => res.json())
+                .then(data => {
+                    const list = document.getElementById('patientSuggestions');
+                    list.innerHTML = '';
+                    data.forEach(p => {
+                        const li = document.createElement('li');
+                        li.className = 'list-group-item list-group-item-action';
+                        li.textContent = p.name;
+                        li.style.cursor = 'pointer';
+                        li.addEventListener('click', function () {
+                            document.getElementById('patientSearch').value = p.name;
+                            document.getElementById('PatientId').value = p.id;
+                            list.innerHTML = '';
+                        });
+                        list.appendChild(li);
+                    });
+                });
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('#patientSearch') && !e.target.closest('#patientSuggestions')) {
+                document.getElementById('patientSuggestions').innerHTML = '';
+            }
+        });
+    </script>
 }

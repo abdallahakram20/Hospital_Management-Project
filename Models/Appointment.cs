@@ -6,32 +6,25 @@ namespace Hospital_Management_Project.Models
     {
         [Key]
         public int AppointmentId { get; set; }
-
         [Required, DataType(DataType.DateTime)]
         public DateTime Visit_Date { get; set; }
         [StringLength(50)]
-        public string? Status { get; set; } 
+        public string? Status { get; set; }
         [StringLength(500)]
         public string? Reason { get; set; }
-
         [Required]
-        public string Diagnosis { get; set; }
-        public string Medication { get; set; }
-        public string Treatment_Plan { get; set; }
-
+        public string Diagnosis { get; set; } = string.Empty;
+        public string? Medication { get; set; }
+        public string? Treatment_Plan { get; set; }
         [MaxLength(200)]
-        public string Notes { get; set; }
+        public string? Notes { get; set; }
         [MaxLength(200)]
-        public string Common_tests { get; set; }
-
+        public string? Common_tests { get; set; }
         // Relation Between Patient & Appointment (1 Patient With Many Appointment) 
-
         public int PatientId { get; set; }
-
+        public virtual Patient? Patient { get; set; }
         // Relation Between Staff & Appointment (1 Staff to Many Appointment) 
-
         public int StaffId { get; set; }
-
-
+        public virtual Staff? Staff { get; set; }
     }
 }

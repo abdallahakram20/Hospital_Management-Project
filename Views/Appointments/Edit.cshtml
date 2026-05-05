@@ -1,11 +1,8 @@
 ﻿@model Hospital_Management_Project.Models.Appointment
-
 @{
     ViewData["Title"] = "Edit";
 }
-
 <h1>Edit</h1>
-
 <h4>Appointment</h4>
 <hr />
 <div class="row">
@@ -54,26 +51,30 @@
                 <span asp-validation-for="Common_tests" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="PatientId" class="control-label"></label>
-                <select asp-for="PatientId" class="form-control" asp-items="ViewBag.PatientId"></select>
+                <label class="control-label">Patient</label>
+                <select asp-for="PatientId" class="form-control" asp-items="@(ViewData["Patients"] as SelectList)">
+                    <option value="">-- Select Patient --</option>
+                </select>
                 <span asp-validation-for="PatientId" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="StaffId" class="control-label"></label>
-                <select asp-for="StaffId" class="form-control" asp-items="ViewBag.StaffId"></select>
+                <label class="control-label">Doctor</label>
+                <select asp-for="StaffId" class="form-control" asp-items="@(ViewData["StaffList"] as SelectList)">
+                    <option value="">-- Select Doctor --</option>
+                </select>
                 <span asp-validation-for="StaffId" class="text-danger"></span>
             </div>
-            <div class="form-group">
+            <div class="form-group mt-3">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>
         </form>
     </div>
 </div>
-
 <div>
     <a asp-action="Index">Back to List</a>
 </div>
-
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

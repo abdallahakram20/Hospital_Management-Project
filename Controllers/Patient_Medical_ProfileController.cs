@@ -18,14 +18,12 @@ namespace Hospital_Management_Project.Controllers
             _context = context;
         }
 
-        // GET: Patient_Medical_Profile
         public async Task<IActionResult> Index()
         {
             var appDbContext = _context.PatientMedicalProfile.Include(p => p.Patient);
             return View(await appDbContext.ToListAsync());
         }
 
-        // GET: Patient_Medical_Profile/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -44,31 +42,43 @@ namespace Hospital_Management_Project.Controllers
             return View(patient_Medical_Profile);
         }
 
-        // GET: Patient_Medical_Profile/Create
         public IActionResult Create()
         {
-            ViewData["PatientId"] = new SelectList(_context.Patient, "PatientId", "FName");
+            var patientsWithProfiles = _context.PatientMedicalProfile.Select(p => p.PatientId).ToList();
+            var availablePatients = _context.Patient
+                .Where(p => !patientsWithProfiles.Contains(p.PatientId));
+
+            ViewData["PatientId"] = new SelectList(availablePatients, "PatientId", "FName");
             return View();
         }
 
-        // POST: Patient_Medical_Profile/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("ProfileId,Blood_Type,Blood_Pressure,Chronic_Disease,Allergies,Weight,Diabets,PatientId")] Patient_Medical_Profile patient_Medical_Profile)
         {
+            bool profileExists = await _context.PatientMedicalProfile
+                .AnyAsync(p => p.PatientId == patient_Medical_Profile.PatientId);
+
+            if (profileExists)
+            {
+                ModelState.AddModelError("PatientId", "This patient already has a medical profile.");
+            }
+
             if (ModelState.IsValid)
             {
                 _context.Add(patient_Medical_Profile);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["PatientId"] = new SelectList(_context.Patient, "PatientId", "FName", patient_Medical_Profile.PatientId);
+
+            var patientsWithProfiles = _context.PatientMedicalProfile.Select(p => p.PatientId).ToList();
+            var availablePatients = _context.Patient
+                .Where(p => !patientsWithProfiles.Contains(p.PatientId) || p.PatientId == patient_Medical_Profile.PatientId);
+
+            ViewData["PatientId"] = new SelectList(availablePatients, "PatientId", "FName", patient_Medical_Profile.PatientId);
             return View(patient_Medical_Profile);
         }
 
-        // GET: Patient_Medical_Profile/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -85,9 +95,6 @@ namespace Hospital_Management_Project.Controllers
             return View(patient_Medical_Profile);
         }
 
-        // POST: Patient_Medical_Profile/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("ProfileId,Blood_Type,Blood_Pressure,Chronic_Disease,Allergies,Weight,Diabets,PatientId")] Patient_Medical_Profile patient_Medical_Profile)
@@ -121,7 +128,6 @@ namespace Hospital_Management_Project.Controllers
             return View(patient_Medical_Profile);
         }
 
-        // GET: Patient_Medical_Profile/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -140,7 +146,6 @@ namespace Hospital_Management_Project.Controllers
             return View(patient_Medical_Profile);
         }
 
-        // POST: Patient_Medical_Profile/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
