@@ -45,7 +45,6 @@ namespace Hospital_Management_Project.Controllers
         // GET: Staffs/Create
         public IActionResult Create()
         {
-            ViewData["DepartmentId"] = new SelectList(_context.Department, "DepartmentId", "DeptName");
             return View();
         }
 
@@ -54,7 +53,7 @@ namespace Hospital_Management_Project.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("StaffId,Position,Email,Password,Fname,Lname,DepartmentId")] Staff staff)
+        public async Task<IActionResult> Create([Bind("StaffId,Position,Email,Password,Fname,Lname,DeptName")] Staff staff)
         {
             if (ModelState.IsValid)
             {
@@ -86,7 +85,7 @@ namespace Hospital_Management_Project.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("StaffId,Position,Email,Password,Fname,Lname,DeptId")] Staff staff)
+        public async Task<IActionResult> Edit(int id, [Bind("StaffId,Position,Email,Password,Fname,Lname,DepartmentId")] Staff staff)
         {
             if (id != staff.StaffId)
             {
