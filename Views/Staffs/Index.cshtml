@@ -9,6 +9,24 @@
 <p>
     <a asp-action="Create">Create New</a>
 </p>
+<form asp-action="Index" method="get" style="margin-bottom: 20px;">
+    <div class="input-group">
+        <input type="text" name="searchString" placeholder="Search by name or Staff ID..." 
+               value="@ViewData["CurrentFilter"]" class="form-control" style="width:300px;" />
+        <button type="submit" class="btn btn-primary">Search</button>
+        <a asp-action="Index" class="btn btn-secondary">Clear</a>
+    </div>
+</form>
+<form asp-action="ChangePassword" method="post">
+    <input type="hidden" asp-for="First().StaffId" name="id" />
+    <div class="form-group">
+        <label>New Password</label>
+        <input type="password" name="newPassword" class="form-control" required />
+    </div>
+    <br />
+    <button type="submit" class="btn btn-success">Save Changes</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>
 <table class="table">
     <thead>
         <tr>
@@ -27,7 +45,13 @@
             <th>
                 @Html.DisplayNameFor(model => model.Lname)
             </th>
-            <th></th>
+            @if (User.Identity.IsAuthenticated && User.IsInRole("Admin"))
+            {
+                <th>@Html.DisplayNameFor(model => model.Email)</th>
+                <th>@Html.DisplayNameFor(model => model.Password)</th>
+
+            }
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -40,18 +64,22 @@
                 @Html.DisplayFor(modelItem => item.Email)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Password)
-            </td>
-            <td>
                 @Html.DisplayFor(modelItem => item.Fname)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Lname)
             </td>
+            @if (User.Identity.IsAuthenticated && User.IsInRole("Admin"))
+            {
+                <td>@Html.DisplayFor(modelItem => item.Email)</td>
+                <td>@Html.DisplayFor(modelItem => item.Password)</td>
+                    <span> | </span>
+                    <a asp-action="Delete" asp-route-id="@item.StaffId" class="text-danger">Delete</a>
+            }
             <td>
                 <a asp-action="Edit" asp-route-id="@item.StaffId">Edit</a> |
                 <a asp-action="Details" asp-route-id="@item.StaffId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.StaffId">Delete</a>
+                <a asp-action="Delete" asp-route-id="@item.StaffId">Delete</a> |
             </td>
         </tr>
 }

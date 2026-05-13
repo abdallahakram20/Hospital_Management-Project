@@ -9,6 +9,13 @@
 <p>
     <a asp-action="Create">Create New</a>
 </p>
+<form asp-action="Index" method="get" style="margin-bottom: 20px;">
+    <div class="input-group">
+        <input type="text" name="searchString" placeholder="Search by name or ID..." value="@ViewData["CurrentFilter"]" class="form-control" style="width:300px; display:inline-block;" />
+        <button type="submit" class="btn btn-primary">Search</button>
+        <a asp-action="Index" class="btn btn-secondary">Clear</a>
+    </div>
+</form>
 <table class="table">
     <thead>
         <tr>
@@ -27,13 +34,12 @@
             <th>
                 @Html.DisplayNameFor(model => model.Gender)
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.user_name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Password)
-            </th>
-            <th></th>
+            @if (User.Identity.IsAuthenticated && User.IsInRole("Admin"))
+            {
+                <th>@Html.DisplayNameFor(model => model.user_name)</th>
+                <th>@Html.DisplayNameFor(model => model.Password)</th>
+            }
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -54,15 +60,19 @@
             <td>
                 @Html.DisplayFor(modelItem => item.Gender)
             </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.user_name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Password)
-            </td>
+                @if (User.Identity.IsAuthenticated && User.IsInRole("Admin"))
+                {
+                    <th>@Html.DisplayNameFor(model => model.user_name)</th>
+                    <th>@Html.DisplayNameFor(model => model.Password)</th>
+                    <span> | </span>
+                    <a asp-action="Delete" asp-route-id="@item.PatientId" class="text-danger">Delete</a>
+                }
+                <th>Actions</th>
+            
             <td>
                 <a asp-action="Edit" asp-route-id="@item.PatientId">Edit</a> |
                 <a asp-action="Details" asp-route-id="@item.PatientId">Details</a> |
+                <a asp-controller="Patients" asp-action="ManageAccount" asp-route-id="@item.PatientId">Manage Login </a>|
                 <a asp-action="Delete" asp-route-id="@item.PatientId">Delete</a>
             </td>
         </tr>

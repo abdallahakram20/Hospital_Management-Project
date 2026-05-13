@@ -25,6 +25,7 @@ namespace Hospital_Management_Project.Models
         public string user_name { get; set; } = string.Empty;
         [Required]
         [MaxLength(100)]
+        [DataType(DataType.Password)]
         public string Password { get; set; } = string.Empty;
 
         [NotMapped]

@@ -12,6 +12,7 @@ namespace Hospital_Management_Project.Models
         [Required, EmailAddress]
         public string Email { get; set; } = string.Empty;
         [Required]
+        [DataType(DataType.Password)]
         public string Password { get; set; } = string.Empty;
         [MaxLength(10)]
         public string Fname { get; set; } = string.Empty;
