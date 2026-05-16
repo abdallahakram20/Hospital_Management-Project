@@ -1,71 +1,110 @@
 ﻿@model IEnumerable<Hospital_Management_Project.Models.Patient_Medical_Profile>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Patient Medical Profiles";
 }
 
-<h1>Index</h1>
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 bg-light p-3 rounded shadow-sm">
+        <div>
+            <h2 class="text-primary mb-0"><i class="bi bi-file-earmark-medical-fill"></i> Patient Medical Records</h2>
+            <small class="text-muted">Confidential clinical health summary data and metrics</small>
+        </div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Blood_Type)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Blood_Pressure)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Chronic_Disease)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Allergies)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Weight)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Diabets)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Patient)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Blood_Type)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Blood_Pressure)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Chronic_Disease)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Allergies)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Weight)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Diabets)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Patient.FName)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.ProfileId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.ProfileId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.ProfileId">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+        @if (!User.IsInRole("Patient"))
+        {
+            <a asp-action="Create" class="btn btn-primary shadow-sm">
+                <i class="bi bi-plus-circle"></i> Create Medical Profile
+            </a>
+        }
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0 align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th><i class="bi bi-person-bounding-box"></i> Patient Name</th>
+                            <th><i class="bi bi-droplet-fill text-danger"></i> Blood Type</th>
+                            <th><i class="bi bi-heart-pulse-fill text-warning"></i> Blood Pressure</th>
+                            <th><i class="bi bi-activity"></i> Chronic Diseases</th>
+                            <th><i class="bi bi-exclamation-triangle-fill text-danger"></i> Allergies</th>
+                            <th><i class="bi bi-speedometer2"></i> Weight (kg)</th>
+                            <th><i class="bi bi-capsule-hormone"></i> Diabetes Status</th>
+                            <th class="text-center" style="min-width: 220px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center py-5 text-muted">
+                                    <i class="bi bi-shield-lock display-4 block mb-2"></i>
+                                    <p class="mb-0 fw-bold">No authorization metrics or profiles found for your account context.</p>
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="fw-bold text-dark">
+                                        @(item.Patient != null ? $"{item.Patient.FName} {item.Patient.LName}" : "Unknown Patient")
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-danger px-2 py-1">@Html.DisplayFor(modelItem => item.Blood_Type)</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info text-dark px-2 py-1">@Html.DisplayFor(modelItem => item.Blood_Pressure)</span>
+                                    </td>
+                                    <td class="text-truncate" style="max-width: 150px;">
+                                        @(string.IsNullOrEmpty(item.Chronic_Disease) ? "None" : item.Chronic_Disease)
+                                    </td>
+                                    <td class="text-truncate" style="max-width: 150px;">
+                                        @(string.IsNullOrEmpty(item.Allergies) ? "No known allergies" : item.Allergies)
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold">@Html.DisplayFor(modelItem => item.Weight)</span>
+                                    </td>
+                                    <td>
+                                        @if (item.Diabets)
+                                        {
+                                            <span class="badge bg-warning text-dark px-2 py-1">
+                                                <i class="bi bi-exclamation-circle"></i> Diabetic
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success px-2 py-1">
+                                                <i class="bi bi-shield-check"></i> Normal
+                                            </span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group gap-1">
+                                            <a asp-action="Details" asp-route-id="@item.ProfileId" class="btn btn-sm btn-outline-info rounded">
+                                                <i class="bi bi-eye"></i> Details
+                                            </a>
+
+                                            @if (!User.IsInRole("Patient"))
+                                            {
+                                                <a asp-action="Edit" asp-route-id="@item.ProfileId" class="btn btn-sm btn-outline-primary rounded">
+                                                    <i class="bi bi-pencil-square"></i> Edit
+                                                </a>
+                                                <a asp-action="Delete" asp-route-id="@item.ProfileId" class="btn btn-sm btn-outline-danger rounded">
+                                                    <i class="bi bi-trash"></i> Delete
+                                                </a>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

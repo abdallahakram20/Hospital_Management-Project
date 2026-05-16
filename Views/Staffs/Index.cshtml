@@ -6,82 +6,127 @@
 
 <h1>Index</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<form asp-action="Index" method="get" style="margin-bottom: 20px;">
-    <div class="input-group">
-        <input type="text" name="searchString" placeholder="Search by name or Staff ID..." 
-               value="@ViewData["CurrentFilter"]" class="form-control" style="width:300px;" />
-        <button type="submit" class="btn btn-primary">Search</button>
-        <a asp-action="Index" class="btn btn-secondary">Clear</a>
-    </div>
-</form>
-<form asp-action="ChangePassword" method="post">
-    <input type="hidden" asp-for="First().StaffId" name="id" />
-    <div class="form-group">
-        <label>New Password</label>
-        <input type="password" name="newPassword" class="form-control" required />
-    </div>
-    <br />
-    <button type="submit" class="btn btn-success">Save Changes</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
-</form>
-<table class="table">
+@if (!User.IsInRole("Patient"))
+{
+    <p>
+        <a asp-action="Create" class="btn btn-success">Create New</a>
+    </p>
+
+    <form asp-action="Index" method="get" style="margin-bottom: 20px;">
+        <div class="input-group">
+            <input type="text" name="searchString" placeholder="Search by name or Staff ID..."
+                   value="@ViewData["CurrentFilter"]" class="form-control" style="width:300px;" />
+            <button type="submit" class="btn btn-primary">Search</button>
+            <a asp-action="Index" class="btn btn-secondary">Clear</a>
+        </div>
+    </form>
+
+    @if (Model != null && Model.Any())
+    {
+        <form asp-action="ChangePassword" method="post" style="max-width: 400px; margin-bottom: 30px; padding: 15px; border: 1px solid #ddd; border-radius: 5px;">
+            <h5>Change Password (First Staff)</h5>
+            <input type="hidden" value="@Model.First().StaffId" name="id" />
+            <div class="form-group">
+                <label>New Password</label>
+                <input type="password" name="newPassword" class="form-control" required />
+            </div>
+            <br />
+            <button type="submit" class="btn btn-success btn-sm">Save Changes</button>
+        </form>
+    }
+}
+
+<table class="table table-striped table-bordered">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Position)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Email)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Password)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Fname)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Lname)
-            </th>
-            @if (User.Identity.IsAuthenticated && User.IsInRole("Admin"))
+            <th>@Html.DisplayNameFor(model => model.Fname)</th>
+            <th>@Html.DisplayNameFor(model => model.Lname)</th>
+            <th>@Html.DisplayNameFor(model => model.Position)</th>
+
+            @if (!User.IsInRole("Patient"))
             {
                 <th>@Html.DisplayNameFor(model => model.Email)</th>
-                <th>@Html.DisplayNameFor(model => model.Password)</th>
-
+                @if (User.Identity.IsAuthenticated && User.IsInRole("Admin"))
+                {
+                    <th>@Html.DisplayNameFor(model => model.Password)</th>
+                }
+                <th>Actions</th>
             }
-            <th>Actions</th>
+            else
+            {
+                <th>Doctor's Schedule</th>
+            }
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Position)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Email)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Fname)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Lname)
-            </td>
-            @if (User.Identity.IsAuthenticated && User.IsInRole("Admin"))
+        @if (Model != null && Model.Any())
+        {
+            foreach (var item in Model)
             {
-                <td>@Html.DisplayFor(modelItem => item.Email)</td>
-                <td>@Html.DisplayFor(modelItem => item.Password)</td>
-                    <span> | </span>
-                    <a asp-action="Delete" asp-route-id="@item.StaffId" class="text-danger">Delete</a>
+                <tr>
+                    <td>@Html.DisplayFor(modelItem => item.Fname)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Lname)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Position)</td>
+
+                    @if (!User.IsInRole("Patient"))
+                    {
+                        <td>@Html.DisplayFor(modelItem => item.Email)</td>
+                        @if (User.Identity.IsAuthenticated && User.IsInRole("Admin"))
+                        {
+                            <td>@Html.DisplayFor(modelItem => item.Password)</td>
+                        }
+                        <td>
+                            <a asp-action="Edit" asp-route-id="@item.StaffId" class="btn btn-sm btn-warning">Edit</a> |
+                            <a asp-action="Details" asp-route-id="@item.StaffId" class="btn btn-sm btn-info">Details</a> |
+                            <a asp-action="Delete" asp-route-id="@item.StaffId" class="btn btn-sm btn-danger">Delete</a>
+                        </td>
+                    }
+                    else
+                    {
+                        <td>
+                            @if (item.Position != null && (item.Position.Contains("Doctor") || item.Position.Contains("Doctor")))
+                            {
+                                @if (item.Appointments != null && item.Appointments.Any())
+                                {
+                                    <ul class="list-unstyled mb-0">
+                                        @foreach (var app in item.Appointments)
+                                        {
+                                            <li>
+                                                <span class="badge bg-info text-dark">
+                                                    @app.Visit_Date.ToString("dd/MM/yyyy hh:mm tt")
+                                                </span>
+                                                @if (app.Status == "Available")
+                                                {
+                                                    <span class="text-success"> (Available)</span>
+                                                }
+                                                else
+                                                {
+
+                                                    <span class="text-danger"> (Booked)</span>
+                                                }
+                                            </li>
+                                        }
+                                    </ul>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">No appointments scheduled</span>
+                                }
+                            }
+                            else
+                            {
+                                <span class="text-muted">N/A (Not a Doctor)</span>
+                            }
+                        </td>
+                    }
+                </tr>
             }
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.StaffId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.StaffId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.StaffId">Delete</a> |
-            </td>
-        </tr>
-}
+        }
+        else
+        {
+            <tr>
+                <td colspan="6" class="text-center">No records found.</td>
+            </tr>
+        }
     </tbody>
 </table>

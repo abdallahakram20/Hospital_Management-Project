@@ -1,6 +1,6 @@
 using Hospital_Management_Project.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authentication.Cookies; // تأكد من إضافة هذا السطر
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace Hospital_Management_Project
 {
@@ -10,25 +10,29 @@ namespace Hospital_Management_Project
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // 1. إعداد قاعدة البيانات
+            // 1. Database Context Configuration
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
             );
 
-            // 2. إضافة خدمة الكوكيز (مهم جداً للـ Login)
+            // 2. Cookie Authentication Configuration
             builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options =>
                 {
-                    options.LoginPath = "/Account/Login"; // المسار الذي يتم تحويل المستخدم إليه لو حاول دخول صفحة محظورة
-                    options.AccessDeniedPath = "/Account/AccessDenied"; // المسار لو حاول شخص دخول صفحة ليست من صلاحياته
-                    options.ExpireTimeSpan = TimeSpan.FromDays(7); // تذكر الدخول لمدة 7 أيام
+                    options.LoginPath = "/Account/Login";
+                    options.AccessDeniedPath = "/Account/AccessDenied";
+
+                    // Set cookie expiration time on idle (e.g., 20 minutes)
+                    options.ExpireTimeSpan = TimeSpan.FromMinutes(20);
+
+                    // Enable sliding expiration to renew cookie if user is active
+                    options.SlidingExpiration = true;
                 });
 
             builder.Services.AddControllersWithViews();
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
@@ -40,51 +44,65 @@ namespace Hospital_Management_Project
 
             app.UseRouting();
 
-            // 3. ترتيب الميدل وير ضروري جداً (Authentication قبل Authorization)
             app.UseAuthentication();
             app.UseAuthorization();
 
-            // 4. تعديل المسار الافتراضي لفتح صفحة اللوجن أولاً
             app.MapControllerRoute(
-            name: "login",
-            pattern: "login",
-            defaults: new { controller = "Account", action = "Login" });
+                name: "login",
+                pattern: "login",
+                defaults: new { controller = "Account", action = "Login" });
 
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Account}/{action=Login}/{id?}");
 
+            // --- Database Automated Data Seeding ---
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
-                var context = services.GetRequiredService<AppDbContext>();
-
-                if (!context.Department.Any())
+                try
                 {
-                    context.Department.Add(new Department { DeptName = "Administration" });
-                    context.SaveChanges();
-                }
+                    var context = services.GetRequiredService<AppDbContext>();
 
-                var adminEmail = "admin@hospital.com"; // ضع إيميلك هنا
-                var adminExists = context.Staff.Any(s => s.Email == adminEmail);
+                    // Ensure database and schema exist before seeding
+                    context.Database.EnsureCreated();
 
-                if (!adminExists)
-                {
-                    var adminUser = new Staff
+                    // Seed Department table if empty
+                    if (!context.Department.Any())
                     {
-                        Fname = "Abdallah",
-                        Lname = "Akram",
-                        Email = adminEmail,
-                        Position = "Admin", 
-                        DepartmentId = context.Department.First().DepartmentId,
-                        
-                        Password = BCrypt.Net.BCrypt.HashPassword("Kali")
-                    };
+                        context.Department.Add(new Department { DeptName = "Administration" });
+                        context.SaveChanges();
+                    }
 
-                    context.Staff.Add(adminUser);
-                    context.SaveChanges();
+                    var adminEmail = "admin@hospital.com";
+                    var adminExists = context.Staff.Any(s => s.Email == adminEmail);
+
+                    if (!adminExists)
+                    {
+                        var adminDept = context.Department.FirstOrDefault(d => d.DeptName == "Administration")
+                                         ?? context.Department.First();
+
+                        var adminUser = new Staff
+                        {
+                            Fname = "Abdallah",
+                            Lname = "Akram",
+                            Email = adminEmail,
+                            Position = "Admin",
+                            DepartmentId = adminDept.DepartmentId,
+                            Password = BCrypt.Net.BCrypt.HashPassword("kali")
+                        };
+
+                        context.Staff.Add(adminUser);
+                        context.SaveChanges();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    var logger = services.GetRequiredService<ILogger<Program>>();
+                    logger.LogError(ex, "An error occurred while seeding the database.");
                 }
             }
+
             app.Run();
         }
     }

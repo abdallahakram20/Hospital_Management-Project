@@ -1,64 +1,115 @@
 ﻿@model Hospital_Management_Project.Models.Patient_Medical_Profile
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Modify Medical Record";
 }
 
-<h1>Edit</h1>
+<div class="container mt-4">
+    <div class="mb-3">
+        <a asp-action="Index" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Record Directory
+        </a>
+    </div>
 
-<h4>Patient_Medical_Profile</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="ProfileId" />
-            <div class="form-group">
-                <label asp-for="Blood_Type" class="control-label"></label>
-                <input asp-for="Blood_Type" class="form-control" />
-                <span asp-validation-for="Blood_Type" class="text-danger"></span>
-            </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="Blood_Pressure" /> @Html.DisplayNameFor(model => model.Blood_Pressure)
-                </label>
-            </div>
-            <div class="form-group">
-                <label asp-for="Chronic_Disease" class="control-label"></label>
-                <input asp-for="Chronic_Disease" class="form-control" />
-                <span asp-validation-for="Chronic_Disease" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Allergies" class="control-label"></label>
-                <input asp-for="Allergies" class="form-control" />
-                <span asp-validation-for="Allergies" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Weight" class="control-label"></label>
-                <input asp-for="Weight" class="form-control" />
-                <span asp-validation-for="Weight" class="text-danger"></span>
-            </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="Diabets" /> @Html.DisplayNameFor(model => model.Diabets)
-                </label>
-            </div>
-            <div class="form-group">
-                <label asp-for="PatientId" class="control-label"></label>
-                <select asp-for="PatientId" class="form-control" asp-items="ViewBag.PatientId"></select>
-                <span asp-validation-for="PatientId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+    <div class="card shadow-sm border-0 max-width-card mx-auto" style="max-width: 750px;">
+        <div class="card-header bg-primary text-white p-3">
+            <h4 class="mb-0"><i class="bi bi-pencil-square"></i> Modify Patient Medical Record</h4>
+            <small class="text-white-50">Update clinical health metrics, physiological data, and systemic statuses</small>
+        </div>
+
+        <div class="card-body p-4">
+            <form asp-action="Edit">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                <input type="hidden" asp-for="ProfileId" />
+
+                <div class="row g-3">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label asp-for="PatientId" class="form-label fw-bold"><i class="bi bi-person-fill"></i> Assigned Patient Profile</label>
+                            <select asp-for="PatientId" class="form-select bg-light" asp-items="ViewBag.PatientId" readonly disabled></select>
+                            <input type="hidden" asp-for="PatientId" />
+                            <span asp-validation-for="PatientId" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="Blood_Type" class="form-label fw-bold"><i class="bi bi-droplet-fill text-danger"></i> Blood Type</label>
+                            <select asp-for="Blood_Type" class="form-select">
+                                <option value="">Select Blood Type...</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                            </select>
+                            <span asp-validation-for="Blood_Type" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="Weight" class="form-label fw-bold"><i class="bi bi-speedometer2"></i> Patient Weight (kg)</label>
+                            <div class="input-group">
+                                <input asp-for="Weight" class="form-control" type="number" step="0.1" placeholder="e.g. 72.5" />
+                                <span class="input-group-text">kg</span>
+                            </div>
+                            <span asp-validation-for="Weight" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="Blood_Pressure" class="form-label fw-bold"><i class="bi bi-heart-pulse-fill text-warning"></i> Blood Pressure Status</label>
+                            <input asp-for="Blood_Pressure" class="form-control" placeholder="e.g. 120/80 mmHg" />
+                            <span asp-validation-for="Blood_Pressure" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="Diabets" class="form-label fw-bold"><i class="bi bi-capsule-hormone"></i> Diabetes Diagnosis</label>
+                            <select asp-for="Diabets" class="form-select">
+                                <option value="No">No / Normal</option>
+                                <option value="Yes">Yes / Diabetic</option>
+                            </select>
+                            <span asp-validation-for="Diabets" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label asp-for="Chronic_Disease" class="form-label fw-bold"><i class="bi bi-activity"></i> Chronic Illnesses & Medical Conditions</label>
+                            <textarea asp-for="Chronic_Disease" class="form-control" rows="2" placeholder="List any ongoing chronic conditions (e.g. Asthma, Hypertension) or write 'None'"></textarea>
+                            <span asp-validation-for="Chronic_Disease" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label asp-for="Allergies" class="form-label fw-bold"><i class="bi bi-exclamation-triangle-fill text-danger"></i> Environmental or Drug Allergies</label>
+                            <textarea asp-for="Allergies" class="form-control" rows="2" placeholder="List known substance allergies (e.g. Penicillin, Nuts) or write 'No known allergies'"></textarea>
+                            <span asp-validation-for="Allergies" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                    <a asp-action="Index" class="btn btn-light border">Cancel Changes</a>
+                    <button type="submit" class="btn btn-success px-4">
+                        <i class="bi bi-check-circle"></i> Save Update Records
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
-
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

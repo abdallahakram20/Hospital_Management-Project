@@ -1,77 +1,118 @@
 ﻿@model IEnumerable<Hospital_Management_Project.Models.Appointment>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Appointments Directory";
 }
 
-<h1>Index</h1>
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 bg-light p-3 rounded shadow-sm">
+        <div>
+            <h2 class="text-primary mb-0"><i class="bi bi-calendar-check-fill"></i> Appointments Management</h2>
+            <small class="text-muted">View, track, and manage all patient clinical sessions and time slots</small>
+        </div>
+        <a asp-action="Create" class="btn btn-primary shadow-sm">
+            <i class="bi bi-calendar-plus"></i> Create New Appointment Slot
+        </a>
+    </div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Visit_Date)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Status)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Reason)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Diagnosis)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Medication)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Treatment_Plan)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Notes)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Common_tests)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Visit_Date)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Status)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Reason)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Diagnosis)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Medication)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Treatment_Plan)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Notes)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Common_tests)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.AppointmentId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.AppointmentId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.AppointmentId">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0 align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th><i class="bi bi-clock"></i> Visit Date & Time</th>
+                            <th><i class="bi bi-info-circle"></i> Status</th>
+                            <th><i class="bi bi-question-circle"></i> Reason</th>
+                            <th><i class="bi bi-heart-pulse"></i> Diagnosis</th>
+                            <th><i class="bi bi-capsule"></i> Medication</th>
+                            <th><i class="bi bi-journal-medical"></i> Treatment Plan</th>
+                            <th><i class="bi bi-file-earmark-text"></i> Notes</th>
+                            <th><i class="bi bi-clipboard-check"></i> Common Tests</th>
+                            <th class="text-center" style="min-width: 220px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="9" class="text-center py-5 text-muted">
+                                    <i class="bi bi-folder-x display-4 block mb-2"></i>
+                                    <p class="mb-0 fw-bold">No appointment records found at the moment.</p>
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="fw-bold text-secondary">
+                                        @Html.DisplayFor(modelItem => item.Visit_Date)
+                                    </td>
+                                    <td>
+                                        @if (item.Status == "Available")
+                                        {
+                                            <span class="badge bg-success px-2 py-1">
+                                                <i class="bi bi-check-circle"></i> Available
+                                            </span>
+                                        }
+                                        else if (item.Status == "Booked")
+                                        {
+                                            <span class="badge bg-warning text-dark px-2 py-1">
+                                                <i class="bi bi-bookmark-dash"></i> Booked
+                                            </span>
+                                        }
+                                        else if (item.Status == "Cancelled")
+                                        {
+                                            <span class="badge bg-danger px-2 py-1">
+                                                <i class="bi bi-x-circle"></i> Cancelled
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-info text-dark px-2 py-1">
+                                                @item.Status
+                                            </span>
+                                        }
+                                    </td>
+                                    <td class="text-truncate" style="max-width: 150px;">
+                                        @(string.IsNullOrEmpty(item.Reason) ? "N/A" : item.Reason)
+                                    </td>
+                                    <td class="text-truncate" style="max-width: 150px;">
+                                        @(string.IsNullOrEmpty(item.Diagnosis) ? "Pending Clinical Check" : item.Diagnosis)
+                                    </td>
+                                    <td class="text-truncate" style="max-width: 120px;">
+                                        @(string.IsNullOrEmpty(item.Medication) ? "None" : item.Medication)
+                                    </td>
+                                    <td class="text-truncate" style="max-width: 150px;">
+                                        @(string.IsNullOrEmpty(item.Treatment_Plan) ? "None" : item.Treatment_Plan)
+                                    </td>
+                                    <td class="text-truncate" style="max-width: 120px;">
+                                        @(string.IsNullOrEmpty(item.Notes) ? "-" : item.Notes)
+                                    </td>
+                                    <td>
+                                        @(string.IsNullOrEmpty(item.Common_tests) ? "None Required" : item.Common_tests)
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group gap-1">
+                                            <a asp-action="Edit" asp-route-id="@item.AppointmentId" class="btn btn-sm btn-outline-primary rounded">
+                                                <i class="bi bi-pencil-square"></i> Edit
+                                            </a>
+                                            <a asp-action="Details" asp-route-id="@item.AppointmentId" class="btn btn-sm btn-outline-info rounded">
+                                                <i class="bi bi-eye"></i> Details
+                                            </a>
+                                            <a asp-action="Delete" asp-route-id="@item.AppointmentId" class="btn btn-sm btn-outline-danger rounded">
+                                                <i class="bi bi-trash"></i> Delete
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

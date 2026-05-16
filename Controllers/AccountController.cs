@@ -4,14 +4,24 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Hospital_Management_Project.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System;
 
 namespace Hospital_Management_Project.Controllers
 {
-    public class AccountController(AppDbContext context) : Controller
+    public class AccountController : Controller
     {
-        private readonly AppDbContext _context = context;
+        private readonly AppDbContext _context;
 
-        // 1. عرض صفحة اللوجن
+        public AccountController(AppDbContext context)
+        {
+            _context = context;
+        }
+
+        // 1. GET: Account/Login
+        // Displays the authentication portal interface
+
         [HttpGet]
         public IActionResult Login()
         {
@@ -22,18 +32,21 @@ namespace Hospital_Management_Project.Controllers
             return View();
         }
 
-        // 2. معالجة بيانات اللوجن
+        // 2. POST: Account/Login
+        // Processes identity verification inputs for both Staff and Patients
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        // تم تغيير LoginViewModel إلى CombinedLoginViewModel ليقرأ الحقول صح
         public async Task<IActionResult> Login(LoginView model)
         {
             try
             {
                 if (model.UserType == "Staff")
                 {
-                    // تأكد أن موديل الـ Staff يحتوي على خاصية Email
-                    var staff = await _context.Staff.FirstOrDefaultAsync(s => s.Email == model.Email);
+                    // Protection: Force validation evaluation against lowercase emails to ensure matching accuracy
+
+                    var inputEmail = model.Email?.Trim().ToLower();
+                    var staff = await _context.Staff.FirstOrDefaultAsync(s => s.Email.ToLower() == inputEmail);
 
                     if (staff != null && BCrypt.Net.BCrypt.Verify(model.Password, staff.Password))
                     {
@@ -43,7 +56,6 @@ namespace Hospital_Management_Project.Controllers
                 }
                 else if (model.UserType == "Patient")
                 {
-                    // تأكد أن موديل الـ Patient يحتوي على خاصية user_name
                     var patient = await _context.Patient.FirstOrDefaultAsync(p => p.user_name == model.UserName);
 
                     if (patient != null && BCrypt.Net.BCrypt.Verify(model.Password, patient.Password))
@@ -55,14 +67,15 @@ namespace Hospital_Management_Project.Controllers
             }
             catch (BCrypt.Net.SaltParseException)
             {
-                ModelState.AddModelError(string.Empty, "Account uses an old security format. Please reset your password.");
+                ModelState.AddModelError(string.Empty, "Account uses an outdated security format. Please reset your password.");
                 return View(model);
             }
 
-            ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+            ModelState.AddModelError(string.Empty, "Invalid authentication parameters or account not found.");
             return View(model);
         }
 
+        // Helper Method: Establishes context principal claims and issues the encrypted security cookie wrapper
         private async Task SignInUser(string identifier, string role, string fullName)
         {
             var claims = new List<Claim>
@@ -74,10 +87,12 @@ namespace Hospital_Management_Project.Controllers
 
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 
+            // Security Policy: Inherit tracking parameters directly from Program.cs middleware setup (e.g., 20 mins sliding timeout)
+
             var authProperties = new AuthenticationProperties
             {
-                IsPersistent = true,
-                ExpiresUtc = DateTimeOffset.UtcNow.AddDays(7)
+                IsPersistent = false, // Session clears completely upon browser termination alongside idle timeout
+                AllowRefresh = true   // Permits automated cryptographic sliding renewal upon active client requests
             };
 
             await HttpContext.SignInAsync(
@@ -86,6 +101,9 @@ namespace Hospital_Management_Project.Controllers
                 authProperties);
         }
 
+        // 3. POST: Account/Logout
+        // Explicitly terminates current identity cookie sessions securely
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
@@ -93,6 +111,9 @@ namespace Hospital_Management_Project.Controllers
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Login", "Account");
         }
+
+        // 4. GET: Account/AccessDenied
+        // Endpoint handler executed whenever unauthorized cross-role resource tampering is intercepted
 
         [HttpGet]
         public IActionResult AccessDenied()

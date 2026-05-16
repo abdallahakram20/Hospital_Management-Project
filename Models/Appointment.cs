@@ -13,7 +13,7 @@ namespace Hospital_Management_Project.Models
         [StringLength(500)]
         public string? Reason { get; set; }
         [Required]
-        public string Diagnosis { get; set; } = string.Empty;
+        public string? Diagnosis { get; set; }
         public string? Medication { get; set; }
         public string? Treatment_Plan { get; set; }
         [MaxLength(200)]

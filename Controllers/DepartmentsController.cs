@@ -6,9 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Hospital_Management_Project.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Hospital_Management_Project.Controllers
 {
+    [Authorize] // Enforce basic authentication for all departmental operations
     public class DepartmentsController : Controller
     {
         private readonly AppDbContext _context;
@@ -19,12 +21,14 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // GET: Departments
+        // Accessible by all authenticated roles (Admin, Staff, Patient) to view available clinic departments
         public async Task<IActionResult> Index()
         {
             return View(await _context.Department.ToListAsync());
         }
 
         // GET: Departments/Details/5
+        // Accessible by all authenticated roles to review structure parameters of a department
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -43,16 +47,21 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // GET: Departments/Create
+        // Security Policy: Restricted strictly to Admin role
+
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             return View();
         }
 
         // POST: Departments/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+
         [HttpPost]
         [ValidateAntiForgeryToken]
+        // Security Policy: Restricted strictly to Admin role to prevent privilege escalation
+
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([Bind("DepartmentId,DeptName,DeptFloor")] Department department)
         {
             if (ModelState.IsValid)
@@ -65,6 +74,9 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // GET: Departments/Edit/5
+        // Security Policy: Restricted strictly to Admin role
+
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -80,11 +92,13 @@ namespace Hospital_Management_Project.Controllers
             return View(department);
         }
 
-        // POST: Departments/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: Departments/Edit
+
         [HttpPost]
         [ValidateAntiForgeryToken]
+        // Security Policy: Restricted strictly to Admin role to defend against overposting and URL tampering
+
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id, [Bind("DepartmentId,DeptName,DeptFloor")] Department department)
         {
             if (id != department.DepartmentId)
@@ -116,6 +130,9 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // GET: Departments/Delete/5
+        // Security Policy: Restricted strictly to Admin role
+
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -133,9 +150,13 @@ namespace Hospital_Management_Project.Controllers
             return View(department);
         }
 
-        // POST: Departments/Delete/5
+        // POST: Departments/Delete
+
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        // Security Policy: Restricted strictly to Admin role to prevent malicious structural deletions
+
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var department = await _context.Department.FindAsync(id);

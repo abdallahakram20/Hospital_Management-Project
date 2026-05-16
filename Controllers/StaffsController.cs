@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Hospital_Management_Project.Controllers
 {
-    [Authorize] // تأمين الكنترولر بالكامل - يجب تسجيل الدخول للوصول
+    [Authorize] // Secure the entire controller - authentication is required for all actions
     public class StaffsController : Controller
     {
         private readonly AppDbContext _context;
@@ -22,20 +22,25 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // GET: Staffs
-        // الأدمن يرى الجميع، الموظف يرى نفسه فقط
+        // Admin and Patients can view the list (filtered conditionally in the View). Regular staff members can only view themselves.
         public IActionResult Index(string searchString)
         {
             var userEmail = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userRole = User.FindFirstValue(ClaimTypes.Role);
 
-            IQueryable<Staff> staffList = _context.Staff.Include(s => s.Department);
+            // 1. Fetch data and completely exclude Admins from the general staff directory listing
+            IQueryable<Staff> staffList = _context.Staff
+                                                 .Include(s => s.Department)
+                                                 .Include(s => s.Appointments)
+                                                 .Where(s => s.Position != "Admin");
 
-            // إذا لم يكن أدمن، يتم فلترة القائمة ليرى حسابه فقط
-            if (userRole != "Admin")
+            // 2. Regular staff members (not Admin or Patient) can exclusively view their own individual record
+            if (userRole != "Admin" && userRole != "Patient")
             {
                 staffList = staffList.Where(s => s.Email == userEmail);
             }
 
+            // 3. Apply search filter conditions for Admin users only
             if (!string.IsNullOrEmpty(searchString) && userRole == "Admin")
             {
                 staffList = staffList.Where(s => s.Fname.Contains(searchString)
@@ -46,7 +51,8 @@ namespace Hospital_Management_Project.Controllers
             return View(staffList.ToList());
         }
 
-        // GET: Staffs/Details/5
+        // GET: Staffs/Details
+
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
@@ -57,25 +63,31 @@ namespace Hospital_Management_Project.Controllers
 
             if (staff == null) return NotFound();
 
-            // التحقق من الصلاحية: أدمن أو صاحب الحساب
             var userEmail = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userRole = User.FindFirstValue(ClaimTypes.Role);
+
+            // Security: Patients are completely blocked from viewing internal management staff profiles
+            if (userRole == "Patient") return Forbid();
+
+            // Security: Regular staff members cannot spy on other staff details
             if (userRole != "Admin" && staff.Email != userEmail) return Forbid();
 
             return View(staff);
         }
 
         // GET: Staffs/Create
-        // متاح للأدمن فقط
+        // Restricted to Admin users only (Patients and standard Staff are barred)
         public IActionResult Create()
         {
-            if (User.FindFirstValue(ClaimTypes.Role) != "Admin") return Forbid();
+            var userRole = User.FindFirstValue(ClaimTypes.Role);
+            if (userRole != "Admin") return Forbid();
 
             ViewData["DepartmentId"] = new SelectList(_context.Department, "DepartmentId", "DeptName");
             return View();
         }
 
         // POST: Staffs/Create
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("StaffId,Position,Email,Password,Fname,Lname,DepartmentId")] Staff staff)
@@ -84,7 +96,6 @@ namespace Hospital_Management_Project.Controllers
 
             if (ModelState.IsValid)
             {
-                // تشفير الباسورد قبل الحفظ في قاعدة البيانات
                 staff.Password = BCrypt.Net.BCrypt.HashPassword(staff.Password);
                 _context.Add(staff);
                 await _context.SaveChangesAsync();
@@ -94,7 +105,7 @@ namespace Hospital_Management_Project.Controllers
             return View(staff);
         }
 
-        // GET: Staffs/Edit/5
+        // GET: Staffs/Edit
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
@@ -102,38 +113,40 @@ namespace Hospital_Management_Project.Controllers
             var staff = await _context.Staff.FindAsync(id);
             if (staff == null) return NotFound();
 
-            // التحقق: الموظف يعدل نفسه فقط أو الأدمن يعدل أي شخص
             var currentUserEmail = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userRole = User.FindFirstValue(ClaimTypes.Role);
 
+            // Patients are barred from modifying staff records
+            if (userRole == "Patient") return Forbid();
             if (userRole != "Admin" && staff.Email != currentUserEmail) return Forbid();
 
             ViewData["DepartmentId"] = new SelectList(_context.Department, "DepartmentId", "DeptName", staff.DepartmentId);
             return View(staff);
         }
 
-        // POST: Staffs/Edit/5
+        // POST: Staffs/Edit
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("StaffId,Email,Fname,Lname,DepartmentId")] Staff staff)
         {
             if (id != staff.StaffId) return NotFound();
 
-            // جلب البيانات الأصلية بدون تتبع (AsNoTracking) للمقارنة والحماية
             var existingStaff = await _context.Staff.AsNoTracking().FirstOrDefaultAsync(s => s.StaffId == id);
             if (existingStaff == null) return NotFound();
 
             var currentUserEmail = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userRole = User.FindFirstValue(ClaimTypes.Role);
 
-            // منع التعديل إذا لم يكن أدمن أو صاحب الحساب
+            if (userRole == "Patient") return Forbid();
             if (userRole != "Admin" && existingStaff.Email != currentUserEmail) return Forbid();
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    // حماية: إذا لم يكن أدمن، يتم استرجاع المنصب والباسورد الأصليين لمنع التلاعب
+                    // Protection: Prevent role parameter tempering if a non-admin submits updates
+
                     if (userRole != "Admin")
                     {
                         staff.Position = existingStaff.Position;
@@ -141,10 +154,7 @@ namespace Hospital_Management_Project.Controllers
                     }
                     else
                     {
-                        // للأدمن: نحافظ على الباسورد القديم (لأن التعديل هنا لا يشمل الباسورد)
                         staff.Password = existingStaff.Password;
-                        // يمكن للأدمن تعديل المنصب إذا أردت إضافة الحقل في الـ View
-                        // staff.Position = ...
                     }
 
                     _context.Update(staff);
@@ -161,7 +171,8 @@ namespace Hospital_Management_Project.Controllers
             return View(staff);
         }
 
-        // GET: Staffs/ChangePassword/5 (إعادة تعيين الباسورد)
+        // GET: Staffs/ChangePassword
+
         public async Task<IActionResult> ChangePassword(int? id)
         {
             if (id == null) return NotFound();
@@ -172,13 +183,14 @@ namespace Hospital_Management_Project.Controllers
             var currentUserEmail = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userRole = User.FindFirstValue(ClaimTypes.Role);
 
-            // الأدمن يغير للكل، الموظف يغير لنفسه فقط
+            if (userRole == "Patient") return Forbid();
             if (userRole != "Admin" && staff.Email != currentUserEmail) return Forbid();
 
             return View(staff);
         }
 
-        // POST: Staffs/ChangePassword/5
+        // POST: Staffs/ChangePassword
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangePassword(int id, string newPassword)
@@ -189,20 +201,18 @@ namespace Hospital_Management_Project.Controllers
             var currentUserEmail = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userRole = User.FindFirstValue(ClaimTypes.Role);
 
+            if (userRole == "Patient") return Forbid();
             if (userRole != "Admin" && staff.Email != currentUserEmail) return Forbid();
 
             if (!string.IsNullOrEmpty(newPassword))
             {
-                // تشفير الباسورد الجديد باستخدام BCrypt
                 staff.Password = BCrypt.Net.BCrypt.HashPassword(newPassword);
                 _context.Update(staff);
                 await _context.SaveChangesAsync();
-
-                // إذا غير الموظف باسورده لنفسه، قد ترغب في توجيهه للهوم
                 return RedirectToAction(nameof(Index));
             }
 
-            ModelState.AddModelError("", "كلمة المرور لا يمكن أن تكون فارغة.");
+            ModelState.AddModelError("", "Password field cannot be left empty.");
             return View(staff);
         }
 
@@ -222,7 +232,8 @@ namespace Hospital_Management_Project.Controllers
             return View(staff);
         }
 
-        // POST: Staffs/Delete/5
+        // POST: Staffs/Delete
+
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -242,6 +253,53 @@ namespace Hospital_Management_Project.Controllers
         private bool StaffExists(int id)
         {
             return _context.Staff.Any(e => e.StaffId == id);
+        }
+
+        // GET: Staffs/ManageRoles
+        // Accessible exclusively by Admin to monitor staff list and change user permissions/roles directly
+
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ManageRoles()
+        {
+            var staffList = await _context.Staff
+                                          .Include(s => s.Department)
+                                          .Where(s => s.Position != "Admin")
+                                          .ToListAsync();
+
+            return View(staffList);
+        }
+
+        // POST: Staffs/UpdateRole
+        // Server endpoint designed to update user positions and claim parameters securely
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateRole(int staffId, string newPosition)
+        {
+            var staff = await _context.Staff.FindAsync(staffId);
+            if (staff == null) return NotFound();
+
+            // Guard Clause: Prevent arbitrary API calls from tampering with Administrator privileges
+
+            if (staff.Position == "Admin")
+            {
+                TempData["Error"] = "Modifying primary Administrator account settings is strictly prohibited!";
+                return RedirectToAction(nameof(ManageRoles));
+            }
+
+            if (!string.IsNullOrEmpty(newPosition))
+            {
+                staff.Position = newPosition;
+                _context.Update(staff);
+                await _context.SaveChangesAsync();
+
+                // Fixed: Explicitly concatenated Fname and Lname fields for english clean output
+
+                TempData["Success"] = $"Staff member {staff.Fname} {staff.Lname} has been successfully assigned to the role of: {newPosition}.";
+            }
+
+            return RedirectToAction(nameof(ManageRoles));
         }
     }
 }

@@ -1,0 +1,98 @@
+﻿@model IEnumerable<Hospital_Management_Project.Models.Staff>
+
+@{
+    ViewData["Title"] = "Manage Users Roles";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-shield-lock-fill text-primary"></i> Users Roles Management</h2>
+        <a asp-action="Index" class="btn btn-secondary btn-sm"><i class="bi bi-arrow-left"></i> Back to Staff List</a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <table class="table table-hover table-striped mb-0 align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Full Name</th>
+                        <th>Email</th>
+                        <th>Department</th>
+                        <th>Current Role / Position</th>
+                        <th class="text-center" style="width: 250px;">Change Role</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@item.Fname @item.Lname</strong>
+                            </td>
+                            <td>@item.Email</td>
+                            <td>
+                                <span class="badge bg-secondary">@(item.Department?.DeptName ?? "N/A")</span>
+                            </td>
+                            <td>
+                                @if (item.Position == "Admin")
+                                {
+                                    <span class="badge bg-danger"><i class="bi bi-person-badge-fill"></i> Admin</span>
+                                }
+                                else if (item.Position == "Doctor")
+                                {
+                                    <span class="badge bg-success"><i class="bi bi-heart-pulse-fill"></i> Doctor</span>
+                                }
+                                else if (item.Position == "Nurse")
+                                {
+                                    <span class="badge bg-warning text-dark"><i class="bi bi-capsule"></i> Nurse</span>
+                                }
+                                else if (item.Position == "Receptionist")
+                                {
+                                    <span class="badge bg-info text-dark"><i class="bi bi-person-workspace"></i> Receptionist</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">@item.Position</span>
+                                }
+                            </td>
+                            <td>
+                                <form asp-action="UpdateRole" method="post" class="d-flex gap-2 justify-content-center">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="staffId" value="@item.StaffId" />
+
+                                    <select name="newPosition" class="form-select form-select-sm" required>
+                                        <option value="">-- Select Role --</option>
+                                        <option value="Admin">Admin</option>
+                                        <option value="Doctor">Doctor</option>
+                                        <option value="Nurse">Nurse</option>
+                                        <option value="Receptionist">Receptionist</option>
+                                    </select>
+
+                                    <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Are you sure you want to change this user\'s role?');">
+                                        Save
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
