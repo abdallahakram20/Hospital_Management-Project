@@ -153,6 +153,24 @@
                 text-decoration: underline;
             }
 
+    .register-prompt {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.9);
+        text-align: center;
+        margin-top: 15px;
+    }
+
+        .register-prompt a {
+            color: #ffffff;
+            text-decoration: underline;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+
+            .register-prompt a:hover {
+                color: #f0f0f0;
+            }
+
     .alert-custom {
         background-color: #eef2f6;
         border-radius: 4px;
@@ -387,6 +405,10 @@
                         </div>
 
                         <button type="submit" class="btn btn-custom w-100">Login</button>
+
+                        <div class="register-prompt">
+                            Don't have an account? <a asp-controller="Patients" asp-action="Create">Create an account</a>
+                        </div>
                     </form>
                 </div>
             </div>
