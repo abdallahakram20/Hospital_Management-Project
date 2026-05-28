@@ -206,6 +206,9 @@ namespace Hospital_Management_Project.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
+                    b.Property<string>("ImagePath")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Lname")
                         .IsRequired()
                         .HasMaxLength(10)

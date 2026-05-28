@@ -120,5 +120,114 @@ namespace Hospital_Management_Project.Controllers
         {
             return View();
         }
+        // 5. GET: Account/ForgotPassword
+
+        [HttpGet]
+        public IActionResult ForgotPassword(string userType)
+        {
+
+            ViewBag.UserType = userType;
+            return View();
+        }
+
+        // 6. POST: Account/ForgotPassword
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ForgotPassword(string identifier, string userType)
+        {
+            if (string.IsNullOrEmpty(identifier))
+            {
+                ModelState.AddModelError(string.Empty, "Please enter your Email or Username.");
+                ViewBag.UserType = userType;
+                return View();
+            }
+
+            bool userExists = false;
+
+            if (userType == "Staff")
+            {
+                var inputEmail = identifier.Trim().ToLower();
+                var staff = await _context.Staff.FirstOrDefaultAsync(s => s.Email.ToLower() == inputEmail);
+                if (staff != null) userExists = true;
+            }
+            else if (userType == "Patient")
+            {
+                var patient = await _context.Patient.FirstOrDefaultAsync(p => p.user_name == identifier.Trim());
+                if (patient != null) userExists = true;
+            }
+
+            if (userExists)
+            {
+
+                string resetToken = Guid.NewGuid().ToString();
+
+                var resetLink = Url.Action("ResetPassword", "Account",
+                    new { token = resetToken, identifier = identifier, userType = userType },
+                    protocol: HttpContext.Request.Scheme);
+
+                ViewBag.ResetLink = resetLink;
+            }
+
+            ViewBag.Message = "If your account exists in our system, you will receive password reset instructions shortly.";
+
+            return View("ForgotPasswordConfirmation");
+        }
+
+        // 7. GET: Account/ResetPassword
+        // يعرض صفحة كتابة الباسورد الجديد
+        [HttpGet]
+        public IActionResult ResetPassword(string token, string identifier, string userType)
+        {
+            if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(identifier))
+            {
+                return RedirectToAction("Login");
+            }
+
+            ViewBag.Token = token;
+            ViewBag.Identifier = identifier;
+            ViewBag.UserType = userType;
+
+            return View();
+        }
+
+        // 8. POST: Account/ResetPassword
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(string identifier, string userType, string newPassword, string confirmPassword)
+        {
+            if (newPassword != confirmPassword)
+            {
+                ModelState.AddModelError("", "Passwords do not match.");
+                ViewBag.Identifier = identifier;
+                ViewBag.UserType = userType;
+                return View();
+            }
+
+            if (userType == "Staff")
+            {
+                var staff = await _context.Staff.FirstOrDefaultAsync(s => s.Email == identifier);
+                if (staff != null)
+                {
+                    staff.Password = BCrypt.Net.BCrypt.HashPassword(newPassword);
+                    _context.Update(staff);
+                }
+            }
+            else if (userType == "Patient")
+            {
+                var patient = await _context.Patient.FirstOrDefaultAsync(p => p.user_name == identifier);
+                if (patient != null)
+                {
+                    patient.Password = BCrypt.Net.BCrypt.HashPassword(newPassword);
+                    _context.Update(patient);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Your password has been reset successfully. Please login with your new password.";
+            return RedirectToAction("Login");
+        }
     }
 }

@@ -18,6 +18,9 @@ namespace Hospital_Management_Project.Models
         public string Fname { get; set; } = string.Empty;
         [MaxLength(10)]
         public string Lname { get; set; } = string.Empty;
+        public string? ImagePath { get; set; }
+        [NotMapped]
+        public IFormFile? ImageFile { get; set; }
 
         [NotMapped]
         public string StaffName => $"{Fname} {Lname}";

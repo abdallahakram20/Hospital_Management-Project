@@ -2,92 +2,344 @@
 
 @{
     ViewData["Title"] = "Remove Medical Record";
+    Layout = null;
 }
 
-<div class="container mt-4">
-    <div class="mb-3">
-        <a asp-action="Index" class="btn btn-sm btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> Cancel and Go Back
-        </a>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+<style>
+    :root {
+        --primary: #1A76D1;
+        --primary-dk: #1560ad;
+        --dark: #2C2D3F;
+        --muted: #888;
+        --light-bg: #f9f9f9;
+        --white: #fff;
+        --danger: #e74c3c;
+        --shadow: 0 4px 15px rgba(0,0,0,.07);
+        --radius: 6px;
+        --tr: all .3s ease;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Poppins',sans-serif;
+        font-size: 14px;
+        color: var(--muted);
+    }
+
+    .mp-page {
+        padding: 40px 30px;
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .mp-breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        margin-bottom: 20px;
+    }
+
+        .mp-breadcrumb a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+            .mp-breadcrumb a:hover {
+                text-decoration: underline;
+            }
+
+        .mp-breadcrumb i {
+            font-size: 10px;
+            color: var(--muted);
+        }
+
+    .mp-page-header {
+        background: var(--white);
+        border-radius: var(--radius);
+        padding: 28px 36px;
+        margin-bottom: 28px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+        box-shadow: var(--shadow);
+        border-left: 4px solid var(--danger);
+    }
+
+        .mp-page-header h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 4px;
+        }
+
+            .mp-page-header h2 i {
+                color: var(--danger);
+            }
+
+        .mp-page-header p {
+            font-size: 13px;
+        }
+
+    .mp-card {
+        background: var(--white);
+        border-radius: var(--radius);
+        padding: 36px;
+        box-shadow: var(--shadow);
+    }
+
+    /* Form grid */
+    .mp-form-grid {
+        display: grid;
+        grid-template-columns: repeat(2,1fr);
+        gap: 22px;
+        margin-bottom: 32px;
+    }
+
+    .mp-form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+        .mp-form-group.full {
+            grid-column: span 2;
+        }
+
+    .mp-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--dark);
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+        .mp-label i {
+            color: var(--primary);
+            font-size: 13px;
+        }
+
+    .mp-input, .mp-select {
+        height: 46px;
+        border: 1px solid #e0e0e0;
+        border-radius: var(--radius);
+        padding: 0 16px;
+        font-size: 14px;
+        font-family: 'Poppins',sans-serif;
+        color: var(--dark);
+        background: var(--white);
+        transition: var(--tr);
+        width: 100%;
+    }
+
+        .mp-input:focus, .mp-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(26,118,209,.1);
+        }
+
+    .mp-select {
+        cursor: pointer;
+    }
+
+    .mp-pass-wrap {
+        position: relative;
+    }
+
+        .mp-pass-wrap .mp-input {
+            padding-right: 44px;
+        }
+
+    .mp-eye-btn {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--muted);
+        font-size: 15px;
+        padding: 4px;
+    }
+
+        .mp-eye-btn:hover {
+            color: var(--primary);
+        }
+
+    .mp-field-error {
+        color: var(--danger);
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .mp-divider {
+        border: none;
+        border-top: 1px solid #f0f0f0;
+        margin-bottom: 28px;
+    }
+
+    /* Buttons */
+    .mp-form-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .mp-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 12px 28px;
+        border-radius: var(--radius);
+        font-size: 14px;
+        font-weight: 600;
+        font-family: 'Poppins',sans-serif;
+        cursor: pointer;
+        text-decoration: none;
+        border: none;
+        transition: var(--tr);
+        white-space: nowrap;
+    }
+
+    .mp-btn-primary {
+        background: var(--primary);
+        color: #fff;
+    }
+
+        .mp-btn-primary:hover {
+            background: var(--primary-dk);
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(26,118,209,.3);
+        }
+
+    .mp-btn-secondary {
+        background: var(--light-bg);
+        color: var(--dark);
+        border: 1px solid #e0e0e0;
+    }
+
+        .mp-btn-secondary:hover {
+            background: #eee;
+            color: var(--dark);
+        }
+
+    @@media (max-width:768px) {
+        .mp-page {
+            padding: 20px 16px;
+        }
+
+        .mp-page-header {
+            padding: 20px;
+        }
+
+        .mp-card {
+            padding: 22px;
+        }
+
+        .mp-form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .mp-form-group.full {
+            grid-column: span 1;
+        }
+
+        .mp-form-actions {
+            flex-direction: column;
+        }
+
+        .mp-btn {
+            justify-content: center;
+        }
+    }
+</style>
+
+<div class="mp-page">
+
+    <div class="mp-breadcrumb">
+        <a asp-controller="Home" asp-action="Index"><i class="fas fa-home"></i> Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a asp-action="Index">Medical Records</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Delete</span>
     </div>
 
-    <div class="alert alert-danger d-flex align-items-center shadow-sm mb-4" role="alert">
-        <i class="bi bi-exclamation-triangle-fill fs-3 me-3"></i>
+    <div class="mp-page-header">
         <div>
-            <h5 class="alert-heading mb-1 fw-bold">Critical Action Request</h5>
-            <p class="mb-0">Are you completely sure you want to permanently delete this patient's medical profile? This action is irreversible and clinical history parameters will be lost.</p>
+            <h2><i class="fas fa-exclamation-triangle"></i> Critical Action Request</h2>
+            <p>Are you completely sure you want to permanently delete this patient's medical profile? This action is irreversible.</p>
         </div>
     </div>
 
-    <div class="card shadow-sm border-0 mx-auto" style="max-width: 800px;">
-        <div class="card-header bg-danger text-white p-3">
-            <h5 class="mb-0"><i class="bi bi-file-earmark-x"></i> Medical Record Pending Deletion</h5>
-        </div>
+    <div class="mp-card">
+        <form asp-action="Delete">
+            <input type="hidden" asp-for="ProfileId" />
 
-        <div class="card-body p-4">
-            <div class="bg-light p-3 rounded mb-4 border-start border-danger border-4">
-                <span class="text-muted small fw-bold block mb-1">PATIENT IDENTITY</span>
-                <h5 class="text-dark mb-0 fw-bold">
-                    @(Model?.Patient != null ? $"{Model.Patient.FName} {Model.Patient.LName}" : "N/A")
-                </h5>
-            </div>
+            <div class="mp-form-grid">
+                <div class="mp-form-group full">
+                    <label class="mp-label"><i class="fas fa-user"></i> Patient Identity</label>
+                    <input class="mp-input" readonly value="@(Model?.Patient != null ? $"{Model.Patient.FName} {Model.Patient.LName}" : "N/A")" />
+                </div>
 
-            <div class="row g-3 mb-4">
-                <div class="col-md-4">
-                    <div class="p-2 border rounded text-center bg-white">
-                        <small class="text-muted fw-bold d-block mb-1">BLOOD TYPE</small>
-                        <span class="fw-bold text-danger">@Html.DisplayFor(model => model.Blood_Type)</span>
-                    </div>
+                <div class="mp-form-group">
+                    <label class="mp-label"><i class="fas fa-tint" style="color: var(--danger);"></i> Blood Type</label>
+                    <input class="mp-input" readonly value="@Html.DisplayFor(model => model.Blood_Type)" style="font-weight: 600; color: var(--danger);" />
                 </div>
-                <div class="col-md-4">
-                    <div class="p-2 border rounded text-center bg-white">
-                        <small class="text-muted fw-bold d-block mb-1">BLOOD PRESSURE</small>
-                        <span class="fw-bold text-info">@Html.DisplayFor(model => model.Blood_Pressure)</span>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="p-2 border rounded text-center bg-white">
-                        <small class="text-muted fw-bold d-block mb-1">WEIGHT</small>
-                        <span class="fw-bold text-dark">@Html.DisplayFor(model => model.Weight) kg</span>
-                    </div>
-                </div>
-            </div>
 
-            <div class="border rounded p-3 bg-white">
-                <div class="row g-2">
-                    <div class="col-12 py-1 border-bottom d-flex align-items-center">
-                        <span class="fw-bold text-secondary me-2" style="min-width: 150px;">Diabetes Diagnosis:</span>
-                        <div>
-                            @if (Model != null && Model.Diabets)
-                            {
-                                <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle"></i> Diabetic</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-success"><i class="bi bi-shield-check"></i> Normal / Non-Diabetic</span>
-                            }
-                        </div>
-                    </div>
-                    <div class="col-12 py-1 border-bottom">
-                        <span class="fw-bold text-secondary d-block mb-1">Chronic Diseases:</span>
-                        <p class="mb-0 text-dark ps-2 bg-light rounded py-1">@(string.IsNullOrEmpty(Model?.Chronic_Disease) ? "None" : Model.Chronic_Disease)</p>
-                    </div>
-                    <div class="col-12 py-1">
-                        <span class="fw-bold text-secondary d-block mb-1">Allergies:</span>
-                        <p class="mb-0 text-danger ps-2 bg-light rounded py-1">@(string.IsNullOrEmpty(Model?.Allergies) ? "No known allergies" : Model.Allergies)</p>
-                    </div>
+                <div class="mp-form-group">
+                    <label class="mp-label"><i class="fas fa-heartbeat"></i> Blood Pressure</label>
+                    <input class="mp-input" readonly value="@Html.DisplayFor(model => model.Blood_Pressure)" />
+                </div>
+
+                <div class="mp-form-group">
+                    <label class="mp-label"><i class="fas fa-weight"></i> Weight</label>
+                    <input class="mp-input" readonly value="@Html.DisplayFor(model => model.Weight) kg" />
+                </div>
+
+                <div class="mp-form-group">
+                    <label class="mp-label"><i class="fas fa-capsules"></i> Diabetes Diagnosis</label>
+                    <input class="mp-input" readonly value="@(Model != null && Model.Diabets ? "Diabetic" : "Normal / Non-Diabetic")" />
+                </div>
+
+                <div class="mp-form-group full">
+                    <label class="mp-label"><i class="fas fa-notes-medical"></i> Chronic Diseases</label>
+                    <input class="mp-input" readonly value="@(string.IsNullOrEmpty(Model?.Chronic_Disease) ? "None" : Model.Chronic_Disease)" />
+                </div>
+
+                <div class="mp-form-group full">
+                    <label class="mp-label"><i class="fas fa-allergies"></i> Allergies</label>
+                    <input class="mp-input" readonly value="@(string.IsNullOrEmpty(Model?.Allergies) ? "No known allergies" : Model.Allergies)" style="color: var(--danger);" />
                 </div>
             </div>
 
-            <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-2">
-                <form asp-action="Delete">
-                    <input type="hidden" asp-for="ProfileId" />
-                    <a asp-action="Index" class="btn btn-light border">Cancel and Keep Record</a>
-                    <button type="submit" class="btn btn-danger px-4">
-                        <i class="bi bi-trash-fill"></i> Confirm Absolute Deletion
-                    </button>
-                </form>
+            <hr class="mp-divider" />
+
+            <div class="mp-form-actions">
+                <button type="submit" class="mp-btn mp-btn-primary" style="background: var(--danger);">
+                    <i class="fas fa-trash-alt"></i> Confirm Absolute Deletion
+                </button>
+                <a asp-action="Index" class="mp-btn mp-btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Cancel and Keep Record
+                </a>
             </div>
-        </div>
+        </form>
     </div>
 </div>

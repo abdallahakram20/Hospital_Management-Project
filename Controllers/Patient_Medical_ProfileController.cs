@@ -23,7 +23,6 @@ namespace Hospital_Management_Project.Controllers
 
         // GET: Patient_Medical_Profile
         // Security: Patients can only see their own profile. Doctors/Admins see all records.
-
         public async Task<IActionResult> Index()
         {
             var currentUserIdentifier = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -34,7 +33,6 @@ namespace Hospital_Management_Project.Controllers
             if (string.Equals(userRole, "Patient", StringComparison.OrdinalIgnoreCase))
             {
                 // Filter to only fetch the logged-in patient's record based on username
-
                 profilesQuery = profilesQuery.Where(p => p.Patient!.user_name == currentUserIdentifier);
             }
 
@@ -43,7 +41,6 @@ namespace Hospital_Management_Project.Controllers
 
         // GET: Patient_Medical_Profile/Details/5
         // Security: Prevent cross-patient spying on medical details
-
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
@@ -58,7 +55,6 @@ namespace Hospital_Management_Project.Controllers
             var userRole = User.FindFirstValue(ClaimTypes.Role);
 
             // Bouncer Check: If patient, block access and redirect to AccessDenied if the record doesn't belong to them
-
             if (string.Equals(userRole, "Patient", StringComparison.OrdinalIgnoreCase) &&
                 patient_Medical_Profile.Patient?.user_name != currentUserIdentifier)
             {
@@ -68,9 +64,34 @@ namespace Hospital_Management_Project.Controllers
             return View(patient_Medical_Profile);
         }
 
+        // ====================================================================
+        // GET: Patient_Medical_Profile/PrintReport/5
+        // Security: Same as Details, Patients can only print their own records
+        // ====================================================================
+        public async Task<IActionResult> PrintReport(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var patient_Medical_Profile = await _context.PatientMedicalProfile
+                .Include(p => p.Patient) // Ensure Patient data is loaded if needed in the print view
+                .FirstOrDefaultAsync(m => m.ProfileId == id);
+
+            if (patient_Medical_Profile == null) return NotFound();
+
+            var currentUserIdentifier = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userRole = User.FindFirstValue(ClaimTypes.Role);
+
+            // Security Check: Block patient if they try to print someone else's report
+            if (string.Equals(userRole, "Patient", StringComparison.OrdinalIgnoreCase) &&
+                patient_Medical_Profile.Patient?.user_name != currentUserIdentifier)
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
+            return View(patient_Medical_Profile);
+        }
+
         // GET: Patient_Medical_Profile/Create
         // Security Roles: Patients are strictly forbidden from authoring medical records
-
         [Authorize(Roles = "Admin,Doctor,Staff")]
         public IActionResult Create()
         {
@@ -87,7 +108,6 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // POST: Patient_Medical_Profile/Create
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin,Doctor,Staff")]
@@ -120,7 +140,6 @@ namespace Hospital_Management_Project.Controllers
 
         // GET: Patient_Medical_Profile/Edit
         // Security Roles: Patients cannot edit their own medical profile data
-
         [Authorize(Roles = "Admin,Doctor,Staff")]
         public async Task<IActionResult> Edit(int? id)
         {
@@ -138,7 +157,6 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // POST: Patient_Medical_Profile/Edit
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin,Doctor,Staff")]
@@ -171,7 +189,6 @@ namespace Hospital_Management_Project.Controllers
 
         // GET: Patient_Medical_Profile/Delete
         // Security: Block Patients from executing deletions, redirecting instantly to AccessDenied
-
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -179,7 +196,6 @@ namespace Hospital_Management_Project.Controllers
             var userRole = User.FindFirstValue(ClaimTypes.Role);
 
             // Strict check: If user role resolves to Patient, boot them out completely
-
             if (string.Equals(userRole, "Patient", StringComparison.OrdinalIgnoreCase))
             {
                 return RedirectToAction("AccessDenied", "Account");
@@ -194,7 +210,6 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // POST: Patient_Medical_Profile/Delete
-
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin,Doctor")]

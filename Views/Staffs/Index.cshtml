@@ -1,132 +1,402 @@
 ﻿@model IEnumerable<Hospital_Management_Project.Models.Staff>
-
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Staff Directory";
+    // استخدام OrdinalIgnoreCase لمقارنة النصوص بشكل احترافي وآمن
+    bool isPatient = User.IsInRole("Patient");
 }
 
-<h1>Index</h1>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-@if (!User.IsInRole("Patient"))
-{
-    <p>
-        <a asp-action="Create" class="btn btn-success">Create New</a>
-    </p>
-
-    <form asp-action="Index" method="get" style="margin-bottom: 20px;">
-        <div class="input-group">
-            <input type="text" name="searchString" placeholder="Search by name or Staff ID..."
-                   value="@ViewData["CurrentFilter"]" class="form-control" style="width:300px;" />
-            <button type="submit" class="btn btn-primary">Search</button>
-            <a asp-action="Index" class="btn btn-secondary">Clear</a>
-        </div>
-    </form>
-
-    @if (Model != null && Model.Any())
-    {
-        <form asp-action="ChangePassword" method="post" style="max-width: 400px; margin-bottom: 30px; padding: 15px; border: 1px solid #ddd; border-radius: 5px;">
-            <h5>Change Password (First Staff)</h5>
-            <input type="hidden" value="@Model.First().StaffId" name="id" />
-            <div class="form-group">
-                <label>New Password</label>
-                <input type="password" name="newPassword" class="form-control" required />
-            </div>
-            <br />
-            <button type="submit" class="btn btn-success btn-sm">Save Changes</button>
-        </form>
+<style>
+    :root {
+        --primary: #1A76D1;
+        --primary-dark: #145db3;
+        --primary-light: #e8f2fc;
+        --primary-gradient: linear-gradient(135deg, #1A76D1, #3b92ec);
+        --bg-page: #f4f8fc;
+        --card-bg: #ffffff;
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+        --input-bg: #f8fafc;
+        --input-border: #cbd5e1;
+        --card-shadow: 0 10px 25px -5px rgba(26, 118, 209, 0.08), 0 4px 6px -2px rgba(0,0,0,0.02);
     }
-}
 
-<table class="table table-striped table-bordered">
-    <thead>
-        <tr>
-            <th>@Html.DisplayNameFor(model => model.Fname)</th>
-            <th>@Html.DisplayNameFor(model => model.Lname)</th>
-            <th>@Html.DisplayNameFor(model => model.Position)</th>
+    body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background-color: var(--bg-page);
+        color: var(--text-main);
+        margin: 0;
+        padding: 0;
+    }
 
-            @if (!User.IsInRole("Patient"))
-            {
-                <th>@Html.DisplayNameFor(model => model.Email)</th>
-                @if (User.Identity.IsAuthenticated && User.IsInRole("Admin"))
-                {
-                    <th>@Html.DisplayNameFor(model => model.Password)</th>
-                }
-                <th>Actions</th>
-            }
-            else
-            {
-                <th>Doctor's Schedule</th>
-            }
-        </tr>
-    </thead>
-    <tbody>
-        @if (Model != null && Model.Any())
+    .page-container {
+        padding: 40px 20px;
+        max-width: 1300px;
+        margin: 0 auto;
+    }
+
+    /* Header Section */
+    .page-header {
+        background: var(--card-bg);
+        border-radius: 24px;
+        padding: 30px 40px;
+        margin-bottom: 32px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: var(--card-shadow);
+        flex-wrap: wrap;
+        gap: 20px;
+        border-left: 6px solid var(--primary);
+    }
+
+    .header-text h2 {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text-main);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .header-text p {
+        color: var(--text-muted);
+        font-size: 14px;
+        margin: 5px 0 0 0;
+    }
+
+    .btn-create {
+        background: var(--primary-gradient);
+        color: #fff;
+        border: none;
+        border-radius: 14px;
+        padding: 14px 28px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all .25s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 10px 20px -5px rgba(26, 118, 209, 0.4);
+    }
+
+        .btn-create:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 15px 25px -5px rgba(26, 118, 209, 0.5);
+            color: #fff;
+        }
+
+    /* Staff Cards Grid */
+    .staff-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 24px;
+    }
+
+    .staff-card {
+        background: var(--card-bg);
+        border-radius: 24px;
+        padding: 30px 24px 24px;
+        box-shadow: var(--card-shadow);
+        border: 1px solid rgba(26, 118, 209, 0.08);
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .staff-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: var(--primary-gradient);
+            opacity: 0.8;
+        }
+
+        .staff-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px -12px rgba(26, 118, 209, 0.15);
+            border-color: rgba(26, 118, 209, 0.2);
+        }
+
+    /* Image Settings */
+    .staff-avatar-img {
+        width: 95px;
+        height: 95px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 16px;
+        box-shadow: 0 8px 16px rgba(26, 118, 209, 0.15);
+        border: 4px solid var(--card-bg);
+        outline: 2px solid var(--primary-light);
+        transition: transform 0.3s ease;
+        background-color: var(--primary-light);
+    }
+
+    .staff-card:hover .staff-avatar-img {
+        transform: scale(1.05);
+        outline-color: var(--primary);
+    }
+
+    .staff-name {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--text-main);
+        margin: 0 0 8px 0;
+    }
+
+    .staff-role {
+        display: inline-block;
+        background: var(--bg-page);
+        color: var(--primary-dark);
+        padding: 6px 16px;
+        border-radius: 50px;
+        font-size: 13px;
+        font-weight: 700;
+        border: 1px solid var(--input-border);
+        margin-bottom: 20px;
+        letter-spacing: 0.3px;
+    }
+
+    .staff-info {
+        width: 100%;
+        text-align: left;
+        padding-top: 20px;
+        margin-bottom: 24px;
+        border-top: 1px dashed var(--input-border);
+    }
+
+    .info-line {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+        color: var(--text-muted);
+        margin-bottom: 12px;
+    }
+
+        .info-line i {
+            color: var(--primary);
+            font-size: 16px;
+            background: var(--input-bg);
+            padding: 6px;
+            border-radius: 8px;
+        }
+
+    /* Action Buttons inside Card */
+    .action-btns {
+        display: flex;
+        gap: 8px;
+        width: 100%;
+        margin-top: auto;
+    }
+
+    .btn-action {
+        flex: 1;
+        border-radius: 12px;
+        padding: 10px 0;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all .2s ease;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-edit {
+        background: #fffbeb;
+        color: #d97706;
+        border: 1px solid #fde68a;
+    }
+
+        .btn-edit:hover {
+            background: #f59e0b;
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+    .btn-details {
+        background: var(--primary-light);
+        color: var(--primary);
+        border: 1px solid #bfdbfe;
+    }
+
+        .btn-details:hover {
+            background: var(--primary);
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+    .btn-delete {
+        background: #fef2f2;
+        color: #b91c1c;
+        border: 1px solid #fecaca;
+    }
+
+        .btn-delete:hover {
+            background: #b91c1c;
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+        background: var(--card-bg);
+        border-radius: 24px;
+        box-shadow: var(--card-shadow);
+        grid-column: 1 / -1;
+    }
+
+        .empty-state i {
+            font-size: 64px;
+            color: var(--primary);
+            opacity: 0.4;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .empty-state h4 {
+            color: var(--text-main);
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+    @@media (max-width: 768px) {
+        .staff-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
+
+<div class="page-container">
+    <div class="page-header">
+        <div class="header-text">
+            <h2><i class="bi bi-people-fill" style="color: var(--primary);"></i> Staff Directory</h2>
+            <p>@(isPatient ? "View our certified medical specialists and doctors" : "Manage all hospital staff and healthcare professionals")</p>
+        </div>
+        @if (!isPatient)
         {
-            foreach (var item in Model)
-            {
-                <tr>
-                    <td>@Html.DisplayFor(modelItem => item.Fname)</td>
-                    <td>@Html.DisplayFor(modelItem => item.Lname)</td>
-                    <td>@Html.DisplayFor(modelItem => item.Position)</td>
+            <a asp-action="Create" class="btn-create">
+                <i class="bi bi-person-plus-fill"></i> Add New Staff
+            </a>
+        }
+    </div>
 
-                    @if (!User.IsInRole("Patient"))
-                    {
-                        <td>@Html.DisplayFor(modelItem => item.Email)</td>
-                        @if (User.Identity.IsAuthenticated && User.IsInRole("Admin"))
-                        {
-                            <td>@Html.DisplayFor(modelItem => item.Password)</td>
-                        }
-                        <td>
-                            <a asp-action="Edit" asp-route-id="@item.StaffId" class="btn btn-sm btn-warning">Edit</a> |
-                            <a asp-action="Details" asp-route-id="@item.StaffId" class="btn btn-sm btn-info">Details</a> |
-                            <a asp-action="Delete" asp-route-id="@item.StaffId" class="btn btn-sm btn-danger">Delete</a>
-                        </td>
-                    }
-                    else
-                    {
-                        <td>
-                            @if (item.Position != null && (item.Position.Contains("Doctor") || item.Position.Contains("Doctor")))
-                            {
-                                @if (item.Appointments != null && item.Appointments.Any())
-                                {
-                                    <ul class="list-unstyled mb-0">
-                                        @foreach (var app in item.Appointments)
-                                        {
-                                            <li>
-                                                <span class="badge bg-info text-dark">
-                                                    @app.Visit_Date.ToString("dd/MM/yyyy hh:mm tt")
-                                                </span>
-                                                @if (app.Status == "Available")
-                                                {
-                                                    <span class="text-success"> (Available)</span>
-                                                }
-                                                else
-                                                {
-
-                                                    <span class="text-danger"> (Booked)</span>
-                                                }
-                                            </li>
-                                        }
-                                    </ul>
-                                }
-                                else
-                                {
-                                    <span class="text-muted">No appointments scheduled</span>
-                                }
-                            }
-                            else
-                            {
-                                <span class="text-muted">N/A (Not a Doctor)</span>
-                            }
-                        </td>
-                    }
-                </tr>
-            }
+    <div class="staff-grid">
+        @if (!Model.Any())
+        {
+            <div class="empty-state">
+                <i class="bi bi-person-x-fill"></i>
+                <h4>No Medical Staff Found</h4>
+                <p style="color: var(--text-muted);">There are no active records available at the moment.</p>
+            </div>
         }
         else
         {
-            <tr>
-                <td colspan="6" class="text-center">No records found.</td>
-            </tr>
+            int displayedCount = 0;
+
+            @foreach (var item in Model)
+            {
+                // تحسين المقارنة باستخدام string.Equals وتجنب التحذير البصري
+                if (isPatient && !string.Equals(item.Position, "Doctor", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                displayedCount++;
+
+                <div class="staff-card">
+                    @if (!string.IsNullOrEmpty(item.ImagePath))
+                    {
+                        <img src="~/images/staff/@item.ImagePath"
+                             asp-append-version="true"
+                             class="staff-avatar-img"
+                             alt="@item.Fname @item.Lname"
+                             onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=@item.Fname+@item.Lname&background=e8f2fc&color=1A76D1&bold=true&size=150';" />
+                    }
+                    else
+                    {
+                        <img src="https://ui-avatars.com/api/?name=@item.Fname+@item.Lname&background=e8f2fc&color=1A76D1&bold=true&size=150"
+                             class="staff-avatar-img"
+                             alt="@item.Fname @item.Lname" />
+                    }
+                    <h3 class="staff-name">@item.Fname @item.Lname</h3>
+                    <div class="staff-role">
+                        <i class="bi bi-award-fill me-1" style="color: var(--primary);"></i> @item.Position
+                    </div>
+
+                    <div class="staff-info">
+                        <div class="info-line" title="Department">
+                            <i class="bi bi-building-fill"></i>
+                            <span>@(item.Department?.DeptName ?? "No Department Assigned")</span>
+                        </div>
+
+                        @if (!isPatient)
+                        {
+                            <div class="info-line" title="Email Address">
+                                <i class="bi bi-envelope-fill"></i>
+                                <span style="word-break: break-all;">@item.Email</span>
+                            </div>
+                        }
+                        else
+                        {
+                            /* تم إزالة حقل الـ Schedule المعطوب واستبداله بحالة الطبيب الحالية لعدم حدوث خطأ في قاعدة البيانات */
+                            <div class="info-line" title="Status">
+                                <i class="bi bi-check-circle-fill" style="color: #10b981;"></i>
+                                <span>Active & Available</span>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="action-btns">
+                        @if (!isPatient)
+                        {
+                            <a asp-action="Edit" asp-route-id="@item.StaffId" class="btn-action btn-edit" title="Edit Profile">
+                                <i class="bi bi-pencil-square"></i> Edit
+                            </a>
+                        }
+
+                        <a asp-action="Details" asp-route-id="@item.StaffId" class="btn-action btn-details" style="@(isPatient ? "width: 100%;" : "")" title="View Details">
+                            <i class="bi bi-eye-fill"></i> View Details
+                        </a>
+
+                        @if (!isPatient)
+                        {
+                            <a asp-action="Delete" asp-route-id="@item.StaffId" class="btn-action btn-delete" title="Delete Account">
+                                <i class="bi bi-trash-fill"></i> Delete
+                            </a>
+                        }
+                    </div>
+                </div>
+            }
+
+            if (displayedCount == 0)
+            {
+                <div class="empty-state">
+                    <i class="bi bi-person-x-fill"></i>
+                    <h4>No Active Doctors Available</h4>
+                    <p style="color: var(--text-muted);">There are no healthcare specialists listed at this time.</p>
+                </div>
+            }
         }
-    </tbody>
-</table>
+    </div>
+</div>

@@ -5,14 +5,10 @@
 {
     <ul class="navbar-nav ms-auto">
         <li class="nav-item">
-            <span class="nav-link text-dark">Welcome, @User.Identity.Name</span>
-        </li>
-        <li class="nav-item">
-            <form asp-controller="Account" asp-action="Logout" method="post" class="form-inline">
-                <button type="submit" class="nav-link btn btn-link text-danger border-0" style="cursor:pointer">
-                    <i class="bi bi-box-arrow-right"></i> Logout
-                </button>
-            </form>
+            <span class="nav-link text-dark fw-bold fs-5 py-3 d-inline-block"
+                  style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+                Welcome, @User.Identity.Name
+            </span>
         </li>
     </ul>
 }

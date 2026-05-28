@@ -48,7 +48,7 @@ namespace Hospital_Management_Project.Controllers
 
         // GET: Departments/Create
         // Security Policy: Restricted strictly to Admin role
-
+        [HttpGet]
         [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
@@ -56,11 +56,9 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // POST: Departments/Create
-
+        // Security Policy: Restricted strictly to Admin role to prevent privilege escalation
         [HttpPost]
         [ValidateAntiForgeryToken]
-        // Security Policy: Restricted strictly to Admin role to prevent privilege escalation
-
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([Bind("DepartmentId,DeptName,DeptFloor")] Department department)
         {
@@ -75,7 +73,7 @@ namespace Hospital_Management_Project.Controllers
 
         // GET: Departments/Edit/5
         // Security Policy: Restricted strictly to Admin role
-
+        [HttpGet]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
@@ -93,11 +91,9 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // POST: Departments/Edit
-
+        // Security Policy: Restricted strictly to Admin role to defend against overposting and URL tampering
         [HttpPost]
         [ValidateAntiForgeryToken]
-        // Security Policy: Restricted strictly to Admin role to defend against overposting and URL tampering
-
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id, [Bind("DepartmentId,DeptName,DeptFloor")] Department department)
         {
@@ -131,7 +127,7 @@ namespace Hospital_Management_Project.Controllers
 
         // GET: Departments/Delete/5
         // Security Policy: Restricted strictly to Admin role
-
+        [HttpGet]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
@@ -151,11 +147,9 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // POST: Departments/Delete
-
+        // Security Policy: Restricted strictly to Admin role to prevent malicious structural deletions
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        // Security Policy: Restricted strictly to Admin role to prevent malicious structural deletions
-
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {

@@ -1,45 +1,244 @@
 ﻿@model Hospital_Management_Project.Models.Staff
-
 @{
-    ViewData["Title"] = "Delete";
+    ViewData["Title"] = "Delete Staff";
 }
 
-<h1>Delete</h1>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-<h3>Are you sure you want to delete this?</h3>
-<div>
-    <h4>Staff</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Position)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Position)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Email)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Email)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Fname)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Fname)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Lname)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Lname)
-        </dd>
-    </dl>
-    
-    <form asp-action="Delete">
-        <input type="hidden" asp-for="StaffId" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-action="Index">Back to List</a>
-    </form>
+<style>
+    :root {
+        --primary: #1A76D1;
+        --primary-dark: #145db3;
+        --primary-light: #e8f2fc;
+        --bg-page: #f4f8fc;
+        --card-bg: #ffffff;
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+        --input-bg: #f8fafc;
+        --input-border: #cbd5e1;
+        --danger: #ef4444;
+        --danger-dark: #dc2626;
+        --danger-light: #fee2e2;
+        --danger-gradient: linear-gradient(135deg, #ef4444, #f43f5e);
+    }
+
+    body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background-color: var(--bg-page);
+        color: var(--text-main);
+        margin: 0;
+        padding: 0;
+    }
+
+    .page-container {
+        padding: 40px 20px;
+        max-width: 850px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 32px;
+    }
+
+    .header-text h2 {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text-main);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+        .header-text h2 i {
+            color: var(--danger);
+            background: var(--danger-light);
+            padding: 10px;
+            border-radius: 12px;
+            font-size: 24px;
+        }
+
+    .btn-back {
+        background: var(--card-bg);
+        color: var(--primary);
+        border: 1px solid var(--input-border);
+        border-radius: 12px;
+        padding: 10px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all .2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+        .btn-back:hover {
+            background: var(--primary-light);
+            border-color: var(--primary);
+            color: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+    .delete-card {
+        background: var(--card-bg);
+        border-radius: 24px;
+        padding: 40px;
+        box-shadow: 0 20px 40px -10px rgba(239, 68, 68, 0.08);
+        border: 1px solid rgba(239, 68, 68, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+
+        .delete-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: var(--danger-gradient);
+        }
+
+    .warning-box {
+        background: var(--danger-light);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        border-radius: 16px;
+        padding: 16px 20px;
+        margin-bottom: 32px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #991b1b;
+        font-weight: 600;
+        font-size: 15px;
+    }
+
+        .warning-box i {
+            font-size: 20px;
+        }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    .info-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 18px 20px;
+        background: var(--input-bg);
+        border-radius: 16px;
+        border: 1px solid var(--input-border);
+    }
+
+        .info-group.full-width {
+            grid-column: span 2;
+        }
+
+    .info-label {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--primary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .info-value {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-main);
+    }
+
+    .btn-delete {
+        background: var(--danger-gradient);
+        color: #ffffff;
+        border: none;
+        border-radius: 14px;
+        padding: 16px 32px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all .3s ease;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        margin-top: 32px;
+        box-shadow: 0 10px 20px -5px rgba(239, 68, 68, 0.4);
+    }
+
+        .btn-delete:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 25px -5px rgba(239, 68, 68, 0.5);
+            background: var(--danger-dark);
+        }
+
+    @@media (max-width: 768px) {
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .info-group.full-width {
+            grid-column: span 1;
+        }
+
+        .delete-card {
+            padding: 32px 24px;
+        }
+    }
+</style>
+
+<div class="page-container">
+    <div class="page-header">
+        <div class="header-text">
+            <h2><i class="bi bi-person-x-fill"></i> Delete Staff Member</h2>
+        </div>
+        <a asp-action="Index" class="btn-back">
+            <i class="bi bi-arrow-left"></i> Back to List
+        </a>
+    </div>
+
+    <div class="delete-card">
+        <div class="warning-box">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <span>Are you sure you want to delete this staff member? This action cannot be undone.</span>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-group full-width">
+                <span class="info-label"><i class="bi bi-person-badge"></i> Staff Name</span>
+                <span class="info-value">@Model.Fname @Model.Lname</span>
+            </div>
+
+            <div class="info-group">
+                <span class="info-label"><i class="bi bi-envelope"></i> Email</span>
+                <span class="info-value">@Model.Email</span>
+            </div>
+
+            <div class="info-group">
+                <span class="info-label"><i class="bi bi-briefcase"></i> Position</span>
+                <span class="info-value">@Model.Position</span>
+            </div>
+        </div>
+
+        <form asp-action="Delete" method="post">
+            <input type="hidden" asp-for="StaffId" />
+            <button type="submit" class="btn-delete">
+                <i class="bi bi-trash-fill"></i> Confirm Deletion Permanently
+            </button>
+        </form>
+    </div>
 </div>

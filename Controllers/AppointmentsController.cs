@@ -22,8 +22,6 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // GET: Appointments
-        // Security Logic: Filter appointments based on the logged-in user's role
-
         public async Task<IActionResult> Index()
         {
             var currentUserIdentifier = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -32,27 +30,21 @@ namespace Hospital_Management_Project.Controllers
             var appointmentsQuery = _context.Appointment.Include(a => a.Patient).Include(a => a.Staff).AsQueryable();
 
             // 1. If Doctor: View only their own assigned appointments via linked Email
-
             if (userRole == "Doctor")
             {
                 appointmentsQuery = appointmentsQuery.Where(a => a.Staff!.Email == currentUserIdentifier);
             }
-
             // 2. If Patient: View only their personal booked appointments
-
             else if (userRole == "Patient")
             {
                 appointmentsQuery = appointmentsQuery.Where(a => a.Patient!.user_name == currentUserIdentifier);
             }
 
             // 3. If Admin or Receptionist: Can see and manage all appointments
-
             return View(await appointmentsQuery.ToListAsync());
         }
 
         // GET: Appointments/Details/5
-        // Security: Prevent patients or doctors from unauthorized spying on other users' appointment details
-
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
@@ -80,13 +72,9 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // GET: Appointments/Create
-        // Security: Patients are strictly forbidden from creating empty appointments from scratch
-
-        [Authorize(Roles = "Admin,Doctor,Receptionist,Staff")]
+        [Authorize(Roles = "Admin,Doctor,Receptionist,Staff,Patient")]
         public IActionResult Create()
         {
-            // Filter out Admins and construct the Full Name structure safely
-
             var filteredDoctors = _context.Staff
                 .Where(s => s.Position != "Admin")
                 .Select(s => new
@@ -101,23 +89,32 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // POST: Appointments/Create
-
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin,Doctor,Receptionist,Staff")]
+        [Authorize(Roles = "Admin,Doctor,Receptionist,Staff,Patient")]
         public async Task<IActionResult> Create([Bind("AppointmentId,Visit_Date,Status,Reason,Diagnosis,Medication,Treatment_Plan,Notes,Common_tests,PatientId,StaffId")] Appointment appointment)
         {
-            // Guard Clause: Prevent creating an appointment slots with a past date and time
-
             if (appointment.Visit_Date < DateTime.Now)
             {
                 ModelState.AddModelError("Visit_Date", "Cannot create an appointment slot in a date/time that has already passed!");
             }
 
+            var userRole = User.FindFirstValue(ClaimTypes.Role);
+
+            if (userRole == "Patient")
+            {
+                var patientUserName = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var patient = await _context.Patient.FirstOrDefaultAsync(p => p.user_name == patientUserName);
+
+                if (patient != null)
+                {
+                    appointment.PatientId = patient.PatientId;
+                    appointment.Status = "Booked";
+                }
+            }
+
             if (ModelState.IsValid)
             {
-                // Set default status if empty
-
                 if (string.IsNullOrEmpty(appointment.Status))
                 {
                     appointment.Status = "Available";
@@ -127,8 +124,6 @@ namespace Hospital_Management_Project.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-
-            // Repopulate filtered list in case of validation failures
 
             var filteredDoctors = _context.Staff
                 .Where(s => s.Position != "Admin")
@@ -144,22 +139,27 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // GET: Appointments/Edit/5
-        // Security: Restrict access to editing diagnoses, prescriptions, and slot details
-
-        [Authorize(Roles = "Admin,Doctor,Receptionist,Staff")]
+        [Authorize(Roles = "Admin,Doctor,Receptionist,Staff,Patient")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
 
-            var appointment = await _context.Appointment.Include(a => a.Staff).FirstOrDefaultAsync(a => a.AppointmentId == id);
+            var appointment = await _context.Appointment.Include(a => a.Staff).Include(a => a.Patient).FirstOrDefaultAsync(a => a.AppointmentId == id);
             if (appointment == null) return NotFound();
 
-            // Security Check: Ensure editing doctor is the actual owner of this specific appointment slot
+            var currentUserIdentifier = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (User.IsInRole("Doctor"))
             {
-                var currentUserEmail = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (appointment.Staff?.Email != currentUserEmail)
+                if (appointment.Staff?.Email != currentUserIdentifier)
+                {
+                    return RedirectToAction("AccessDenied", "Account");
+                }
+            }
+
+            if (User.IsInRole("Patient"))
+            {
+                if (appointment.Patient?.user_name != currentUserIdentifier)
                 {
                     return RedirectToAction("AccessDenied", "Account");
                 }
@@ -168,8 +168,6 @@ namespace Hospital_Management_Project.Controllers
             var patients = _context.Patient
                 .Select(p => new { id = p.PatientId, name = p.FName + " " + p.LName })
                 .ToList();
-
-            // Re-filtered Staff Dropdown during edit cycles to keep UI sanitized
 
             var filteredDoctors = _context.Staff
                 .Where(s => s.Position != "Admin")
@@ -187,24 +185,37 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // POST: Appointments/Edit/5
-
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin,Doctor,Receptionist,Staff")]
+        [Authorize(Roles = "Admin,Doctor,Receptionist,Staff,Patient")]
         public async Task<IActionResult> Edit(int id, [Bind("AppointmentId,Visit_Date,Status,Reason,Diagnosis,Medication,Treatment_Plan,Notes,Common_tests,PatientId,StaffId")] Appointment appointment)
         {
             if (id != appointment.AppointmentId) return NotFound();
 
-            // Security POST Verification: Prevent cross-parameter parameter tampering attacks on appointment IDs
+            var currentUserIdentifier = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var originalAppointment = await _context.Appointment.AsNoTracking().Include(a => a.Staff).Include(a => a.Patient).FirstOrDefaultAsync(a => a.AppointmentId == id);
 
-            if (User.IsInRole("Doctor"))
+            if (originalAppointment == null) return NotFound();
+
+            if (User.IsInRole("Doctor") && originalAppointment.Staff?.Email != currentUserIdentifier)
             {
-                var originalAppointment = await _context.Appointment.AsNoTracking().Include(a => a.Staff).FirstOrDefaultAsync(a => a.AppointmentId == id);
-                var currentUserEmail = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (originalAppointment == null || originalAppointment.Staff?.Email != currentUserEmail)
+                return RedirectToAction("AccessDenied", "Account");
+            }
+
+            if (User.IsInRole("Patient"))
+            {
+                if (originalAppointment.Patient?.user_name != currentUserIdentifier)
                 {
                     return RedirectToAction("AccessDenied", "Account");
                 }
+
+                appointment.Diagnosis = originalAppointment.Diagnosis;
+                appointment.Medication = originalAppointment.Medication;
+                appointment.Treatment_Plan = originalAppointment.Treatment_Plan;
+                appointment.Notes = originalAppointment.Notes;
+                appointment.Common_tests = originalAppointment.Common_tests;
+                appointment.Status = originalAppointment.Status;
+                appointment.PatientId = originalAppointment.PatientId;
             }
 
             if (ModelState.IsValid)
@@ -242,7 +253,6 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // GET: Appointments/Delete/5
-
         [Authorize(Roles = "Admin,Receptionist")]
         public async Task<IActionResult> Delete(int? id)
         {
@@ -258,7 +268,6 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // POST: Appointments/Delete/5
-
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin,Receptionist")]
@@ -279,8 +288,6 @@ namespace Hospital_Management_Project.Controllers
             return _context.Appointment.Any(e => e.AppointmentId == id);
         }
 
-        // GET: Appointments/SearchPatients
-
         [HttpGet]
         public JsonResult SearchPatients(string term)
         {
@@ -292,19 +299,43 @@ namespace Hospital_Management_Project.Controllers
             return Json(patients);
         }
 
-        // POST: Appointments/BookAppointment
+        // =========================================================================
+        //  دوال حجز وتعديل المواعيد للمريض
+        // =========================================================================
+
+        // GET: Appointments/BookAppointment/5
+        [HttpGet]
+        [Authorize(Roles = "Patient")]
+        public async Task<IActionResult> BookAppointment(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var appointment = await _context.Appointment.FindAsync(id);
+            if (appointment == null) return NotFound();
+
+            // فحص هل الموعد محجوز مسبقاً (تم تعديل الشرط ليتناسب مع int)
+            if (appointment.PatientId > 0)
+            {
+                TempData["Error"] = "This appointment slot has already been booked!";
+                return RedirectToAction("Details", "Staffs", new { id = appointment.StaffId });
+            }
+
+            return View(appointment);
+        }
+
+        // POST: Appointments/ConfirmBookAppointment
         [Authorize(Roles = "Patient")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> BookAppointment(int appointmentId)
+        public async Task<IActionResult> ConfirmBookAppointment(int AppointmentId)
         {
-            var appointment = await _context.Appointment.FindAsync(appointmentId);
+            var appointment = await _context.Appointment.FindAsync(AppointmentId);
             if (appointment == null) return NotFound();
 
-            if (appointment.Status != "Available" && appointment.Status != "متاح")
+            if (appointment.Status != "Available" && appointment.Status != "متاح" && appointment.PatientId > 0)
             {
                 TempData["Error"] = "This appointment slot has already been booked!";
-                return RedirectToAction("Index", "Staffs");
+                return RedirectToAction("Details", "Staffs", new { id = appointment.StaffId });
             }
 
             var patientUserName = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -312,17 +343,15 @@ namespace Hospital_Management_Project.Controllers
 
             if (patient != null)
             {
-                // Double Booking Prevention: Check if the patient already has an active appointment at this exact date and time slot
-
                 bool hasConflict = await _context.Appointment.AnyAsync(a =>
                     a.PatientId == patient.PatientId &&
                     a.Visit_Date == appointment.Visit_Date &&
-                    a.AppointmentId != appointmentId);
+                    a.AppointmentId != AppointmentId);
 
                 if (hasConflict)
                 {
                     TempData["Error"] = "Sorry, you already have another appointment booked at this exact date and time!";
-                    return RedirectToAction("Index", "Staffs");
+                    return RedirectToAction("Details", "Staffs", new { id = appointment.StaffId });
                 }
 
                 appointment.PatientId = patient.PatientId;
@@ -337,7 +366,148 @@ namespace Hospital_Management_Project.Controllers
                 TempData["Error"] = "Patient profile data could not be found.";
             }
 
-            return RedirectToAction("Index", "Staffs");
+            return RedirectToAction("Details", "Staffs", new { id = appointment.StaffId });
+        }
+
+        // GET: Appointments/ChangeAppointment/5
+        [HttpGet]
+        [Authorize(Roles = "Patient")]
+        public async Task<IActionResult> ChangeAppointment(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var appointment = await _context.Appointment.FindAsync(id);
+            if (appointment == null) return NotFound();
+
+            DateTime appointmentDateTime = appointment.Visit_Date;
+            if ((appointmentDateTime - DateTime.Now).TotalHours <= 12)
+            {
+                TempData["Error"] = "Action denied! It is prohibited to change appointments with less than 12 hours remaining.";
+                return RedirectToAction("Details", "Staffs", new { id = appointment.StaffId });
+            }
+
+            // تم تعديل الشرط هنا ليفحص الـ 0 بدلاً من null
+            ViewData["AlternativeAppointments"] = await _context.Appointment
+                .Where(a => a.StaffId == appointment.StaffId && a.PatientId == 0)
+                .ToListAsync();
+
+            return View(appointment);
+        }
+
+        // POST: Appointments/ConfirmChangeAppointment
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Patient")]
+        public async Task<IActionResult> ConfirmChangeAppointment(int currentAppointmentId, int newAppointmentId)
+        {
+            var currentAppointment = await _context.Appointment.FindAsync(currentAppointmentId);
+            var newAppointment = await _context.Appointment.FindAsync(newAppointmentId);
+
+            if (currentAppointment == null || newAppointment == null) return NotFound();
+
+            DateTime currentDateTime = currentAppointment.Visit_Date;
+            if ((currentDateTime - DateTime.Now).TotalHours <= 12)
+            {
+                TempData["Error"] = "Action denied! Time lock is active (Less than 12 hours remaining).";
+                return RedirectToAction("Details", "Staffs", new { id = currentAppointment.StaffId });
+            }
+
+            newAppointment.PatientId = currentAppointment.PatientId;
+            newAppointment.Status = "Booked";
+
+            // تم التعديل هنا: إسناد 0 بدلاً من null لحل خطأ الكومبايلر CS0037
+            currentAppointment.PatientId = 0;
+            currentAppointment.Status = "Available";
+
+            _context.Update(currentAppointment);
+            _context.Update(newAppointment);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Your appointment has been successfully rescheduled to the new slot!";
+            return RedirectToAction("Details", "Staffs", new { id = newAppointment.StaffId });
+        }
+
+
+        // GET: Appointments/PatientMedicalProfile/5
+        public async Task<IActionResult> PatientMedicalProfile(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var medicalProfile = await _context.Set<Patient_Medical_Profile>()
+                .Include(p => p.Patient)
+                .FirstOrDefaultAsync(m => m.ProfileId == id);
+
+            if (medicalProfile == null) return NotFound();
+
+            var currentUserIdentifier = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userRole = User.FindFirstValue(ClaimTypes.Role);
+
+            if (userRole == "Patient" && medicalProfile.Patient?.user_name != currentUserIdentifier)
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
+
+            return View(medicalProfile);
+        }
+
+        // GET: Appointments/PrintReport
+        public async Task<IActionResult> PrintReport()
+        {
+            var currentUserIdentifier = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userRole = User.FindFirstValue(ClaimTypes.Role);
+
+            var appointmentsQuery = _context.Appointment
+                .Include(a => a.Patient)
+                .Include(a => a.Staff)
+                .AsQueryable();
+
+            if (userRole == "Doctor")
+            {
+                appointmentsQuery = appointmentsQuery.Where(a => a.Staff!.Email == currentUserIdentifier);
+            }
+            else if (userRole == "Patient")
+            {
+                appointmentsQuery = appointmentsQuery.Where(a => a.Patient!.user_name == currentUserIdentifier);
+            }
+
+            var reportData = await appointmentsQuery.OrderByDescending(a => a.Visit_Date).ToListAsync();
+
+            return View("PrintReport", reportData);
+        }
+
+        //                   CANCEL APPOINTMENT (Patient Only) 
+
+        [HttpPost]
+        [Authorize(Roles = "Patient")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CancelAppointment(int id)
+        {
+            var appointment = await _context.Appointment
+                .Include(a => a.Patient)
+                .FirstOrDefaultAsync(a => a.AppointmentId == id);
+
+            if (appointment == null)
+                return NotFound();
+
+            var currentUserName = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (appointment.Patient?.user_name != currentUserName)
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
+
+            if ((appointment.Visit_Date - DateTime.Now).TotalHours <= 24)
+            {
+                TempData["Error"] = "لا يمكن إلغاء الموعد لأنه أقل من 24 ساعة متبقية على الموعد.";
+                return RedirectToAction("Index");
+            }
+
+            appointment.Status = "Cancelled";
+            appointment.Notes += $"\n[Cancelled by patient on {DateTime.Now:yyyy-MM-dd HH:mm}]";
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "تم إلغاء الموعد بنجاح.";
+            return RedirectToAction("Index");
         }
     }
 }

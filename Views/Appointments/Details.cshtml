@@ -1,66 +1,345 @@
 ﻿@model Hospital_Management_Project.Models.Appointment
-
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Appointment Details";
 }
 
-<h1>Details</h1>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-<div>
-    <h4>Appointment</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Visit_Date)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Visit_Date)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Status)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Status)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Reason)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Reason)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Diagnosis)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Diagnosis)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Medication)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Medication)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Treatment_Plan)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Treatment_Plan)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Notes)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Notes)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Common_tests)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Common_tests)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.AppointmentId">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+<style>
+    :root {
+        --primary: #1A76D1;
+        --primary-dark: #145db3;
+        --primary-light: #e8f2fc;
+        --primary-gradient: linear-gradient(135deg, #1A76D1, #3b92ec);
+        --bg-page: #f4f8fc;
+        --card-bg: #ffffff;
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+        --input-bg: #f8fafc;
+        --input-border: #cbd5e1;
+        --card-shadow: 0 20px 40px -10px rgba(26, 118, 209, 0.05), 0 4px 6px -2px rgba(0,0,0,0.02);
+    }
+
+    body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background-color: var(--bg-page);
+        color: var(--text-main);
+        margin: 0;
+        padding: 0;
+    }
+
+    .page-container {
+        padding: 40px 20px;
+        max-width: 850px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        background: var(--card-bg);
+        border-radius: 24px;
+        padding: 30px 40px;
+        margin-bottom: 32px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: var(--card-shadow);
+        flex-wrap: wrap;
+        gap: 20px;
+        border-left: 6px solid var(--primary);
+    }
+
+    .header-text h2 {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text-main);
+        margin: 0 0 6px 0;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .header-text p {
+        color: var(--text-muted);
+        font-size: 14px;
+        margin: 0;
+        letter-spacing: 0.3px;
+    }
+
+    .details-wrapper {
+        background: var(--card-bg);
+        border-radius: 24px;
+        padding: 40px;
+        box-shadow: var(--card-shadow);
+        border: 1px solid rgba(26, 118, 209, 0.1);
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+        margin-bottom: 40px;
+    }
+
+    .info-item {
+        background: var(--input-bg);
+        border: 1px solid var(--input-border);
+        border-radius: 16px;
+        padding: 20px 24px;
+        transition: all 0.25s ease;
+    }
+
+        .info-item:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+            box-shadow: 0 8px 20px rgba(26, 118, 209, 0.04);
+        }
+
+        .info-item.full-width {
+            grid-column: span 2;
+        }
+
+    .info-label {
+        color: var(--primary);
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .info-value {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-main);
+        word-break: break-word;
+        line-height: 1.5;
+    }
+
+    .status-badge {
+        padding: 6px 16px;
+        border-radius: 50px;
+        font-size: 12px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+
+    .status-available {
+        background: #e6fbf1;
+        color: #047857;
+        border: 1px solid rgba(4, 120, 87, 0.2);
+    }
+
+    .status-booked {
+        background: #fffbeb;
+        color: #b45309;
+        border: 1px solid rgba(180, 83, 9, 0.2);
+    }
+
+    .status-cancelled {
+        background: #fef2f2;
+        color: #b91c1c;
+        border: 1px solid rgba(185, 28, 28, 0.2);
+    }
+
+    .status-other {
+        background: var(--primary-light);
+        color: var(--primary);
+        border: 1px solid rgba(26, 118, 209, 0.2);
+    }
+
+    .action-btns {
+        display: flex;
+        gap: 16px;
+        justify-content: flex-start;
+        border-top: 1px solid var(--input-border);
+        padding-top: 32px;
+        margin-top: 20px;
+    }
+
+    .btn-action {
+        border-radius: 14px;
+        padding: 14px 32px;
+        font-size: 15px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all .25s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-family: inherit;
+    }
+
+    .btn-edit {
+        background: var(--primary-gradient);
+        color: #fff;
+        border: none;
+        box-shadow: 0 10px 20px -5px rgba(26, 118, 209, 0.4);
+    }
+
+        .btn-edit:hover {
+            background: var(--primary-dark);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px -5px rgba(26, 118, 209, 0.5);
+            color: #fff;
+        }
+
+    .btn-back {
+        background: var(--card-bg);
+        color: var(--primary);
+        border: 1px solid var(--input-border);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+        .btn-back:hover {
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+    @@media (max-width: 768px) {
+        .page-container {
+            padding: 24px 16px;
+        }
+
+        .page-header, .details-wrapper {
+            padding: 24px;
+        }
+
+        .info-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .action-btns {
+            flex-direction: column;
+        }
+
+        .btn-action {
+            justify-content: center;
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="page-container">
+    <div class="page-header">
+        <div class="header-text">
+            <h2><i class="bi bi-file-earmark-medical" style="color: var(--primary);"></i> Appointment Details</h2>
+            <p>Detailed review of the patient's clinical session and logs</p>
+        </div>
+    </div>
+
+    <div class="details-wrapper">
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">
+                    <i class="bi bi-clock"></i> @Html.DisplayNameFor(m => m.Visit_Date)
+                </div>
+                <div class="info-value text-primary">
+                    @Html.DisplayFor(m => m.Visit_Date)
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">
+                    <i class="bi bi-info-circle"></i> @Html.DisplayNameFor(m => m.Status)
+                </div>
+                <div class="info-value">
+                    @if (Model?.Status == "Available")
+                    {
+                        <span class="status-badge status-available">
+                            <i class="bi bi-check-circle-fill"></i> Available
+                        </span>
+                    }
+                    else if (Model?.Status == "Booked")
+                    {
+                        <span class="status-badge status-booked">
+                            <i class="bi bi-bookmark-fill"></i> Booked
+                        </span>
+                    }
+                    else if (Model?.Status == "Cancelled")
+                    {
+                        <span class="status-badge status-cancelled">
+                            <i class="bi bi-x-circle-fill"></i> Cancelled
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="status-badge status-other">
+                            @Html.DisplayFor(m => m.Status)
+                        </span>
+                    }
+                </div>
+            </div>
+
+            <div class="info-item full-width">
+                <div class="info-label">
+                    <i class="bi bi-question-circle"></i> Reason
+                </div>
+                <div class="info-value">
+                    @(string.IsNullOrEmpty(Model?.Reason) ? "N/A" : Model.Reason)
+                </div>
+            </div>
+
+            <div class="info-item full-width">
+                <div class="info-label">
+                    <i class="bi bi-heart-pulse"></i> Diagnosis
+                </div>
+                <div class="info-value">
+                    @(string.IsNullOrEmpty(Model?.Diagnosis) ? "Pending Clinical Check" : Model.Diagnosis)
+                </div>
+            </div>
+
+            <div class="info-item">
+                <div class="info-label">
+                    <i class="bi bi-capsule"></i> Medication
+                </div>
+                <div class="info-value">
+                    @(string.IsNullOrEmpty(Model?.Medication) ? "None" : Model.Medication)
+                </div>
+            </div>
+
+            <div class="info-item">
+                <div class="info-label">
+                    <i class="bi bi-clipboard-check"></i> Common Tests
+                </div>
+                <div class="info-value">
+                    @(string.IsNullOrEmpty(Model?.Common_tests) ? "None Required" : Model.Common_tests)
+                </div>
+            </div>
+
+            <div class="info-item full-width">
+                <div class="info-label">
+                    <i class="bi bi-journal-medical"></i> Treatment Plan
+                </div>
+                <div class="info-value">
+                    @(string.IsNullOrEmpty(Model?.Treatment_Plan) ? "None" : Model.Treatment_Plan)
+                </div>
+            </div>
+
+            <div class="info-item full-width">
+                <div class="info-label">
+                    <i class="bi bi-file-earmark-text"></i> Notes
+                </div>
+                <div class="info-value">
+                    @(string.IsNullOrEmpty(Model?.Notes) ? "-" : Model.Notes)
+                </div>
+            </div>
+        </div>
+
+        <div class="action-btns">
+            <a asp-action="Edit" asp-route-id="@Model?.AppointmentId" class="btn-action btn-edit">
+                <i class="bi bi-pencil-square"></i> Edit Appointment
+            </a>
+            <a asp-action="Index" class="btn-action btn-back">
+                <i class="bi bi-arrow-left"></i> Back to List
+            </a>
+        </div>
+    </div>
 </div>

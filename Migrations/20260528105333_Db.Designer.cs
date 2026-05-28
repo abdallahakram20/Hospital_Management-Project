@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Hospital_Management_Project.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260513092426_Db")]
+    [Migration("20260528105333_Db")]
     partial class Db
     {
         /// <inheritdoc />
@@ -208,6 +208,9 @@ namespace Hospital_Management_Project.Migrations
                         .IsRequired()
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("ImagePath")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Lname")
                         .IsRequired()

@@ -55,6 +55,7 @@ namespace Hospital_Management_Project.Migrations
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Fname = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
                     Lname = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    ImagePath = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DepartmentId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>

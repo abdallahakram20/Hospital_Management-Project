@@ -1,113 +1,418 @@
 ﻿@model Hospital_Management_Project.Models.Patient_Medical_Profile
-
 @{
     ViewData["Title"] = "Create Medical Profile";
 }
 
-<div class="container mt-4">
-    <div class="mb-3">
-        <a asp-action="Index" class="btn btn-sm btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> Back to Record Directory
-        </a>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<style>
+    :root {
+        --primary: #1A76D1;
+        --primary-dk: #1560ad;
+        --dark: #2C2D3F;
+        --muted: #888;
+        --light-bg: #f9f9f9;
+        --white: #fff;
+        --danger: #e74c3c;
+        --shadow: 0 4px 15px rgba(0,0,0,.07);
+        --radius: 6px;
+        --tr: all .3s ease
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box
+    }
+
+    body {
+        font-family: 'Poppins',sans-serif;
+        font-size: 14px;
+        color: var(--muted)
+    }
+
+    .mp-page {
+        padding: 40px 30px;
+        max-width: 860px;
+        margin: 0 auto
+    }
+
+    .mp-breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        margin-bottom: 20px
+    }
+
+        .mp-breadcrumb a {
+            color: var(--primary);
+            text-decoration: none
+        }
+
+            .mp-breadcrumb a:hover {
+                text-decoration: underline
+            }
+
+        .mp-breadcrumb i {
+            font-size: 10px;
+            color: var(--muted)
+        }
+
+    .mp-page-header {
+        background: var(--white);
+        border-radius: var(--radius);
+        padding: 28px 36px;
+        margin-bottom: 28px;
+        box-shadow: var(--shadow);
+        border-left: 4px solid var(--primary)
+    }
+
+        .mp-page-header h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 4px
+        }
+
+            .mp-page-header h2 i {
+                color: var(--primary)
+            }
+
+        .mp-page-header p {
+            font-size: 13px
+        }
+
+    .mp-card {
+        background: var(--white);
+        border-radius: var(--radius);
+        padding: 36px;
+        box-shadow: var(--shadow)
+    }
+
+    .mp-form-grid {
+        display: grid;
+        grid-template-columns: repeat(2,1fr);
+        gap: 22px;
+        margin-bottom: 32px
+    }
+
+    .mp-form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px
+    }
+
+        .mp-form-group.full {
+            grid-column: span 2
+        }
+
+    .mp-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--dark);
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        display: flex;
+        align-items: center;
+        gap: 7px
+    }
+
+        .mp-label i {
+            color: var(--primary);
+            font-size: 13px
+        }
+
+    .mp-input, .mp-select, .mp-textarea {
+        border: 1px solid #e0e0e0;
+        border-radius: var(--radius);
+        padding: 0 16px;
+        font-size: 14px;
+        font-family: 'Poppins',sans-serif;
+        color: var(--dark);
+        background: var(--white);
+        transition: var(--tr);
+        width: 100%
+    }
+
+    .mp-input, .mp-select {
+        height: 46px
+    }
+
+    .mp-textarea {
+        padding: 12px 16px;
+        min-height: 90px;
+        resize: vertical
+    }
+
+        .mp-input:focus, .mp-select:focus, .mp-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(26,118,209,.1)
+        }
+
+    .mp-select {
+        cursor: pointer
+    }
+
+    .mp-input-group {
+        display: flex
+    }
+
+        .mp-input-group .mp-input {
+            border-radius: var(--radius) 0 0 var(--radius)
+        }
+
+    .mp-addon {
+        background: #f0f0f0;
+        border: 1px solid #e0e0e0;
+        border-left: none;
+        border-radius: 0 var(--radius) var(--radius) 0;
+        padding: 0 14px;
+        display: flex;
+        align-items: center;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--muted);
+        white-space: nowrap
+    }
+
+    .mp-switch-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        height: 46px;
+        padding: 0 4px
+    }
+
+    .mp-switch {
+        position: relative;
+        width: 44px;
+        height: 24px;
+        flex-shrink: 0
+    }
+
+        .mp-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+            position: absolute
+        }
+
+    .mp-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: #ccc;
+        border-radius: 24px;
+        transition: .3s
+    }
+
+        .mp-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background: #fff;
+            border-radius: 50%;
+            transition: .3s
+        }
+
+    input:checked + .mp-slider {
+        background: var(--primary)
+    }
+
+        input:checked + .mp-slider:before {
+            transform: translateX(20px)
+        }
+
+    .mp-switch-label {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--dark)
+    }
+
+    .mp-field-error {
+        color: var(--danger);
+        font-size: 12px;
+        font-weight: 500
+    }
+
+    .mp-divider {
+        border: none;
+        border-top: 1px solid #f0f0f0;
+        margin-bottom: 28px
+    }
+
+    .mp-form-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap
+    }
+
+    .mp-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 12px 28px;
+        border-radius: var(--radius);
+        font-size: 14px;
+        font-weight: 600;
+        font-family: 'Poppins',sans-serif;
+        cursor: pointer;
+        text-decoration: none;
+        border: none;
+        transition: var(--tr);
+        white-space: nowrap
+    }
+
+    .mp-btn-primary {
+        background: var(--primary);
+        color: #fff
+    }
+
+        .mp-btn-primary:hover {
+            background: var(--primary-dk);
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(26,118,209,.3)
+        }
+
+    .mp-btn-secondary {
+        background: var(--light-bg);
+        color: var(--dark);
+        border: 1px solid #e0e0e0
+    }
+
+        .mp-btn-secondary:hover {
+            background: #eee;
+            color: var(--dark)
+        }
+
+    @@media(max-width:768px) {
+        .mp-page {
+            padding: 20px 16px
+        }
+
+        .mp-card {
+            padding: 22px
+        }
+
+        .mp-form-grid {
+            grid-template-columns: 1fr
+        }
+
+        .mp-form-group.full {
+            grid-column: span 1
+        }
+
+        .mp-form-actions {
+            flex-direction: column
+        }
+
+        .mp-btn {
+            justify-content: center
+        }
+    }
+</style>
+
+<div class="mp-page">
+    <div class="mp-breadcrumb">
+        <a asp-controller="Home" asp-action="Index"><i class="fas fa-home"></i> Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a asp-action="Index">Medical Profiles</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Create</span>
     </div>
-
-    <div class="card shadow-sm border-0 mx-auto" style="max-width: 750px;">
-        <div class="card-header bg-primary text-white p-3">
-            <h4 class="mb-0"><i class="bi bi-file-earmark-medical-fill"></i> Create New Patient Medical Profile</h4>
-            <small class="text-white-50">Register baseline physiological metrics, vitals, and chronic diagnostic parameters</small>
-        </div>
-
-        <div class="card-body p-4">
-            <form asp-action="Create">
-                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-
-                <div class="row g-3">
-                    <div class="col-md-12">
-                        <div class="form-group">
-                            <label asp-for="PatientId" class="form-label fw-bold"><i class="bi bi-person-fill"></i> Select Patient</label>
-                            <select asp-for="PatientId" class="form-select border-primary" asp-items="ViewBag.PatientId">
-                                <option value="">-- Select Patient --</option>
-                            </select>
-                            <span asp-validation-for="PatientId" class="text-danger small"></span>
-                        </div>
+    <div class="mp-page-header">
+        <h2><i class="fas fa-file-medical"></i> Create Medical Profile</h2>
+        <p>Register baseline physiological metrics, vitals, and chronic diagnostic parameters</p>
+    </div>
+    <div class="mp-card">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="mp-field-error" style="margin-bottom:18px;"></div>
+            <div class="mp-form-grid">
+                <div class="mp-form-group full">
+                    <label class="mp-label"><i class="fas fa-user"></i> Select Patient</label>
+                    <select asp-for="PatientId" class="mp-select" asp-items="ViewBag.PatientId">
+                        <option value="">-- Select Patient --</option>
+                    </select>
+                    <span asp-validation-for="PatientId" class="mp-field-error"></span>
+                </div>
+                <div class="mp-form-group">
+                    <label class="mp-label"><i class="fas fa-tint"></i> Blood Type</label>
+                    <select asp-for="Blood_Type" class="mp-select">
+                        <option value="">Select Blood Type...</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                    </select>
+                    <span asp-validation-for="Blood_Type" class="mp-field-error"></span>
+                </div>
+                <div class="mp-form-group">
+                    <label class="mp-label"><i class="fas fa-weight"></i> Patient Weight</label>
+                    <div class="mp-input-group">
+                        <input asp-for="Weight" class="mp-input" type="number" step="0.1" placeholder="e.g. 70.0" />
+                        <span class="mp-addon">kg</span>
                     </div>
-
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label asp-for="Blood_Type" class="form-label fw-bold"><i class="bi bi-droplet-fill text-danger"></i> Blood Type</label>
-                            <select asp-for="Blood_Type" class="form-select">
-                                <option value="">Select Blood Type...</option>
-                                <option value="A+">A+</option>
-                                <option value="A-">A-</option>
-                                <option value="B+">B+</option>
-                                <option value="B-">B-</option>
-                                <option value="O+">O+</option>
-                                <option value="O-">O-</option>
-                                <option value="AB+">AB+</option>
-                                <option value="AB-">AB-</option>
-                            </select>
-                            <span asp-validation-for="Blood_Type" class="text-danger small"></span>
-                        </div>
+                    <span asp-validation-for="Weight" class="mp-field-error"></span>
+                </div>
+                <div class="mp-form-group">
+                    <label class="mp-label"><i class="fas fa-heartbeat"></i> Blood Pressure</label>
+                    <div class="mp-switch-row">
+                        <label class="mp-switch">
+                            <input asp-for="Blood_Pressure" type="checkbox" />
+                            <span class="mp-slider"></span>
+                        </label>
+                        <span class="mp-switch-label">Abnormal Blood Pressure?</span>
                     </div>
-
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label asp-for="Weight" class="form-label fw-bold"><i class="bi bi-speedometer2"></i> Patient Weight</label>
-                            <div class="input-group">
-                                <input asp-for="Weight" class="form-control" type="number" step="0.1" placeholder="e.g. 70.0" />
-                                <span class="input-group-text">kg</span>
-                            </div>
-                            <span asp-validation-for="Weight" class="text-danger small"></span>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label asp-for="Blood_Pressure" class="form-label fw-bold"><i class="bi bi-heart-pulse-fill text-warning"></i> Blood Pressure</label>
-                            <input asp-for="Blood_Pressure" class="form-control" placeholder="e.g. 120/80 mmHg" />
-                            <span asp-validation-for="Blood_Pressure" class="text-danger small"></span>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6 d-flex align-items-end">
-                        <div class="form-check form-switch p-3 border rounded w-100 bg-light" style="padding-left: 3.5rem !important;">
-                            <input class="form-check-input" type="checkbox" asp-for="Diabets" id="diabetsSwitch" />
-                            <label class="form-check-label fw-bold text-dark" for="diabetsSwitch">
-                                <i class="bi bi-capsule-hormone text-primary"></i> Is Diabetic? (Diabetes Mellitus (DM) )
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="col-md-12">
-                        <div class="form-group">
-                            <label asp-for="Chronic_Disease" class="form-label fw-bold"><i class="bi bi-activity"></i> Chronic Illnesses & Medical Conditions</label>
-                            <textarea asp-for="Chronic_Disease" class="form-control" rows="2" placeholder="List chronic conditions (e.g. Asthma, Hypertension) or write 'None'"></textarea>
-                            <span asp-validation-for="Chronic_Disease" class="text-danger small"></span>
-                        </div>
-                    </div>
-
-                    <div class="col-md-12">
-                        <div class="form-group">
-                            <label asp-for="Allergies" class="form-label fw-bold"><i class="bi bi-exclamation-triangle-fill text-danger"></i> Environmental or Drug Allergies</label>
-                            <textarea asp-for="Allergies" class="form-control" rows="2" placeholder="List known allergies (e.g. Penicillin, Peanuts) or write 'None'"></textarea>
-                            <span asp-validation-for="Allergies" class="text-danger small"></span>
-                        </div>
+                    <span asp-validation-for="Blood_Pressure" class="mp-field-error"></span>
+                </div>
+                <div class="mp-form-group">
+                    <label class="mp-label"><i class="fas fa-pills"></i> Diabetes Status</label>
+                    <div class="mp-switch-row">
+                        <label class="mp-switch">
+                            <input asp-for="Diabets" type="checkbox" />
+                            <span class="mp-slider"></span>
+                        </label>
+                        <span class="mp-switch-label">Is Diabetic?</span>
                     </div>
                 </div>
-
-                <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
-                    <a asp-action="Index" class="btn btn-light border">Cancel</a>
-                    <button type="submit" class="btn btn-primary px-4">
-                        <i class="bi bi-plus-circle"></i> Create Medical Profile
-                    </button>
+                <div class="mp-form-group full">
+                    <label class="mp-label"><i class="fas fa-procedures"></i> Chronic Illnesses &amp; Medical Conditions</label>
+                    <textarea asp-for="Chronic_Disease" class="mp-textarea" placeholder="List chronic conditions (e.g. Asthma, Hypertension) or write 'None'"></textarea>
+                    <span asp-validation-for="Chronic_Disease" class="mp-field-error"></span>
                 </div>
-            </form>
-        </div>
+                <div class="mp-form-group full">
+                    <label class="mp-label"><i class="fas fa-exclamation-triangle"></i> Environmental or Drug Allergies</label>
+                    <textarea asp-for="Allergies" class="mp-textarea" placeholder="List known allergies (e.g. Penicillin, Peanuts) or write 'None'"></textarea>
+                    <span asp-validation-for="Allergies" class="mp-field-error"></span>
+                </div>
+            </div>
+            <hr class="mp-divider" />
+            <div class="mp-form-actions">
+                <button type="submit" class="mp-btn mp-btn-primary"><i class="fas fa-plus-circle"></i> Create Medical Profile</button>
+                <a asp-action="Index" class="mp-btn mp-btn-secondary"><i class="fas fa-arrow-left"></i> Back to List</a>
+            </div>
+        </form>
     </div>
 </div>
-
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
 }

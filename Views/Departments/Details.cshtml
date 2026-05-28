@@ -1,30 +1,222 @@
 ﻿@model Hospital_Management_Project.Models.Department
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Department Details";
+    Layout = null;
 }
 
-<h1>Details</h1>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-<div>
-    <h4>Department</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.DeptName)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.DeptName)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.DeptFloor)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.DeptFloor)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.DepartmentId">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+<style>
+    :root {
+        --primary: #2563eb;
+        --dark: #1e293b;
+        --muted: #64748b;
+        --body-bg: #f1f5f9;
+        --light-bg: #f8fafc;
+        --white: #ffffff;
+        --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        --radius: 8px;
+        --tr: all 0.3s ease;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        font-size: 14px;
+        color: var(--muted);
+        background-color: var(--body-bg);
+    }
+
+    .mp-page {
+        padding: 40px 30px;
+        max-width: 1280px;
+        margin: 0 auto;
+    }
+
+    .mp-page-header {
+        background: linear-gradient(to right, var(--white), var(--light-bg));
+        border-radius: var(--radius);
+        padding: 28px 36px;
+        margin-bottom: 28px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: var(--shadow);
+        border-left: 5px solid var(--primary);
+    }
+
+        .mp-page-header .ph-left h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 6px;
+        }
+
+            .mp-page-header .ph-left h2 i {
+                color: var(--primary);
+                background: #eff6ff;
+                padding: 10px;
+                border-radius: 8px;
+                font-size: 18px;
+            }
+
+        .mp-page-header .ph-left p {
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+    .mp-breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13.5px;
+        margin-bottom: 20px;
+        font-weight: 500;
+    }
+
+        .mp-breadcrumb a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+    .mp-card {
+        background: var(--white);
+        border-radius: var(--radius);
+        padding: 30px;
+        box-shadow: var(--shadow);
+        margin-bottom: 24px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .mp-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 22px;
+        border-radius: var(--radius);
+        font-size: 13.5px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        border: none;
+        transition: var(--tr);
+    }
+
+    .mp-btn-warning {
+        background: #fffbeb;
+        color: #d97706;
+        border: 1px solid #fde68a;
+    }
+
+        .mp-btn-warning:hover {
+            background: #f59e0b;
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+    .mp-btn-secondary {
+        background: #f1f5f9;
+        color: var(--dark);
+        border: 1px solid #cbd5e1;
+    }
+
+        .mp-btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+    /* تصميم عرض التفاصيل */
+    .mp-detail-row {
+        display: flex;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 18px 0;
+        align-items: center;
+    }
+
+        .mp-detail-row:last-child {
+            border-bottom: none;
+        }
+
+    .mp-detail-label {
+        width: 160px;
+        font-weight: 600;
+        color: var(--dark);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .mp-detail-value {
+        flex: 1;
+        color: var(--dark);
+        font-size: 15px;
+        font-weight: 500;
+    }
+
+    .mp-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 14px;
+        border-radius: 50px;
+        font-size: 13px;
+        font-weight: 600;
+        background: #dbeafe;
+        color: #1e40af;
+        border: 1px solid #bfdbfe;
+    }
+</style>
+
+<div class="mp-page">
+    <div class="mp-breadcrumb">
+        <a asp-controller="Home" asp-action="Index"><i class="fas fa-home"></i> Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a asp-action="Index">Departments</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Details</span>
+    </div>
+
+    <div class="mp-page-header">
+        <div class="ph-left">
+            <h2><i class="fas fa-info-circle"></i> Department Details</h2>
+            <p>View complete details of this department</p>
+        </div>
+        <a asp-action="Index" class="mp-btn mp-btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to List
+        </a>
+    </div>
+
+    <div class="mp-card" style="max-width: 600px; margin: 0 auto;">
+
+        <div class="mp-detail-row">
+            <div class="mp-detail-label"><i class="fas fa-tag" style="color:var(--muted)"></i> Name</div>
+            <div class="mp-detail-value">@Html.DisplayFor(model => model.DeptName)</div>
+        </div>
+
+        <div class="mp-detail-row">
+            <div class="mp-detail-label"><i class="fas fa-layer-group" style="color:var(--muted)"></i> Floor</div>
+            <div class="mp-detail-value">
+                <span class="mp-badge">
+                    @Html.DisplayFor(model => model.DeptFloor) Floor
+                </span>
+            </div>
+        </div>
+
+        @if (User.IsInRole("Admin"))
+        {
+            <div style="margin-top: 32px; display: flex; gap: 12px;">
+                <a asp-action="Edit" asp-route-id="@Model?.DepartmentId" class="mp-btn mp-btn-warning" style="flex: 1; justify-content: center; height: 46px;">
+                    <i class="fas fa-edit"></i> Edit Department
+                </a>
+            </div>
+        }
+    </div>
 </div>

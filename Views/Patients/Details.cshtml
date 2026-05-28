@@ -1,54 +1,103 @@
 ﻿@model Hospital_Management_Project.Models.Patient
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Patient Details";
+    Layout = null;
 }
 
-<h1>Details</h1>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-<div>
-    <h4>Patient</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.FName)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.FName)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.LName)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.LName)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Address)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Address)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Phone)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Phone)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Gender)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Gender)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.user_name)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.user_name)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.PatientId">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+<style>
+    :root {
+        --primary: #2563eb;
+        --dark: #1e293b;
+        --muted: #64748b;
+        --body-bg: #f1f5f9;
+        --white: #ffffff;
+        --light-bg: #f8fafc;
+        --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        --radius: 8px;
+    }
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: var(--body-bg);
+        color: var(--dark);
+        margin: 0; padding: 0;
+    }
+
+    .mp-page { padding: 40px 30px; max-width: 800px; margin: 0 auto; }
+    .mp-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 20px; }
+    .mp-breadcrumb a { color: var(--primary); text-decoration: none; }
+
+    .mp-card { background: var(--white); border-radius: var(--radius); padding: 36px; box-shadow: var(--shadow); position: relative; }
+    
+    .mp-profile-header { display: flex; align-items: center; gap: 20px; padding-bottom: 24px; border-bottom: 1px solid #e2e8f0; margin-bottom: 24px; }
+    .mp-avatar { width: 70px; height: 70px; background: #eff6ff; color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+    
+    .mp-profile-title h3 { font-size: 22px; font-weight: 700; color: var(--dark); margin: 0; }
+    .mp-profile-title p { font-size: 13px; color: var(--muted); margin: 4px 0 0 0; }
+
+    .mp-details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    @@media (max-width: 500px) { .mp-details-grid { grid-template-columns: 1fr; } }
+
+    .mp-detail-item { display: flex; flex-direction: column; gap: 4px; background: var(--light-bg); padding: 14px 18px; border-radius: var(--radius); border: 1px solid #sube8f0; }
+    .mp-detail-label { font-size: 12px; text-transform: uppercase; color: var(--muted); font-weight: 600; letter-spacing: .5px; }
+    .mp-detail-value { font-size: 15px; color: var(--dark); font-weight: 500; }
+
+    .mp-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0; }
+    
+    .mp-btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: var(--radius); font-size: 13.5px; font-weight: 600; text-decoration: none; transition: all .3s; }
+    .mp-btn-secondary { background: #e2e8f0; color: var(--dark); }
+    .mp-btn-warning { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
+</style>
+
+<div class="mp-page">
+    <div class="mp-breadcrumb">
+        <a asp-action="Index"><i class="fas fa-procedures"></i> Patients</a>
+        <i class="fas fa-chevron-right"></i>
+        <span>Details</span>
+    </div>
+
+    <div class="mp-card">
+        <div class="mp-profile-header">
+            <div class="mp-avatar">
+                <i class="fas fa-user-injured"></i>
+            </div>
+            <div class="mp-profile-title">
+                <h3>@Model.FName @Model.LName</h3>
+                  </div>
+        </div>
+
+        <div class="mp-details-grid">
+            <div class="mp-detail-item">
+                <span class="mp-detail-label">First Name</span>
+                <span class="mp-detail-value">@Model.FName</span>
+            </div>
+            <div class="mp-detail-item">
+                <span class="mp-detail-label">Last Name</span>
+                <span class="mp-detail-value">@Model.LName</span>
+            </div>
+            <div class="mp-detail-item">
+                <span class="mp-detail-label">Gender</span>
+                <span class="mp-detail-value"><i class="fas @(Model.Gender == "Male" ? "fa-mars" : "fa-venus")"></i> @Model.Gender</span>
+            </div>
+            <div class="mp-detail-item">
+                <span class="mp-detail-label">Phone</span>
+                <span class="mp-detail-value">@Model.Phone</span>
+            </div>
+            <div class="mp-detail-item" style="grid-column: span 2;">
+                <span class="mp-detail-label">Address</span>
+                <span class="mp-detail-value">@Model.Address</span>
+            </div>
+        </div>
+
+        <div class="mp-actions">
+            <a asp-action="Index" class="mp-btn mp-btn-secondary">Back to List</a>
+            <a asp-action="Edit" asp-route-id="@Model.PatientId" class="mp-btn mp-btn-warning">
+                <i class="fas fa-edit"></i> Edit Profile
+            </a>
+        </div>
+    </div>
 </div>

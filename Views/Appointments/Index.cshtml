@@ -1,118 +1,433 @@
 ﻿@model IEnumerable<Hospital_Management_Project.Models.Appointment>
-
 @{
     ViewData["Title"] = "Appointments Directory";
+    bool isPatient = User.IsInRole("Patient");
 }
 
-<div class="container-fluid mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4 bg-light p-3 rounded shadow-sm">
-        <div>
-            <h2 class="text-primary mb-0"><i class="bi bi-calendar-check-fill"></i> Appointments Management</h2>
-            <small class="text-muted">View, track, and manage all patient clinical sessions and time slots</small>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+    :root {
+        --primary: #1A76D1;
+        --primary-dark: #145db3;
+        --primary-light: #e8f2fc;
+        --primary-gradient: linear-gradient(135deg, #1A76D1, #3b92ec);
+        --bg-page: #f4f8fc;
+        --card-bg: #ffffff;
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+        --input-border: #cbd5e1;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --card-shadow: 0 10px 25px -5px rgba(26, 118, 209, 0.08), 0 4px 6px -2px rgba(0,0,0,0.02);
+    }
+
+    body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background-color: var(--bg-page);
+        color: var(--text-main);
+    }
+
+    .mp-page {
+        padding: 40px 20px;
+        max-width: 1300px;
+        margin: 0 auto;
+    }
+
+    /* Header Section */
+    .mp-page-header {
+        background: var(--card-bg);
+        border-radius: 24px;
+        padding: 30px 40px;
+        margin-bottom: 32px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: var(--card-shadow);
+        flex-wrap: wrap;
+        gap: 20px;
+        border-left: 6px solid var(--primary);
+    }
+
+    .ph-left h2 {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text-main);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .ph-left p {
+        color: var(--text-muted);
+        font-size: 14px;
+        margin: 5px 0 0 0;
+    }
+
+    .btn-create {
+        background: var(--primary-gradient);
+        color: #fff;
+        border: none;
+        border-radius: 14px;
+        padding: 14px 28px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all .25s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 10px 20px -5px rgba(26, 118, 209, 0.4);
+    }
+
+        .btn-create:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            color: #fff;
+        }
+
+    .mp-card {
+        background: var(--card-bg);
+        border-radius: 24px;
+        padding: 30px;
+        box-shadow: var(--card-shadow);
+        border: 1px solid rgba(26, 118, 209, 0.08);
+    }
+
+    /* Badges Modernization */
+    .badge-modern {
+        padding: 6px 14px;
+        border-radius: 50px;
+        font-size: 13px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .bg-light-success {
+        background: #ecfdf5;
+        color: var(--success);
+        border: 1px solid #d1fae5;
+    }
+
+    .bg-light-warning {
+        background: #fffbeb;
+        color: var(--warning);
+        border: 1px solid #fde68a;
+    }
+
+    .bg-light-danger {
+        background: #fef2f2;
+        color: var(--danger);
+        border: 1px solid #fecaca;
+    }
+
+    .bg-light-secondary {
+        background: #f1f5f9;
+        color: var(--text-muted);
+        border: 1px solid #e2e8f0;
+    }
+
+    /* Table Design for Admin */
+    .mp-table-wrap {
+        overflow-x: auto;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .mp-table {
+        width: 100%;
+        border-collapse: collapse;
+        white-space: nowrap;
+    }
+
+        .mp-table thead th {
+            background: #f8fafc;
+            color: var(--text-main);
+            padding: 16px 20px;
+            font-weight: 700;
+            font-size: 14px;
+            text-align: left;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .mp-table td {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 14px;
+        }
+
+    /* Actions Buttons */
+    .mp-actions {
+        display: flex;
+        gap: 6px;
+    }
+
+    .mp-btn {
+        padding: 8px 14px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s;
+        text-decoration: none;
+        border: 1px solid transparent;
+    }
+
+    .mp-btn-info {
+        background: var(--primary-light);
+        color: var(--primary);
+    }
+
+        .mp-btn-info:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+    .mp-btn-warning {
+        background: #fffbeb;
+        color: #d97706;
+        border-color: #fde68a;
+    }
+
+        .mp-btn-warning:hover {
+            background: #f59e0b;
+            color: white;
+        }
+
+    .mp-btn-danger {
+        background: #fef2f2;
+        color: var(--danger);
+        border-color: #fecaca;
+    }
+
+        .mp-btn-danger:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+    /* Patient Cards Grid Mode */
+    .appointments-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 24px;
+    }
+
+    .appointment-card {
+        background: var(--card-bg);
+        border-radius: 20px;
+        padding: 24px;
+        border: 1px solid rgba(26, 118, 209, 0.08);
+        box-shadow: var(--card-shadow);
+        position: relative;
+        transition: transform 0.2s;
+    }
+
+        .appointment-card:hover {
+            transform: translateY(-3px);
+        }
+
+    .card-date-box {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+        .card-date-box i {
+            font-size: 20px;
+            color: var(--primary);
+            background: var(--primary-light);
+            padding: 10px;
+            border-radius: 12px;
+        }
+
+    .card-detail-line {
+        font-size: 14px;
+        margin-bottom: 10px;
+        color: var(--text-muted);
+    }
+
+        .card-detail-line strong {
+            color: var(--text-main);
+        }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+        .empty-state i {
+            font-size: 54px;
+            color: var(--text-muted);
+            opacity: 0.4;
+            margin-bottom: 15px;
+        }
+</style>
+
+<div class="mp-page">
+    <div class="mp-page-header">
+        <div class="ph-left">
+            <h2><i class="bi bi-calendar-check-fill" style="color: var(--primary);"></i> Appointments Directory</h2>
+            <p>@(isPatient ? "Track and manage your clinical booking sessions" : "View and manage all patient clinical sessions and time slots")</p>
         </div>
-        <a asp-action="Create" class="btn btn-primary shadow-sm">
-            <i class="bi bi-calendar-plus"></i> Create New Appointment Slot
-        </a>
+        @if (!isPatient)
+        {
+            <a asp-action="Create" class="btn-create">
+                <i class="bi bi-plus-circle-fill"></i> New Appointment
+            </a>
+        }
     </div>
 
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover table-striped mb-0 align-middle">
-                    <thead class="table-dark">
-                        <tr>
-                            <th><i class="bi bi-clock"></i> Visit Date & Time</th>
-                            <th><i class="bi bi-info-circle"></i> Status</th>
-                            <th><i class="bi bi-question-circle"></i> Reason</th>
-                            <th><i class="bi bi-heart-pulse"></i> Diagnosis</th>
-                            <th><i class="bi bi-capsule"></i> Medication</th>
-                            <th><i class="bi bi-journal-medical"></i> Treatment Plan</th>
-                            <th><i class="bi bi-file-earmark-text"></i> Notes</th>
-                            <th><i class="bi bi-clipboard-check"></i> Common Tests</th>
-                            <th class="text-center" style="min-width: 220px;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (!Model.Any())
-                        {
+    @if (!Model.Any())
+    {
+        <div class="mp-card">
+            <div class="empty-state">
+                <i class="bi bi-calendar-x-fill"></i>
+                <h4>No Appointments Found</h4>
+                <p style="color: var(--text-muted);">There are no scheduled sessions at the moment.</p>
+            </div>
+        </div>
+    }
+    else
+    {
+        @if (isPatient)
+        {
+            <div class="appointments-grid">
+                @foreach (var item in Model)
+                {
+                    <div class="appointment-card">
+                        <div class="card-date-box">
+                            <i class="bi bi-clock-history"></i>
+                            <div>
+                                <div style="font-weight: 700; font-size: 16px;">@item.Visit_Date.ToString("dd MMMM yyyy")</div>
+                                <div style="font-size: 13px; color: var(--text-muted);">@item.Visit_Date.ToString("hh:mm tt")</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 16px;">
+                            @if (item.Status == "Available")
+                            {
+                                <span class="badge-modern bg-light-success"><i class="bi bi-check-circle-fill"></i> Available</span>
+                            }
+                            else if (item.Status == "Booked")
+                            {
+                                <span class="badge-modern bg-light-warning"><i class="bi bi-bookmark-dash-fill"></i> Booked</span>
+                            }
+                            else if (item.Status == "Cancelled")
+                            {
+                                <span class="badge-modern bg-light-danger"><i class="bi bi-x-circle-fill"></i> Cancelled</span>
+                            }
+                            else
+                            {
+                                <span class="badge-modern bg-light-secondary">@item.Status</span>
+                            }
+                        </div>
+
+                        <div class="card-detail-line">
+                            <i class="bi bi-chat-left-text-fill me-1"></i> Reason: <strong>@(string.IsNullOrEmpty(item.Reason) ? "N/A" : item.Reason)</strong>
+                        </div>
+                        <div class="card-detail-line">
+                            <i class="bi bi-heart-pulse-fill me-1"></i> Diagnosis: <strong style="color: var(--primary);">@(string.IsNullOrEmpty(item.Diagnosis) ? "Pending doctor review" : item.Diagnosis)</strong>
+                        </div>
+                        <div class="card-detail-line">
+                            <i class="bi bi-capsules me-1"></i> Medication: <strong>@(string.IsNullOrEmpty(item.Medication) ? "None" : item.Medication)</strong>
+                        </div>
+
+                        <hr style="border-top: 1px dashed var(--input-border); margin: 15px 0;" />
+
+                        <div class="mp-actions" style="justify-content: stretch;">
+                            <a asp-action="Details" asp-route-id="@item.AppointmentId" class="mp-btn mp-btn-info" style="flex: 1; justify-content: center;">
+                                <i class="bi bi-eye-fill"></i> View Full Details
+                            </a>
+
+                            @if (item.Status == "Booked")
+                            {
+                                <form asp-action="CancelAppointment" method="post" style="flex: 1; display:flex;">
+                                    <input type="hidden" name="id" value="@item.AppointmentId" />
+                                    <button type="submit" class="mp-btn mp-btn-danger" style="width: 100%; justify-content: center;"
+                                            onclick="return confirm('هل أنت متأكد من إلغاء هذا الموعد؟\n\nملاحظة: لا يمكن الإلغاء إذا بقى أقل من 24 ساعة على الموعد.');">
+                                        <i class="bi bi-x-square-fill"></i> Cancel
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="mp-card">
+                <div class="mp-table-wrap">
+                    <table class="mp-table">
+                        <thead>
                             <tr>
-                                <td colspan="9" class="text-center py-5 text-muted">
-                                    <i class="bi bi-folder-x display-4 block mb-2"></i>
-                                    <p class="mb-0 fw-bold">No appointment records found at the moment.</p>
-                                </td>
+                                <th><i class="bi bi-clock-fill"></i> Visit Date & Time</th>
+                                <th><i class="bi bi-info-circle-fill"></i> Status</th>
+                                <th><i class="bi bi-question-diamond-fill"></i> Reason</th>
+                                <th><i class="bi bi-heart-pulse-fill"></i> Diagnosis</th>
+                                <th><i class="bi bi-capsules-fill"></i> Medication</th>
+                                <th><i class="bi bi-journal-medical"></i> Treatment Plan</th>
+                                <th><i class="bi bi-vials"></i> Common Tests</th>
+                                <th style="text-align:center;"><i class="bi bi-sliders"></i> Actions</th>
                             </tr>
-                        }
-                        else
-                        {
+                        </thead>
+                        <tbody>
                             @foreach (var item in Model)
                             {
                                 <tr>
-                                    <td class="fw-bold text-secondary">
-                                        @Html.DisplayFor(modelItem => item.Visit_Date)
-                                    </td>
+                                    <td style="font-weight:600; color: var(--text-main);">@item.Visit_Date.ToString("yyyy-MM-dd hh:mm tt")</td>
                                     <td>
                                         @if (item.Status == "Available")
                                         {
-                                            <span class="badge bg-success px-2 py-1">
-                                                <i class="bi bi-check-circle"></i> Available
-                                            </span>
+                                            <span class="badge-modern bg-light-success"><i class="bi bi-check-circle-fill"></i> Available</span>
                                         }
                                         else if (item.Status == "Booked")
                                         {
-                                            <span class="badge bg-warning text-dark px-2 py-1">
-                                                <i class="bi bi-bookmark-dash"></i> Booked
-                                            </span>
+                                            <span class="badge-modern bg-light-warning"><i class="bi bi-bookmark-dash-fill"></i> Booked</span>
                                         }
                                         else if (item.Status == "Cancelled")
                                         {
-                                            <span class="badge bg-danger px-2 py-1">
-                                                <i class="bi bi-x-circle"></i> Cancelled
-                                            </span>
+                                            <span class="badge-modern bg-light-danger"><i class="bi bi-x-circle-fill"></i> Cancelled</span>
                                         }
                                         else
                                         {
-                                            <span class="badge bg-info text-dark px-2 py-1">
-                                                @item.Status
-                                            </span>
+                                            <span class="badge-modern bg-light-secondary">@item.Status</span>
                                         }
                                     </td>
-                                    <td class="text-truncate" style="max-width: 150px;">
-                                        @(string.IsNullOrEmpty(item.Reason) ? "N/A" : item.Reason)
-                                    </td>
-                                    <td class="text-truncate" style="max-width: 150px;">
-                                        @(string.IsNullOrEmpty(item.Diagnosis) ? "Pending Clinical Check" : item.Diagnosis)
-                                    </td>
-                                    <td class="text-truncate" style="max-width: 120px;">
-                                        @(string.IsNullOrEmpty(item.Medication) ? "None" : item.Medication)
-                                    </td>
-                                    <td class="text-truncate" style="max-width: 150px;">
-                                        @(string.IsNullOrEmpty(item.Treatment_Plan) ? "None" : item.Treatment_Plan)
-                                    </td>
-                                    <td class="text-truncate" style="max-width: 120px;">
-                                        @(string.IsNullOrEmpty(item.Notes) ? "-" : item.Notes)
-                                    </td>
+                                    <td>@(string.IsNullOrEmpty(item.Reason) ? "N/A" : item.Reason)</td>
+                                    <td><span style="font-weight: 500;">@(string.IsNullOrEmpty(item.Diagnosis) ? "Pending" : item.Diagnosis)</span></td>
+                                    <td>@(string.IsNullOrEmpty(item.Medication) ? "None" : item.Medication)</td>
+                                    <td>@(string.IsNullOrEmpty(item.Treatment_Plan) ? "None" : item.Treatment_Plan)</td>
+                                    <td>@(string.IsNullOrEmpty(item.Common_tests) ? "None" : item.Common_tests)</td>
                                     <td>
-                                        @(string.IsNullOrEmpty(item.Common_tests) ? "None Required" : item.Common_tests)
-                                    </td>
-                                    <td class="text-center">
-                                        <div class="btn-group gap-1">
-                                            <a asp-action="Edit" asp-route-id="@item.AppointmentId" class="btn btn-sm btn-outline-primary rounded">
-                                                <i class="bi bi-pencil-square"></i> Edit
+                                        <div class="mp-actions" style="justify-content: center;">
+                                            <a asp-action="Details" asp-route-id="@item.AppointmentId" class="mp-btn mp-btn-info" title="Details">
+                                                <i class="bi bi-eye-fill"></i>
                                             </a>
-                                            <a asp-action="Details" asp-route-id="@item.AppointmentId" class="btn btn-sm btn-outline-info rounded">
-                                                <i class="bi bi-eye"></i> Details
+                                            <a asp-action="Edit" asp-route-id="@item.AppointmentId" class="mp-btn mp-btn-warning" title="Edit">
+                                                <i class="bi bi-pencil-square"></i>
                                             </a>
-                                            <a asp-action="Delete" asp-route-id="@item.AppointmentId" class="btn btn-sm btn-outline-danger rounded">
-                                                <i class="bi bi-trash"></i> Delete
+                                            <a asp-action="Delete" asp-route-id="@item.AppointmentId" class="mp-btn mp-btn-danger" title="Delete"
+                                               onclick="return confirm('Are you sure you want to delete this appointment?');">
+                                                <i class="bi bi-trash-fill"></i>
                                             </a>
                                         </div>
                                     </td>
                                 </tr>
                             }
-                        }
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
-    </div>
+        }
+    }
 </div>

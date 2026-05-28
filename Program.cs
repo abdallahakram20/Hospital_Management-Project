@@ -47,6 +47,7 @@ namespace Hospital_Management_Project
             app.UseAuthentication();
             app.UseAuthorization();
 
+            // Routing Layouts
             app.MapControllerRoute(
                 name: "login",
                 pattern: "login",
@@ -64,18 +65,22 @@ namespace Hospital_Management_Project
                 {
                     var context = services.GetRequiredService<AppDbContext>();
 
-                    // Ensure database and schema exist before seeding
-                    context.Database.EnsureCreated();
+                    // التحديث الصح: تطبيق المايجريشنز تلقائياً بدون مسح البيانات مسبقاً
+                    context.Database.Migrate();
 
                     // Seed Department table if empty
                     if (!context.Department.Any())
                     {
-                        context.Department.Add(new Department { DeptName = "Administration" });
+                        context.Department.Add(new Department
+                        {
+                            DeptName = "Administration",
+                            DeptFloor = "Ground Floor"
+                        });
                         context.SaveChanges();
                     }
 
                     var adminEmail = "admin@hospital.com";
-                    var adminExists = context.Staff.Any(s => s.Email == adminEmail);
+                    var adminExists = context.Staff.Any(s => s.Email.ToLower() == adminEmail);
 
                     if (!adminExists)
                     {

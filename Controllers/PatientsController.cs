@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Hospital_Management_Project.Controllers
 {
-    [Authorize] // Enforce authentication for all actions unless specified otherwise
+    [Authorize]
     public class PatientsController : Controller
     {
         private readonly AppDbContext _context;
@@ -24,35 +24,50 @@ namespace Hospital_Management_Project.Controllers
 
         // GET: Patients
         // Security: Patients are strictly prohibited from viewing the list of other patients
-
         [Authorize(Roles = "Admin,Doctor,Receptionist,Nurse,Staff")]
-        public IActionResult Index(string searchString)
+        public async Task<IActionResult> Index(string searchString, int page = 1)
         {
+            // التأكد من أن رقم الصفحة لا يقل عن 1
+            if (page < 1) page = 1;
+
+            int pageSize = 20; // تحديد عدد الحالات في الصفحة الواحدة
             ViewData["CurrentFilter"] = searchString;
 
-            var patients = from p in _context.Patient select p;
+            var patientsQuery = from p in _context.Patient select p;
 
             if (!string.IsNullOrEmpty(searchString))
             {
-                patients = patients.Where(s => s.FName.Contains(searchString)
+                patientsQuery = patientsQuery.Where(s => s.FName.Contains(searchString)
                                             || s.LName.Contains(searchString)
                                             || s.PatientId.ToString() == searchString);
             }
 
-            return View(patients.ToList());
+            // 1. حساب إجمالي عدد المرضى بعد الفلترة
+            int totalPatients = await patientsQuery.CountAsync();
+
+            // 2. جلب بيانات الصفحة الحالية فقط باستخدام Skip و Take
+            var patients = await patientsQuery
+                .OrderBy(p => p.PatientId) // الترتيب مهم جداً لضمان دقة الـ Pagination
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            // 3. إرسال بيانات التحكم في الصفحات للـ View
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = (int)Math.Ceiling((double)totalPatients / pageSize);
+            ViewBag.HasPreviousPage = page > 1;
+            ViewBag.HasNextPage = page < ViewBag.TotalPages;
+
+            return View(patients);
         }
 
         // GET: Patients/Details
-        // Security: Medical staff can view any patient, but a patient can only view their own details
-
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
 
             var patient = await _context.Patient.FirstOrDefaultAsync(m => m.PatientId == id);
             if (patient == null) return NotFound();
-
-            // Security Check: If user is a Patient, ensure they only access their own record
 
             if (User.IsInRole("Patient"))
             {
@@ -66,13 +81,35 @@ namespace Hospital_Management_Project.Controllers
             return View(patient);
         }
 
-        // GET: Patients/Create
-        // Available for Anonymous access so new patients can register
+        // GET: Patients/PrintReport/5
+        // ميزة الطباعة: متاح للدكتور، الستاف، والمريض نفسه لطباعة تقريره الخاص
+        [Authorize(Roles = "Admin,Doctor,Receptionist,Nurse,Staff,Patient")]
+        public async Task<IActionResult> PrintReport(int? id)
+        {
+            if (id == null) return NotFound();
 
+            var patient = await _context.Patient.FirstOrDefaultAsync(m => m.PatientId == id);
+            if (patient == null) return NotFound();
+
+            // Security Check: التأكد من أن المريض لا يستطيع طباعة تقرير مريض آخر
+            if (User.IsInRole("Patient"))
+            {
+                var currentUser = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (patient.user_name != currentUser)
+                {
+                    return RedirectToAction("AccessDenied", "Account");
+                }
+            }
+
+            // سنقوم بعرض صفحة مخصصة للطباعة بدون القوائم الجانبية أو الـ Navbar
+            return View(patient);
+        }
+
+        // GET: Patients/Create
         [AllowAnonymous]
         public IActionResult Create()
         {
-            if (User.Identity != null && User.Identity.IsAuthenticated)
+            if (User.Identity != null && User.Identity.IsAuthenticated && User.IsInRole("Patient"))
             {
                 return RedirectToAction("Index", "Home");
             }
@@ -80,7 +117,6 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // POST: Patients/Create
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         [AllowAnonymous]
@@ -88,8 +124,6 @@ namespace Hospital_Management_Project.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Ensure username uniqueness
-
                 var exists = await _context.Patient.AnyAsync(p => p.user_name == patient.user_name);
                 if (exists)
                 {
@@ -101,14 +135,17 @@ namespace Hospital_Management_Project.Controllers
                 _context.Add(patient);
                 await _context.SaveChangesAsync();
 
+                if (User.Identity != null && User.Identity.IsAuthenticated && !User.IsInRole("Patient"))
+                {
+                    return RedirectToAction(nameof(Index));
+                }
+
                 return RedirectToAction("Login", "Account");
             }
             return View(patient);
         }
 
         // GET: Patients/Edit
-        // Security: Only Admin/Staff or the Patient themselves can edit personal details
-
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
@@ -129,7 +166,6 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // POST: Patients/Edit
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("PatientId,FName,LName,Address,Phone,Gender")] Patient patient)
@@ -150,8 +186,6 @@ namespace Hospital_Management_Project.Controllers
             {
                 try
                 {
-                    // Protection: Retain old values for username and password so they don't get overwritten with null
-
                     var existingPatient = await _context.Patient.AsNoTracking().FirstOrDefaultAsync(p => p.PatientId == id);
                     if (existingPatient != null)
                     {
@@ -177,7 +211,6 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // GET: Patients/Delete
-
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
@@ -190,7 +223,6 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // POST: Patients/Delete
-
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
@@ -212,7 +244,7 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // GET: Patients/ManageAccount/5
-        // Account management page (Username & Password modification)
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ManageAccount(int? id)
         {
             if (id == null) return NotFound();
@@ -220,42 +252,20 @@ namespace Hospital_Management_Project.Controllers
             var patient = await _context.Patient.FindAsync(id);
             if (patient == null) return NotFound();
 
-            if (User.IsInRole("Patient"))
-            {
-                var currentUser = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (patient.user_name != currentUser)
-                {
-                    return RedirectToAction("AccessDenied", "Account");
-                }
-            }
-
             return View(patient);
         }
 
         // POST: Patients/ManageAccount
-
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ManageAccount(int id, string user_name, string Password)
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ManageAccount(int id, string user_name)
         {
             var patient = await _context.Patient.FindAsync(id);
             if (patient == null) return NotFound();
 
-            // Security Check
-
-            if (User.IsInRole("Patient"))
-            {
-                var currentUser = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (patient.user_name != currentUser)
-                {
-                    return RedirectToAction("AccessDenied", "Account");
-                }
-            }
-
             if (!string.IsNullOrEmpty(user_name))
             {
-                // Validate Username uniqueness if changed
-
                 if (patient.user_name != user_name)
                 {
                     var exists = await _context.Patient.AnyAsync(p => p.user_name == user_name);
@@ -267,38 +277,10 @@ namespace Hospital_Management_Project.Controllers
                 }
 
                 patient.user_name = user_name;
-
-                // Smart Security Logic for Password Modifications
-
-                if (User.IsInRole("Admin"))
-                {
-                    // Admin cannot write a custom password. Password resets to a secure default temporary value.
-
-                    string temporaryPassword = "Default@Reset123";
-                    patient.Password = BCrypt.Net.BCrypt.HashPassword(temporaryPassword);
-                    TempData["Success"] = $"Username updated. Password has been reset to temporary default: {temporaryPassword}";
-                }
-                else if (User.IsInRole("Patient"))
-                {
-                    // The patient themselves must provide and update their custom password
-
-                    if (!string.IsNullOrEmpty(Password))
-                    {
-                        patient.Password = BCrypt.Net.BCrypt.HashPassword(Password);
-                        TempData["Success"] = "Your account settings have been updated successfully.";
-                    }
-                    else
-                    {
-                        ModelState.AddModelError("Password", "Password is required.");
-                        return View(patient);
-                    }
-                }
+                TempData["Success"] = "Username updated successfully.";
 
                 _context.Update(patient);
                 await _context.SaveChangesAsync();
-
-                if (User.IsInRole("Patient"))
-                    return RedirectToAction(nameof(Details), new { id = patient.PatientId });
 
                 return RedirectToAction(nameof(Index));
             }

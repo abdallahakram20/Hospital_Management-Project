@@ -1,52 +1,326 @@
 ﻿@model Hospital_Management_Project.Models.Staff
-
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Edit Staff Profile";
 }
 
-<h1>Edit</h1>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
 
-<h4>Staff</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<style>
+    :root {
+        --primary: #1A76D1;
+        --primary-dark: #145db3;
+        --primary-light: #e8f2fc;
+        --primary-gradient: linear-gradient(135deg, #1A76D1, #3b92ec);
+        --bg-page: #f4f8fc;
+        --card-bg: #ffffff;
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+        --input-bg: #f8fafc;
+        --input-border: #cbd5e1;
+        --danger: #ef4444;
+    }
+
+    body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background-color: var(--bg-page);
+        color: var(--text-main);
+        margin: 0;
+        padding: 0;
+    }
+
+    .page-container {
+        padding: 40px 20px;
+        max-width: 850px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 32px;
+    }
+
+    .header-text h2 {
+        font-size: 28px;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+        .header-text h2 i {
+            color: var(--primary);
+            background: var(--primary-light);
+            padding: 10px;
+            border-radius: 12px;
+            font-size: 24px;
+        }
+
+    .btn-back {
+        background: var(--card-bg);
+        color: var(--primary);
+        border: 1px solid var(--input-border);
+        border-radius: 12px;
+        padding: 10px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all .2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+        .btn-back:hover {
+            background: var(--primary-light);
+            border-color: var(--primary);
+            color: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+    .form-card {
+        background: var(--card-bg);
+        border-radius: 24px;
+        padding: 40px;
+        box-shadow: 0 20px 40px -10px rgba(26, 118, 209, 0.08);
+        border: 1px solid rgba(26, 118, 209, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+
+        .form-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: var(--primary-gradient);
+        }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+    }
+
+    .form-group.full-width {
+        grid-column: span 2;
+    }
+
+    .custom-label {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    .custom-input, .custom-select {
+        width: 100%;
+        background: var(--input-bg);
+        border: 1.5px solid var(--input-border);
+        border-radius: 12px;
+        padding: 14px 18px;
+        font-size: 15px;
+        font-family: inherit;
+        color: var(--text-main);
+        outline: none;
+        transition: all .3s ease;
+        box-sizing: border-box;
+    }
+
+    .custom-select {
+        appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231A76D1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 18px center;
+        background-size: 16px;
+        padding-right: 45px;
+    }
+
+        .custom-input:focus, .custom-select:focus {
+            background: var(--card-bg);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-light);
+        }
+
+    .image-edit-section {
+        background: var(--input-bg);
+        border: 2px dashed var(--input-border);
+        border-radius: 16px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .preview-container {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .edit-avatar-preview {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #fff;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .crop-wrapper {
+        display: none;
+        max-width: 100%;
+        max-height: 400px;
+        background-color: #000;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-top: 15px;
+    }
+
+        .crop-wrapper img {
+            display: block;
+            max-width: 100%;
+        }
+
+    .text-danger {
+        color: var(--danger);
+        font-size: 13px;
+        margin-top: 6px;
+        display: block;
+        font-weight: 500;
+    }
+
+    .btn-submit {
+        background: var(--primary-gradient);
+        color: #ffffff;
+        border: none;
+        border-radius: 14px;
+        padding: 16px 32px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all .3s ease;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        margin-top: 16px;
+        box-shadow: 0 10px 20px -5px rgba(26, 118, 209, 0.4);
+    }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 25px -5px rgba(26, 118, 209, 0.5);
+        }
+
+    .cropper-view-box, .cropper-face {
+        border-radius: 50%;
+    }
+
+    @@media (max-width: 768px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-group.full-width {
+            grid-column: span 1;
+        }
+
+        .preview-container {
+            flex-direction: column;
+            text-align: center;
+        }
+    }
+</style>
+
+<div class="page-container">
+    <div class="page-header">
+        <div class="header-text">
+            <h2><i class="bi bi-person-gear"></i> Edit Staff Profile</h2>
+        </div>
+        <a asp-action="Index" class="btn-back">
+            <i class="bi bi-arrow-left"></i> Back to List
+        </a>
+    </div>
+
+    <div class="form-card">
+        <form id="editStaffForm" asp-action="Edit" method="post" enctype="multipart/form-data">
             <input type="hidden" asp-for="StaffId" />
+            <input type="hidden" asp-for="ImagePath" />
+            <input type="hidden" asp-for="Password" />
 
-            <div class="form-group">
-                <label asp-for="Position" class="control-label"></label>
-                <input asp-for="Position" class="form-control" />
-                <span asp-validation-for="Position" class="text-danger"></span>
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label asp-for="Fname" class="custom-label">First Name</label>
+                    <input asp-for="Fname" class="custom-input" />
+                    <span asp-validation-for="Fname" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Lname" class="custom-label">Last Name</label>
+                    <input asp-for="Lname" class="custom-input" />
+                    <span asp-validation-for="Lname" class="text-danger"></span>
+                </div>
+
+                <div class="form-group full-width">
+                    <label asp-for="Email" class="custom-label">Email Address</label>
+                    <input asp-for="Email" class="custom-input" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Position" class="custom-label">Position / Role</label>
+                    <input asp-for="Position" class="custom-input" />
+                    <span asp-validation-for="Position" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="DepartmentId" class="custom-label">Department</label>
+                    <select asp-for="DepartmentId" class="custom-select" asp-items="ViewBag.DepartmentId">
+                        <option value="">-- Select Department --</option>
+                    </select>
+                    <span asp-validation-for="DepartmentId" class="text-danger"></span>
+                </div>
+
+                <div class="form-group full-width">
+                    <label class="custom-label">Profile Image (Adjust to Fit Face)</label>
+                    <div class="image-edit-section">
+                        <div class="preview-container">
+                            @if (!string.IsNullOrEmpty(Model.ImagePath))
+                            {
+                                <img id="editImgPreview" src="~/images/staff/@Model.ImagePath" class="edit-avatar-preview" alt="Current Photo"
+                                     onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=@Model.Fname+@Model.Lname&background=e8f2fc&color=1A76D1&bold=true&size=150';" />
+                            }
+                            else
+                            {
+                                <img id="editImgPreview" src="https://ui-avatars.com/api/?name=@Model.Fname+@Model.Lname&background=e8f2fc&color=1A76D1&bold=true&size=150" class="edit-avatar-preview" alt="Default Avatar" />
+                            }
+                            <div style="flex-grow: 1; text-align: left;">
+                                <input type="file" id="imageEditInput" name="ImageFile" class="custom-input" accept="image/*" style="padding: 10px;" />
+                                <small style="color: var(--text-muted); display:block; margin-top:5px;">Choose an image and drag the circle to frame your face perfectly.</small>
+                            </div>
+                        </div>
+
+                        <div class="crop-wrapper" id="cropWrapper">
+                            <img id="imageToCrop" src="" alt="Crop Area">
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label asp-for="Email" class="control-label"></label>
-                <input asp-for="Email" class="form-control" />
-                <span asp-validation-for="Email" class="text-danger"></span>
-            </div>
-
-            <div class="form-group">
-                <label asp-for="Fname" class="control-label"></label>
-                <input asp-for="Fname" class="form-control" />
-                <span asp-validation-for="Fname" class="text-danger"></span>
-            </div>
-
-            <div class="form-group">
-                <label asp-for="Lname" class="control-label"></label>
-                <input asp-for="Lname" class="form-control" />
-                <span asp-validation-for="Lname" class="text-danger"></span>    
-            </div>
-
-            <div class="form-group">
-                <label asp-for="DepartmentId" class="control-label"></label>
-                <select asp-for="DepartmentId" class="form-control" asp-items="ViewBag.DepartmentId"></select>
-                <span asp-validation-for="DepartmentId" class="text-danger"></span>
-            </div>
-
-            <div class="form-group mt-3">
-                <input type="submit" value="Save" class="btn btn-primary" />
-                <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+            <div class="form-group full-width" style="margin-bottom: 0; margin-top: 32px;">
+                <button type="submit" class="btn-submit">
+                    <i class="bi bi-save-fill"></i> Save Changes
+                </button>
             </div>
         </form>
     </div>
@@ -56,4 +330,74 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+
+    <script>
+        let cropper;
+        const imageInput = document.getElementById('imageEditInput');
+        const imageToCrop = document.getElementById('imageToCrop');
+        const cropWrapper = document.getElementById('cropWrapper');
+        const form = document.getElementById('editStaffForm');
+
+        imageInput.addEventListener('change', function (e) {
+        const files = e.target.files;
+        if (files && files.length > 0) {
+        const file = files[0];
+        const reader = new FileReader();
+
+        reader.onload = function (event) {
+        if (cropper) {
+        cropper.destroy();
+        }
+
+        imageToCrop.src = event.target.result;
+        cropWrapper.style.display = 'block';
+
+        cropper = new Cropper(imageToCrop, {
+        aspectRatio: 1,
+        viewMode: 1,
+        background: false,
+        autoCropArea: 0.8
+        });
+        };
+        reader.readAsDataURL(file);
+        }
+        });
+
+        // التعديل المضمون: إرسال الـ Form مبرمجاً بالـ Cropped Image عبر FormData لضمان السيف بالسيرفر
+        form.addEventListener('submit', function (e) {
+        if (!cropper) return; // لو مفيش صورة جديدة، سيب الفورم يشتغل طبيعي
+
+        e.preventDefault(); // وقف السيف العادي البايظ
+
+        // قص الصورة بأبعاد ممتازة
+        cropper.getCroppedCanvas({ width: 400, height: 400 }).toBlob(function (blob) {
+
+        // إنشاء كائن FormData لجمع كل مدخلات الصفحة يدوياً وبدقة
+        const formData = new FormData(form);
+
+        // حذف أي ملف غير مقصوص متبقي في الـ input
+        formData.delete("ImageFile");
+
+        // حقن الصورة المقصوصة الحقيقية والنهائية
+        formData.append("ImageFile", blob, "cropped_avatar.jpg");
+
+        // إرسال البيانات للسيرفر عبر الـ Fetch API لضمان استقرار العملية
+        fetch(form.action, {
+        method: 'POST',
+        body: formData
+        })
+        .then(response => {
+        if (response.ok || response.redirected) {
+        // عند النجاح، التوجيه التلقائي لصفحة الـ Index لتشاهد التحديث فوراً
+        window.location.href = '@Url.Action("Index")';
+        } else {
+        alert("حدث خطأ أثناء حفظ الصورة، تأكد من إعدادات الـ Controller.");
+        }
+        })
+        .catch(err => console.error("Error submitting cropped image:", err));
+
+        }, 'image/jpeg', 0.9);
+        });
+    </script>
 }

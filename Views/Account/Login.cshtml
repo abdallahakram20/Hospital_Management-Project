@@ -2,447 +2,552 @@
 
 @{
     ViewData["Title"] = "Login";
+    Layout = null;
 }
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CarePlus</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
-<style>
-    body {
-        margin: 0;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
+    <style>
+            @@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap');
 
-    .login-page-wrapper {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100vh;
-        background: linear-gradient(90deg, #1A6B73 50%, #eef2f6 50%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-        z-index: 9999;
-        overflow-y: auto;
-    }
+            body {
+                margin: 0;
+                font-family: 'DM Sans', sans-serif;
+            }
 
-    .login-container {
-        background: #ffffff;
-        border-radius: 12px;
-        box-shadow: 0 15px 40px rgba(0,0,0,0.2);
-        display: flex;
-        flex-direction: row;
-        max-width: 950px;
-        width: 100%;
-        min-height: 550px;
-        overflow: hidden;
-    }
+            .login-page-wrapper {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100vh;
+                background-color: #dff0f3;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+                z-index: 9999;
+                overflow-y: auto;
+            }
 
-    .login-left {
-        padding: 50px 40px;
-        width: 50%;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        background-color: #1A6B73;
-        color: #ffffff;
-    }
+            .login-container {
+                background: #ffffff;
+                border-radius: 24px;
+                box-shadow: 0 8px 32px rgba(59,191,191,0.08);
+                display: flex;
+                flex-direction: row;
+                max-width: 1000px;
+                width: 100%;
+                min-height: 600px;
+                overflow: hidden;
+            }
 
-    .login-right {
-        width: 50%;
-        background-color: #ffffff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-    }
+            .login-left {
+                padding: 60px 50px;
+                width: 50%;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                background-color: #ffffff;
+            }
 
-    .brand-title {
-        color: #ffffff;
-        font-weight: 800;
-        font-size: 28px;
-        letter-spacing: 1px;
-        margin-bottom: 0;
-        text-align: center;
-    }
+            .login-right {
+                width: 50%;
+                background-color: #3BBFBF;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+            }
 
-    .brand-subtitle {
-        color: rgba(255, 255, 255, 0.8);
-        font-size: 14px;
-        text-align: center;
-        margin-bottom: 40px;
-    }
+            .brand-title {
+                color: #1a2e35;
+                font-family: 'Playfair Display', serif;
+                font-weight: 700;
+                font-size: 32px;
+                margin-bottom: 5px;
+                text-align: center;
+            }
 
-    .nav-pills {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-        margin-bottom: 30px;
-    }
+            .brand-subtitle {
+                color: #5a7a82;
+                font-size: 15px;
+                text-align: center;
+                margin-bottom: 30px;
+            }
 
-        .nav-pills .nav-link {
-            color: rgba(255, 255, 255, 0.6);
-            border-radius: 0;
-            border-bottom: 2px solid transparent;
-            padding: 10px 15px;
-        }
+            .nav-pills {
+                background: #f4f8f9;
+                border-radius: 50px;
+                padding: 5px;
+                margin-bottom: 30px;
+                border-bottom: none;
+            }
 
-            .nav-pills .nav-link.active {
+                .nav-pills .nav-link {
+                    color: #5a7a82;
+                    border-radius: 50px;
+                    padding: 10px 15px;
+                    font-weight: 600;
+                    font-size: 14px;
+                    transition: all 0.3s ease;
+                }
+
+                    .nav-pills .nav-link.active {
+                        background-color: #ffffff;
+                        color: #3BBFBF;
+                        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+                        font-weight: 700;
+                        border: none;
+                    }
+
+            .form-label-custom {
+                font-size: 13px;
+                font-weight: 600;
+                color: #5a7a82;
+                margin-bottom: 8px;
+            }
+
+            .custom-input {
+                border: 1px solid #dce4e6;
+                border-radius: 12px;
+                padding: 12px 15px;
+                background-color: #ffffff;
+                color: #1a2e35;
+                font-size: 14px;
+                box-shadow: none !important;
+                transition: all 0.3s ease;
+            }
+
+                .custom-input::placeholder {
+                    color: #aebfc4;
+                }
+
+                .custom-input:focus {
+                    border-color: #3BBFBF;
+                    background-color: #ffffff;
+                    color: #1a2e35;
+                    box-shadow: 0 0 0 4px rgba(59,191,191,0.1) !important;
+                }
+
+            .toggle-password {
+                right: 15px !important;
+                top: 36px !important;
+                color: #aebfc4 !important;
+                transition: color 0.2s;
+            }
+
+                .toggle-password:hover {
+                    color: #3BBFBF !important;
+                }
+
+            .btn-custom {
+                background-color: #3BBFBF;
+                color: #ffffff;
+                border-radius: 50px;
+                font-weight: 600;
+                font-size: 15px;
+                padding: 14px;
+                border: none;
+                transition: all 0.2s ease;
+                margin-bottom: 15px;
+            }
+
+                .btn-custom:hover {
+                    background-color: #2aa0a0;
+                    transform: translateY(-2px);
+                    color: #ffffff;
+                }
+
+            .register-container {
+                text-align: center;
+                margin-top: 20px;
+                padding-top: 20px;
+                border-top: 1px dashed #dce4e6;
+            }
+
+            .register-text {
+                font-size: 13px;
+                color: #5a7a82;
+                margin-bottom: 12px;
+            }
+
+            .btn-register-outline {
                 background-color: transparent;
-                color: #ffffff;
-                border-bottom: 2px solid #ffffff;
-                font-weight: bold;
+                color: #3BBFBF;
+                border: 2px solid #3BBFBF;
+                border-radius: 50px;
+                font-weight: 600;
+                font-size: 14px;
+                padding: 12px 24px;
+                transition: all 0.2s ease;
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                width: 100%;
             }
 
-    .custom-input {
-        border: none;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.4);
-        border-radius: 0;
-        padding-left: 0;
-        box-shadow: none !important;
-        background-color: transparent;
-        color: #ffffff;
-        padding-bottom: 8px;
-    }
+                .btn-register-outline:hover {
+                    background-color: #3BBFBF;
+                    color: #ffffff;
+                    transform: translateY(-1px);
+                    box-shadow: 0 4px 12px rgba(59,191,191,0.15);
+                }
 
-        .custom-input::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-        }
-
-        .custom-input:focus {
-            border-bottom: 2px solid #ffffff;
-            background-color: transparent;
-            color: #ffffff;
-        }
-
-    .form-label-custom {
-        font-size: 12px;
-        color: rgba(255, 255, 255, 0.9);
-        margin-bottom: 5px;
-    }
-
-    .btn-custom {
-        background-color: #ffffff;
-        color: #1A6B73;
-        border-radius: 4px;
-        font-weight: bold;
-        padding: 12px;
-        border: none;
-        transition: 0.3s;
-        margin-bottom: 15px;
-    }
-
-        .btn-custom:hover {
-            background-color: #f0f0f0;
-            color: #135259;
-        }
-
-    .options-row {
-        font-size: 12px;
-        color: rgba(255, 255, 255, 0.9);
-        margin-top: 15px;
-        margin-bottom: 25px;
-    }
-
-        .options-row a {
-            color: rgba(255, 255, 255, 0.9);
-            text-decoration: none;
-        }
-
-            .options-row a:hover {
-                color: #ffffff;
-                text-decoration: underline;
+            .options-row {
+                font-size: 13px;
+                color: #5a7a82;
+                margin-top: 15px;
+                margin-bottom: 25px;
+                align-items: center;
             }
 
-    .alert-custom {
-        background-color: #eef2f6;
-        border-radius: 4px;
-        padding: 15px;
-        color: #1A6B73;
-        font-size: 12px;
-        display: flex;
-        align-items: flex-start;
-        gap: 10px;
-    }
+                .options-row a {
+                    color: #3BBFBF;
+                    text-decoration: none;
+                    font-weight: 600;
+                }
 
-        .alert-custom strong {
-            color: #135259;
-        }
+                    .options-row a:hover {
+                        text-decoration: underline;
+                    }
 
-    .circle-graphic-wrapper {
-        position: relative;
-        width: 300px;
-        height: 300px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
+                .options-row input[type="checkbox"] {
+                    accent-color: #3BBFBF;
+                    width: 16px;
+                    height: 16px;
+                    cursor: pointer;
+                    vertical-align: middle;
+                    margin-right: 5px;
+                }
 
-    .circle-track {
-        position: absolute;
-        width: 260px;
-        height: 260px;
-        border: 2px solid rgba(26, 107, 115, 0.3);
-        border-radius: 50%;
-    }
+                .options-row label {
+                    vertical-align: middle;
+                    cursor: pointer;
+                }
 
-    .center-circle {
-        position: relative;
-        width: 150px;
-        height: 150px;
-        background: #ffffff;
-        border: 6px solid #1A6B73;
-        border-radius: 50%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        z-index: 10;
-    }
+            .alert-custom {
+                background-color: #eaf6f6;
+                border-radius: 12px;
+                padding: 15px;
+                color: #5a7a82;
+                font-size: 13px;
+                display: flex;
+                align-items: flex-start;
+                gap: 10px;
+                border-left: 4px solid #3BBFBF;
+            }
 
-        .center-circle h3 {
-            color: #1A6B73;
-            margin: 0;
-            font-weight: 800;
-            font-size: 20px;
-            letter-spacing: 1px;
-        }
+                .alert-custom i {
+                    color: #3BBFBF;
+                }
 
-        .center-circle p {
-            color: #1A6B73;
-            margin: 0;
-            font-size: 10px;
-        }
+                .alert-custom strong {
+                    color: #1a2e35;
+                }
 
-    .node {
-        position: absolute;
-        width: 36px;
-        height: 36px;
-        background: #1A6B73;
-        color: #ffffff;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 16px;
-        z-index: 5;
-    }
+            .circle-graphic-wrapper {
+                position: relative;
+                width: 300px;
+                height: 300px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
 
-    .node-1 {
-        top: 0;
-        left: 50%;
-        transform: translate(-50%, -50%);
-    }
+            .circle-track {
+                position: absolute;
+                width: 260px;
+                height: 260px;
+                border: 2px dashed rgba(255, 255, 255, 0.4);
+                border-radius: 50%;
+                animation: spin 40s linear infinite;
+            }
 
-    .node-2 {
-        top: 14.6%;
-        left: 85.3%;
-        transform: translate(-50%, -50%);
-    }
+            @@keyframes spin {
+                100% {
+                    transform: rotate(360deg);
+                }
+            }
 
-    .node-3 {
-        top: 50%;
-        left: 100%;
-        transform: translate(-50%, -50%);
-    }
+            .center-circle {
+                position: relative;
+                width: 150px;
+                height: 150px;
+                background: #ffffff;
+                border: 6px solid #eaf6f6;
+                border-radius: 50%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                z-index: 10;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            }
 
-    .node-4 {
-        top: 85.3%;
-        left: 85.3%;
-        transform: translate(-50%, -50%);
-    }
+                .center-circle h3 {
+                    color: #1a2e35;
+                    margin: 0;
+                    font-family: 'Playfair Display', serif;
+                    font-weight: 700;
+                    font-size: 20px;
+                }
 
-    .node-5 {
-        top: 100%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-    }
+                .center-circle p {
+                    color: #3BBFBF;
+                    margin: 0;
+                    font-size: 11px;
+                    font-weight: 600;
+                }
 
-    .node-6 {
-        top: 85.3%;
-        left: 14.6%;
-        transform: translate(-50%, -50%);
-    }
+            .node {
+                position: absolute;
+                width: 40px;
+                height: 40px;
+                background: #ffffff;
+                color: #3BBFBF;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 18px;
+                z-index: 5;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            }
 
-    .node-7 {
-        top: 50%;
-        left: 0;
-        transform: translate(-50%, -50%);
-    }
+            .node-1 {
+                top: 0;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
 
-    .node-8 {
-        top: 14.6%;
-        left: 14.6%;
-        transform: translate(-50%, -50%);
-    }
+            .node-2 {
+                top: 14.6%;
+                left: 85.3%;
+                transform: translate(-50%, -50%);
+            }
 
-    .bottom-buildings {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 40px;
-        background-image: url('data:image/svg+xml;utf8,<svg opacity="0.15" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 20"><rect x="5" y="10" width="8" height="10" fill="%231A6B73"/><rect x="18" y="5" width="12" height="15" fill="%231A6B73"/><rect x="35" y="12" width="10" height="8" fill="%231A6B73"/><rect x="50" y="8" width="12" height="12" fill="%231A6B73"/><rect x="68" y="3" width="15" height="17" fill="%231A6B73"/><rect x="88" y="11" width="8" height="9" fill="%231A6B73"/></svg>');
-        background-repeat: repeat-x;
-        background-position: bottom;
-        background-size: 150px;
-    }
+            .node-3 {
+                top: 50%;
+                left: 100%;
+                transform: translate(-50%, -50%);
+            }
 
-    @@media (max-width: 768px) {
-        .login-container {
-            flex-direction: column;
-        }
+            .node-4 {
+                top: 85.3%;
+                left: 85.3%;
+                transform: translate(-50%, -50%);
+            }
 
-        .login-left, .login-right {
-            width: 100%;
-        }
+            .node-5 {
+                top: 100%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
 
-        .login-right {
-            padding: 40px;
-            display: none;
-        }
+            .node-6 {
+                top: 85.3%;
+                left: 14.6%;
+                transform: translate(-50%, -50%);
+            }
 
-        .login-page-wrapper {
-            background: #1A6B73;
-        }
-    }
-</style>
+            .node-7 {
+                top: 50%;
+                left: 0;
+                transform: translate(-50%, -50%);
+            }
 
-<div class="login-page-wrapper">
-    <div class="login-container">
+            .node-8 {
+                top: 14.6%;
+                left: 14.6%;
+                transform: translate(-50%, -50%);
+            }
 
-        <div class="login-left">
-            <h2 class="brand-title">HOSPITAL</h2>
-            <p class="brand-subtitle">Management Service</p>
+            .bottom-buildings {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                height: 40px;
+                background-image: url('data:image/svg+xml;utf8,<svg opacity="0.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 20"><rect x="5" y="10" width="8" height="10" fill="%23ffffff"/><rect x="18" y="5" width="12" height="15" fill="%23ffffff"/><rect x="35" y="12" width="10" height="8" fill="%23ffffff"/><rect x="50" y="8" width="12" height="12" fill="%23ffffff"/><rect x="68" y="3" width="15" height="17" fill="%23ffffff"/><rect x="88" y="11" width="8" height="9" fill="%23ffffff"/></svg>');
+                background-repeat: repeat-x;
+                background-position: bottom;
+                background-size: 150px;
+            }
 
-            <div asp-validation-summary="ModelOnly" class="alert alert-danger small mb-3"></div>
+            @@media (max-width: 768px) {
+                .login-container {
+                    flex-direction: column;
+                }
 
-            <ul class="nav nav-pills nav-justified" id="loginTabs" role="tablist">
-                <li class="nav-item">
-                    <button class="nav-link @(Model?.UserType != "Patient" ? "active" : "")"
-                            id="staff-tab" data-bs-toggle="pill" data-bs-target="#staffLogin" type="button">
-                        Staff Member
-                    </button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link @(Model?.UserType == "Patient" ? "active" : "")"
-                            id="patient-tab" data-bs-toggle="pill" data-bs-target="#patientLogin" type="button">
-                        Patient
-                    </button>
-                </li>
-            </ul>
+                .login-left, .login-right {
+                    width: 100%;
+                }
 
-            <div class="tab-content">
-                <div class="tab-pane fade @(Model?.UserType != "Patient" ? "show active" : "")" id="staffLogin">
-                    <form asp-controller="Account" asp-action="Login" method="post">
-                        <input type="hidden" name="UserType" value="Staff" />
+                .login-left {
+                    padding: 40px 30px;
+                }
 
-                        <div class="mb-4">
-                            <label asp-for="Email" class="form-label-custom">Staff Email Address</label>
-                            <input asp-for="Email" class="form-control custom-input" placeholder="staffmember@hospital.com" required />
-                            <span asp-validation-for="Email" class="text-danger small"></span>
-                        </div>
+                .login-right {
+                    display: none;
+                }
+            }
+    </style>
+</head>
+<body>
 
-                        <div class="mb-3 position-relative">
-                            <label asp-for="Password" class="form-label-custom">Password</label>
-                            <input asp-for="Password" type="password" class="form-control custom-input" placeholder="••••••••" required />
-                            <i class="bi bi-eye-slash position-absolute toggle-password" style="right: 5px; top: 28px; color: rgba(255, 255, 255, 0.6); cursor: pointer;"></i>
-                            <span asp-validation-for="Password" class="text-danger small"></span>
-                        </div>
+    <div class="login-page-wrapper">
+        <div class="login-container">
 
-                        <div class="d-flex justify-content-between options-row">
-                            <div>
-                                <input type="checkbox" id="rememberStaff" />
-                                <label for="rememberStaff" class="ms-1">Remember me</label>
+            <div class="login-left">
+                <h2 class="brand-title">CarePlus</h2>
+                <p class="brand-subtitle">Medical Service</p>
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger small mb-3"></div>
+
+                <ul class="nav nav-pills nav-justified" id="loginTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link @(Model?.UserType != "Patient" ? "active" : "")"
+                                id="staff-tab" data-bs-toggle="pill" data-bs-target="#staffLogin" type="button" role="tab" aria-controls="staffLogin" aria-selected="@(Model?.UserType != "Patient" ? "true" : "false")">
+                            Staff Member
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link @(Model?.UserType == "Patient" ? "active" : "")"
+                                id="patient-tab" data-bs-toggle="pill" data-bs-target="#patientLogin" type="button" role="tab" aria-controls="patientLogin" aria-selected="@(Model?.UserType == "Patient" ? "true" : "false")">
+                            Patient
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="tab-pane fade @(Model?.UserType != "Patient" ? "show active" : "")" id="staffLogin" role="tabpanel" aria-labelledby="staff-tab">
+                        <form asp-controller="Account" asp-action="Login" method="post">
+                            <input type="hidden" name="UserType" value="Staff" />
+
+                            <div class="mb-4">
+                                <label asp-for="Email" class="form-label-custom">Staff Email Address</label>
+                                <input asp-for="Email" class="form-control custom-input" placeholder="staffmember@careplus.com" required />
+                                <span asp-validation-for="Email" class="text-danger small"></span>
                             </div>
-                            <a href="#">Forgot Password?</a>
-                        </div>
 
-                        <button type="submit" class="btn btn-custom w-100">Login</button>
-                    </form>
+                            <div class="mb-3 position-relative">
+                                <label asp-for="Password" class="form-label-custom">Password</label>
+                                <input asp-for="Password" type="password" class="form-control custom-input" placeholder="••••••••" required />
+                                <i class="bi bi-eye-slash position-absolute toggle-password" style="cursor: pointer;"></i>
+                                <span asp-validation-for="Password" class="text-danger small"></span>
+                            </div>
+
+                            <div class="d-flex justify-content-between options-row">
+                                <div>
+                                    <input type="checkbox" id="rememberStaff" />
+                                    <label for="rememberStaff">Remember me</label>
+                                </div>
+                                <a asp-controller="Account" asp-action="ForgotPassword" asp-route-userType="Staff">Forgot Password?</a>
+                            </div>
+
+                            <button type="submit" class="btn btn-custom w-100">Login</button>
+                        </form>
+                    </div>
+
+                    <div class="tab-pane fade @(Model?.UserType == "Patient" ? "show active" : "")" id="patientLogin" role="tabpanel" aria-labelledby="patient-tab">
+                        <form asp-controller="Account" asp-action="Login" method="post">
+                            <input type="hidden" name="UserType" value="Patient" />
+
+                            <div class="mb-4">
+                                <label asp-for="UserName" class="form-label-custom">Patient Username</label>
+                                <input asp-for="UserName" class="form-control custom-input" placeholder="username" required />
+                                <span asp-validation-for="UserName" class="text-danger small"></span>
+                            </div>
+
+                            <div class="mb-3 position-relative">
+                                <label asp-for="Password" class="form-label-custom">Password</label>
+                                <input asp-for="Password" type="password" class="form-control custom-input" placeholder="••••••••" required />
+                                <i class="bi bi-eye-slash position-absolute toggle-password" style="cursor: pointer;"></i>
+                                <span asp-validation-for="Password" class="text-danger small"></span>
+                            </div>
+
+                            <div class="d-flex justify-content-between options-row">
+                                <div>
+                                    <input type="checkbox" id="rememberPatient" />
+                                    <label for="rememberPatient">Remember me</label>
+                                </div>
+                                <a asp-controller="Account" asp-action="ForgotPassword" asp-route-userType="Patient">Forgot Password?</a>
+                            </div>
+
+                            <button type="submit" class="btn btn-custom w-100">Login</button>
+                        </form>
+
+                        <div class="register-container">
+                            <p class="register-text">New patient without credentials?</p>
+                            <a asp-controller="Patients" asp-action="Create" class="btn-register-outline">
+                                <i class="bi bi-person-plus-fill"></i> Create Account Here
+                            </a>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="tab-pane fade @(Model?.UserType == "Patient" ? "show active" : "")" id="patientLogin">
-                    <form asp-controller="Account" asp-action="Login" method="post">
-                        <input type="hidden" name="UserType" value="Patient" />
-
-                        <div class="mb-4">
-                            <label asp-for="UserName" class="form-label-custom">Patient Username / Mobile</label>
-                            <input asp-for="UserName" class="form-control custom-input" placeholder="01 *******" required />
-                            <span asp-validation-for="UserName" class="text-danger small"></span>
-                        </div>
-
-                        <div class="mb-3 position-relative">
-                            <label asp-for="Password" class="form-label-custom">Password</label>
-                            <input asp-for="Password" type="password" class="form-control custom-input" placeholder="••••••••" required />
-                            <i class="bi bi-eye-slash position-absolute toggle-password" style="right: 5px; top: 28px; color: rgba(255, 255, 255, 0.6); cursor: pointer;"></i>
-                            <span asp-validation-for="Password" class="text-danger small"></span>
-                        </div>
-
-                        <div class="d-flex justify-content-between options-row">
-                            <div>
-                                <input type="checkbox" id="rememberPatient" />
-                                <label for="rememberPatient" class="ms-1">Remember me</label>
-                            </div>
-                            <a href="#">Forgot Password?</a>
-                        </div>
-
-                        <button type="submit" class="btn btn-custom w-100">Login</button>
-                    </form>
+                <div class="alert-custom mt-3">
+                    <i class="bi bi-info-circle-fill fs-5"></i>
+                    <div>
+                        <strong>Security Update:</strong> If this is your first login after the update, please contact the admin to reset your password.
+                    </div>
                 </div>
+
             </div>
 
-            <div class="alert-custom mt-3">
-                <i class="bi bi-info-circle-fill fs-5"></i>
-                <div>
-                    <strong>Security Update:</strong> If this is your first login after the update, please contact the admin to reset your password.
+            <div class="login-right">
+                <div class="circle-graphic-wrapper">
+                    <div class="circle-track"></div>
+                    <div class="center-circle">
+                        <h3>CarePlus</h3>
+                        <p>Medical Service</p>
+                    </div>
+                    <div class="node node-1"><i class="bi bi-person"></i></div>
+                    <div class="node node-2"><i class="bi bi-thermometer-half"></i></div>
+                    <div class="node node-3"><i class="bi bi-heart-pulse"></i></div>
+                    <div class="node node-4"><i class="bi bi-clipboard2-pulse"></i></div>
+                    <div class="node node-5"><i class="bi bi-capsule"></i></div>
+                    <div class="node node-6"><i class="bi bi-activity"></i></div>
+                    <div class="node node-7"><i class="bi bi-bandaid"></i></div>
+                    <div class="node node-8"><i class="bi bi-file-medical"></i></div>
                 </div>
+                <div class="bottom-buildings"></div>
             </div>
 
         </div>
-
-        <div class="login-right">
-            <div class="circle-graphic-wrapper">
-                <div class="circle-track"></div>
-                <div class="center-circle">
-                    <h3>HOSPITAL</h3>
-                    <p>Management Service</p>
-                </div>
-                <div class="node node-1"><i class="bi bi-person"></i></div>
-                <div class="node node-2"><i class="bi bi-thermometer-half"></i></div>
-                <div class="node node-3"><i class="bi bi-heart-pulse"></i></div>
-                <div class="node node-4"><i class="bi bi-clipboard2-pulse"></i></div>
-                <div class="node node-5"><i class="bi bi-capsule"></i></div>
-                <div class="node node-6"><i class="bi bi-activity"></i></div>
-                <div class="node node-7"><i class="bi bi-bandaid"></i></div>
-                <div class="node node-8"><i class="bi bi-file-medical"></i></div>
-            </div>
-            <div class="bottom-buildings"></div>
-        </div>
-
     </div>
-</div>
 
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const togglePasswordIcons = document.querySelectorAll('.toggle-password');
+        const togglePasswordIcons = document.querySelectorAll('.toggle-password');
 
-            togglePasswordIcons.forEach(function (icon) {
-                icon.addEventListener('click', function () {
-                    const input = this.parentElement.querySelector('input');
+        togglePasswordIcons.forEach(function (icon) {
+        icon.addEventListener('click', function () {
+        const input = this.parentElement.querySelector('input');
 
-                    if (input.type === 'password') {
-                        input.type = 'text';
-                        this.classList.remove('bi-eye-slash');
-                        this.classList.add('bi-eye');
-                    } else {
-                        input.type = 'password';
-                        this.classList.remove('bi-eye');
-                        this.classList.add('bi-eye-slash');
-                    }
-                });
-            });
+        if (input.type === 'password') {
+        input.type = 'text';
+        this.classList.remove('bi-eye-slash');
+        this.classList.add('bi-eye');
+        } else {
+        input.type = 'password';
+        this.classList.remove('bi-eye');
+        this.classList.add('bi-eye-slash');
+        }
+        });
+        });
         });
     </script>
-}
+</body>
+</html>

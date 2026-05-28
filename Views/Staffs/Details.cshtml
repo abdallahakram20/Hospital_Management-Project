@@ -1,42 +1,322 @@
-﻿@model Hospital_Management_Project.Models.Staff
-
+﻿@using System.Security.Claims
+@model Hospital_Management_Project.Models.Staff
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Staff Details";
+    bool isPatient = User.IsInRole("Patient");
+
+    // جلب المواعيد المتاحة (التي لم تحجز بعد)
+    var availableAppointments = Model.Appointments?
+        .Where(a => a.PatientId == null || a.PatientId == 0)
+        .OrderBy(a => a.Visit_Date) ?? Enumerable.Empty<Hospital_Management_Project.Models.Appointment>();
+
+    // جلب المواعيد المحجوزة (سواء للمريض الحالي أو لمرضى آخرين)
+    var bookedAppointments = Model.Appointments?
+        .Where(a => a.PatientId > 0)
+        .OrderBy(a => a.Visit_Date) ?? Enumerable.Empty<Hospital_Management_Project.Models.Appointment>();
 }
 
-<h1>Details</h1>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-<div>
-    <h4>Staff</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Position)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Position)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Email)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Email)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Fname)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Fname)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Lname)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Lname)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.StaffId">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+<style>
+    :root {
+        --primary: #1A76D1;
+        --primary-light: #e8f2fc;
+        --primary-gradient: linear-gradient(135deg, #1A76D1, #3b92ec);
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+        --card-bg: #ffffff;
+        --bg-page: #f4f8fc;
+        --danger: #ef4444;
+        --danger-light: #fef2f2;
+        --warning: #f59e0b;
+        --warning-light: #fffbeb;
+        --success: #10b981;
+        --success-light: #ecfdf5;
+        --card-shadow: 0 10px 25px -5px rgba(26, 118, 209, 0.06);
+    }
+
+    .appointments-section {
+        background: var(--card-bg);
+        border-radius: 24px;
+        padding: 30px;
+        box-shadow: var(--card-shadow);
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .sub-section-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text-main);
+        margin: 25px 0 15px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* تنسيق المواعيد المتاحة على شكل كروت مرنة */
+    .available-slots-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 12px;
+        margin-bottom: 30px;
+    }
+
+    .slot-card {
+        background: var(--bg-page);
+        border: 1px solid #e2e8f0;
+        padding: 14px;
+        border-radius: 16px;
+        text-align: center;
+        text-decoration: none;
+        color: var(--text-main);
+        transition: all 0.2s ease;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+        .slot-card:hover {
+            background: var(--primary-gradient);
+            color: white !important;
+            border-color: transparent;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(26, 118, 209, 0.2);
+        }
+
+        .slot-card strong {
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .slot-card span {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+    /* تنسيق جدول المواعيد المحجوزة المميز */
+    .busy-table-wrap {
+        overflow-x: auto;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.01);
+    }
+
+    .busy-table {
+        width: 100%;
+        border-collapse: collapse;
+        white-space: nowrap;
+    }
+
+        .busy-table th {
+            background: #f8fafc;
+            color: var(--text-main);
+            padding: 14px 20px;
+            font-weight: 700;
+            font-size: 13px;
+            text-align: left;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .busy-table td {
+            padding: 14px 20px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 13px;
+            vertical-align: middle;
+        }
+
+    /* شارات المواعيد المحجوزة */
+    .status-pill {
+        padding: 6px 12px;
+        border-radius: 50px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .pill-mine {
+        background: var(--primary-light);
+        color: var(--primary);
+        border: 1px solid #bfdbfe;
+    }
+
+    .pill-busy {
+        background: #f1f5f9;
+        color: var(--text-muted);
+        border: 1px solid #cbd5e1;
+    }
+
+    /* أزرار الإجراءات داخل الجدول */
+    .btn-appt-action {
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        transition: all 0.2s;
+    }
+
+    .btn-action-edit {
+        background: #fffbeb;
+        color: #d97706;
+        border: 1px solid #fde68a;
+    }
+
+        .btn-action-edit:hover {
+            background: #f59e0b;
+            color: white;
+        }
+
+    .btn-action-delete {
+        background: #fef2f2;
+        color: var(--danger);
+        border: 1px solid #fecaca;
+    }
+
+        .btn-action-delete:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+    .no-data-box {
+        text-align: center;
+        padding: 30px;
+        color: var(--text-muted);
+        background: #f8fafc;
+        border-radius: 16px;
+        border: 1px dashed #cbd5e1;
+        font-size: 13px;
+    }
+</style>
+
+<div class="appointments-section">
+    <h3 style="font-weight: 700; font-size: 22px; color: var(--text-main); margin-bottom: 20px; display:flex; align-items:center; gap:10px;">
+        <i class="bi bi-calendar3-event" style="color: var(--primary);"></i> Doctor's Schedule & Bookings
+    </h3>
+
+    @if (Model.Appointments != null && Model.Appointments.Any())
+    {
+        <h4 class="sub-section-title">
+            <i class="bi bi-unlock-fill" style="color: var(--success);"></i> Book an Available Slot
+        </h4>
+
+        @if (availableAppointments.Any())
+        {
+            <div class="available-slots-grid">
+                @foreach (var appointment in availableAppointments)
+                {
+                    <a asp-action="BookAppointment" asp-route-id="@appointment.AppointmentId" class="slot-card" title="Click to book this slot">
+                        <strong>@appointment.Visit_Date.ToString("dd MMM yyyy")</strong>
+                        <span><i class="bi bi-clock me-1"></i> @appointment.Visit_Date.ToString("hh:mm tt")</span>
+                        <span style="font-size: 11px; margin-top: 4px; color: var(--success); font-weight: 600;">Available <i class="bi bi-plus-circle"></i></span>
+                    </a>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="no-data-box">
+                <i class="bi bi-exclamation-circle mb-1 d-block" style="font-size: 18px; color: var(--warning);"></i>
+                Fully Booked! No available open slots for new bookings right now.
+            </div>
+        }
+
+        <h4 class="sub-section-title">
+            <i class="bi bi-lock-fill" style="color: var(--text-muted);"></i> Booked & Reserved Sessions (Busy Times)
+        </h4>
+
+        @if (bookedAppointments.Any())
+        {
+            <div class="busy-table-wrap">
+                <table class="busy-table">
+                    <thead>
+                        <tr>
+                            <th><i class="bi bi-calendar-event"></i> Date</th>
+                            <th><i class="bi bi-clock"></i> Time Slot</th>
+                            <th><i class="bi bi-info-circle"></i> Status / Availability</th>
+                            <th><i class="bi bi-sliders"></i> Your Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var appointment in bookedAppointments)
+                        {
+                            double hoursLeft = (appointment.Visit_Date - DateTime.Now).TotalHours;
+
+                            bool isMine = isPatient && (ViewBag.CurrentPatientId != null && appointment.PatientId.ToString() == ViewBag.CurrentPatientId.ToString());
+
+                            <tr style="@(isMine ? "background-color: rgba(26,118,209,0.03);" : "")">
+                                <td style="font-weight: 600; color: var(--text-main);">
+                                    @appointment.Visit_Date.ToString("dd MMMM yyyy")
+                                </td>
+                                <td style="color: var(--text-muted);">
+                                    @appointment.Visit_Date.ToString("hh:mm tt")
+                                </td>
+                                <td>
+                                    @if (isMine)
+                                    {
+                                        <span class="status-pill pill-mine">
+                                            <i class="bi bi-person-check-fill"></i> Reserved by You
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-pill pill-busy">
+                                            <i class="bi bi-lock-fill"></i> Doctor Busy
+                                        </span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (isMine)
+                                    {
+                                        if (hoursLeft > 12)
+                                        {
+                                            <a asp-action="ChangeAppointment" asp-route-id="@appointment.AppointmentId" class="btn-appt-action btn-action-edit" style="margin-right: 5px;">
+                                                <i class="bi bi-pencil-square"></i> Reschedule
+                                            </a>
+                                            <a asp-action="CancelAppointment" asp-route-id="@appointment.AppointmentId" class="btn-appt-action btn-action-delete"
+                                               onclick="return confirm('Are you sure you want to cancel your appointment?');">
+                                                <i class="bi bi-trash-fill"></i> Cancel
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-danger" style="font-size: 12px; font-weight:600;">
+                                                <i class="bi bi-lock-fill"></i> Locked (&lt; 12h)
+                                            </span>
+                                        }
+                                    }
+                                    else
+                                    {
+
+                                        <span style="font-size: 12px; color: var(--text-muted); font-weight: 500;">
+                                            <i class="bi bi-slash-circle me-1"></i> Not Available
+                                        </span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="no-data-box">
+                <i class="bi bi-calendar-check mb-1 d-block" style="font-size: 18px; color: var(--success);"></i>
+                No busy sessions found. The doctor is completely free.
+            </div>
+        }
+    }
+    else
+    {
+        <div class="no-data-box" style="padding: 50px 20px;">
+            <i class="bi bi-calendar-x mb-2 d-block" style="font-size: 32px; color: var(--text-muted); opacity:0.5;"></i>
+            No appointments scheduled for this staff member at the moment.
+        </div>
+    }
 </div>

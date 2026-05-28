@@ -1,8 +1,1415 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
+    Layout = null;
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+<style>
+    :root {
+        --primary: #1A76D1;
+        --primary-dk: #1560ad;
+        --dark: #2C2D3F;
+        --muted: #888;
+        --light-bg: #f9f9f9;
+        --white: #ffffff;
+        --shadow-sm: 0 4px 15px rgba(0,0,0,.07);
+        --shadow-md: 0 8px 30px rgba(0,0,0,.12);
+        --radius: 6px;
+        --transition: all .3s ease;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        font-size: 14px;
+        color: var(--muted);
+        background: #fff;
+    }
+
+    a {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    /* ── TOPBAR ─────────────────────────────────── */
+    .topbar {
+        background: var(--white);
+        border-bottom: 1px solid #eee;
+        padding: 10px 0;
+    }
+
+        .topbar .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+    .top-links {
+        display: flex;
+        gap: 20px;
+        list-style: none;
+    }
+
+        .top-links a {
+            color: var(--dark);
+            font-size: 13px;
+            transition: var(--transition);
+        }
+
+            .top-links a:hover {
+                color: var(--primary);
+            }
+
+    .top-contact {
+        display: flex;
+        gap: 22px;
+        list-style: none;
+    }
+
+        .top-contact li {
+            color: var(--dark);
+            font-size: 13px;
+        }
+
+        .top-contact i {
+            color: var(--primary);
+            margin-right: 6px;
+        }
+
+        .top-contact a:hover {
+            color: var(--primary);
+        }
+
+    /* ── HEADER ─────────────────────────────────── */
+    .header-inner {
+        background: var(--white);
+        box-shadow: 0 2px 10px rgba(0,0,0,.06);
+        position: sticky;
+        top: 0;
+        z-index: 999;
+        animation: fadeInDown .4s ease;
+    }
+    @@keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .header-inner .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 72px;
+    }
+    /* Logo */
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+
+    .logo-icon {
+        width: 40px;
+        height: 40px;
+        background: var(--primary);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .logo-icon svg {
+            width: 22px;
+            height: 22px;
+        }
+
+    .logo-text {
+        line-height: 1.2;
+    }
+
+        .logo-text strong {
+            display: block;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .logo-text span {
+            font-size: 11px;
+            color: var(--muted);
+            letter-spacing: .4px;
+        }
+
+    /* Nav */
+    .main-nav {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        list-style: none;
+    }
+
+        .main-nav li {
+            position: relative;
+        }
+
+        .main-nav a {
+            display: block;
+            padding: 24px 14px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--dark);
+            transition: var(--transition);
+            position: relative;
+        }
+
+            .main-nav a::after {
+                content: '';
+                position: absolute;
+                left: 0;
+                bottom: 0;
+                height: 3px;
+                width: 0%;
+                background: var(--primary);
+                border-radius: 3px 3px 0 0;
+                transition: var(--transition);
+            }
+
+            .main-nav a:hover,
+            .main-nav a.active {
+                color: var(--primary);
+            }
+
+                .main-nav a:hover::after,
+                .main-nav a.active::after {
+                    width: 100%;
+                }
+
+    /* Book btn */
+    .btn-book {
+        background: var(--primary);
+        color: var(--white) !important;
+        padding: 10px 22px !important;
+        border-radius: var(--radius);
+        font-weight: 600;
+        font-size: 13px;
+        transition: var(--transition);
+        white-space: nowrap;
+    }
+
+        .btn-book:hover {
+            background: var(--primary-dk);
+            transform: translateY(-1px);
+        }
+
+        .btn-book::after {
+            display: none !important;
+        }
+
+    /* Logout */
+    .btn-logout-nav {
+        background: transparent;
+        border: 1.5px solid #e55;
+        color: #e55;
+        border-radius: var(--radius);
+        padding: 7px 16px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: 'Poppins', sans-serif;
+        transition: var(--transition);
+    }
+
+        .btn-logout-nav:hover {
+            background: #e55;
+            color: #fff;
+        }
+
+    /* ── HERO ────────────────────────────────────── */
+    .hero {
+        background: linear-gradient(120deg, #e8f4fd 0%, #f5fbff 60%, #d6ecfa 100%);
+        padding: 80px 0 0;
+        overflow: hidden;
+        position: relative;
+    }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            right: -80px;
+            top: -60px;
+            width: 420px;
+            height: 420px;
+            border-radius: 50%;
+            background: rgba(26,118,209,.06);
+        }
+
+        .hero .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: flex-end;
+            gap: 40px;
+        }
+
+    .hero-text {
+        flex: 1;
+        padding-bottom: 60px;
+    }
+
+        .hero-text .badge {
+            display: inline-block;
+            background: rgba(26,118,209,.1);
+            color: var(--primary);
+            font-size: 12px;
+            font-weight: 600;
+            padding: 5px 14px;
+            border-radius: 50px;
+            margin-bottom: 18px;
+            letter-spacing: .3px;
+        }
+
+        .hero-text h1 {
+            font-size: 46px;
+            font-weight: 700;
+            line-height: 1.15;
+            color: var(--dark);
+            margin-bottom: 16px;
+        }
+
+            .hero-text h1 span {
+                color: var(--primary);
+            }
+
+        .hero-text p {
+            font-size: 15px;
+            color: var(--muted);
+            max-width: 400px;
+            line-height: 1.7;
+            margin-bottom: 32px;
+        }
+
+    .hero-btns {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: #fff;
+        padding: 13px 30px;
+        border-radius: var(--radius);
+        font-weight: 600;
+        font-size: 14px;
+        transition: var(--transition);
+        display: inline-block;
+    }
+
+        .btn-primary:hover {
+            background: var(--primary-dk);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(26,118,209,.3);
+        }
+
+    .btn-outline {
+        background: transparent;
+        color: var(--dark);
+        border: 2px solid #ddd;
+        padding: 11px 28px;
+        border-radius: var(--radius);
+        font-weight: 500;
+        font-size: 14px;
+        transition: var(--transition);
+        display: inline-block;
+    }
+
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+    /* hero stats strip */
+    .hero-stats {
+        display: flex;
+        gap: 32px;
+        margin-top: 40px;
+    }
+
+    .hero-stat {
+        text-align: center;
+    }
+
+        .hero-stat strong {
+            display: block;
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .hero-stat span {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+    /* hero image side */
+    .hero-img {
+        flex: 0 0 380px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+    }
+
+    .hero-img-box {
+        width: 340px;
+        height: 300px;
+        background: linear-gradient(160deg, rgba(26,118,209,.15) 0%, rgba(26,118,209,.05) 100%);
+        border-radius: 18px 18px 0 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        position: relative;
+    }
+
+        .hero-img-box::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary);
+            border-radius: 0 0 4px 4px;
+        }
+
+        .hero-img-box svg {
+            width: 200px;
+            height: 200px;
+            opacity: .45;
+        }
+
+    /* ── SCHEDULE CARDS ─────────────────────────── */
+    .schedule-strip {
+        background: transparent;
+        padding: 0;
+        margin: 0;
+    }
+
+        .schedule-strip .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            transform: translateY(-40px);
+        }
+
+    .schedule-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+    }
+
+    .schedule-card {
+        background: var(--primary);
+        border-radius: var(--radius);
+        padding: 28px 24px;
+        color: #fff;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+        transition: var(--transition);
+        text-decoration: none;
+        display: block;
+    }
+
+        .schedule-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(26,118,209,.35);
+            color: #fff;
+        }
+
+        .schedule-card .sc-icon {
+            font-size: 60px;
+            opacity: .15;
+            position: absolute;
+            right: -8px;
+            bottom: -12px;
+        }
+
+        .schedule-card .sc-label {
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: .5px;
+            text-transform: uppercase;
+            opacity: .8;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .schedule-card h4 {
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .schedule-card p {
+            font-size: 13px;
+            opacity: .85;
+            line-height: 1.5;
+        }
+
+    /* ── SECTION HEADER ─────────────────────────── */
+    section {
+        padding: 70px 0;
+    }
+
+    .section-header {
+        text-align: center;
+        margin-bottom: 48px;
+    }
+
+        .section-header .overline {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: var(--primary);
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .section-header h2 {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--dark);
+            position: relative;
+            display: inline-block;
+            padding-bottom: 16px;
+        }
+
+            .section-header h2::after {
+                content: '';
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+                bottom: 0;
+                width: 50px;
+                height: 3px;
+                background: var(--primary);
+                border-radius: 2px;
+            }
+
+        .section-header p {
+            margin-top: 14px;
+            max-width: 540px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+    /* ── DEPARTMENTS ─────────────────────────────── */
+    .depts {
+        background: var(--light-bg);
+    }
+
+        .depts .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+    .dept-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 24px;
+    }
+
+    .dept-card {
+        background: var(--white);
+        border-radius: var(--radius);
+        padding: 36px 20px 28px;
+        text-align: center;
+        box-shadow: var(--shadow-sm);
+        transition: var(--transition);
+        cursor: pointer;
+        display: block;
+        color: inherit;
+    }
+
+        .dept-card:hover {
+            transform: translateY(-7px);
+            box-shadow: var(--shadow-md);
+            color: inherit;
+        }
+
+            .dept-card:hover .dept-icon-wrap {
+                background: var(--primary);
+                border-color: transparent;
+            }
+
+                .dept-card:hover .dept-icon-wrap i {
+                    color: #fff;
+                }
+
+    .dept-icon-wrap {
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        border: 1px solid #e0e0e0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        transition: var(--transition);
+    }
+
+        .dept-icon-wrap i {
+            font-size: 38px;
+            color: var(--primary);
+            transition: var(--transition);
+        }
+
+    .dept-card h3 {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 8px;
+    }
+
+    .dept-card p {
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    /* ── SERVICES ────────────────────────────────── */
+    .services .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 24px;
+    }
+
+    .services-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 28px;
+    }
+
+    .service-card {
+        background: var(--white);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+        transition: var(--transition);
+        cursor: pointer;
+        display: block;
+        color: inherit;
+        position: relative;
+    }
+
+        .service-card::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            height: 3px;
+            width: 0%;
+            background: var(--primary);
+            transition: var(--transition);
+        }
+
+        .service-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-md);
+            color: inherit;
+        }
+
+            .service-card:hover::after {
+                width: 100%;
+            }
+
+    .service-img {
+        height: 140px;
+        background: linear-gradient(135deg, #c8e3f5 0%, #e8f4fd 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .service-img i {
+            font-size: 52px;
+            color: var(--primary);
+            opacity: .6;
+        }
+
+    .service-body {
+        padding: 22px;
+    }
+
+        .service-body h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+
+        .service-body p {
+            font-size: 13px;
+            line-height: 1.55;
+        }
+
+    /* ── FUN FACTS ───────────────────────────────── */
+    .fun-facts {
+        background: var(--primary);
+        padding: 70px 0;
+    }
+
+        .fun-facts .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: grid;
+            grid-template-columns: repeat(4,1fr);
+            gap: 32px;
+        }
+
+    .fact-item {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+    }
+
+    .fact-icon {
+        width: 66px;
+        height: 66px;
+        border-radius: 50%;
+        border: 2px solid rgba(255,255,255,.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: var(--transition);
+    }
+
+    .fact-item:hover .fact-icon {
+        background: #fff;
+        border-color: transparent;
+    }
+
+        .fact-item:hover .fact-icon i {
+            color: var(--primary);
+        }
+
+    .fact-icon i {
+        font-size: 26px;
+        color: #fff;
+        transition: var(--transition);
+    }
+
+    .fact-content strong {
+        display: block;
+        font-size: 28px;
+        font-weight: 700;
+        color: #fff;
+    }
+
+    .fact-content span {
+        font-size: 13px;
+        color: rgba(255,255,255,.8);
+    }
+
+    /* ── CALL TO ACTION ──────────────────────────── */
+    .cta-section {
+        background: linear-gradient(135deg, var(--dark) 0%, #3a3b55 100%);
+        padding: 80px 0;
+    }
+
+        .cta-section .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            text-align: center;
+        }
+
+        .cta-section h2 {
+            font-size: 32px;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1.3;
+            margin-bottom: 16px;
+        }
+
+        .cta-section p {
+            color: rgba(255,255,255,.75);
+            max-width: 500px;
+            margin: 0 auto 32px;
+            font-size: 15px;
+        }
+
+    .cta-btns {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn-white {
+        background: #fff;
+        color: var(--primary);
+        padding: 13px 32px;
+        border-radius: var(--radius);
+        font-weight: 600;
+        font-size: 14px;
+        transition: var(--transition);
+        display: inline-block;
+    }
+
+        .btn-white:hover {
+            background: var(--primary);
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+    .btn-ghost {
+        background: transparent;
+        color: #fff;
+        border: 2px solid rgba(255,255,255,.5);
+        padding: 11px 30px;
+        border-radius: var(--radius);
+        font-weight: 500;
+        font-size: 14px;
+        transition: var(--transition);
+        display: inline-block;
+    }
+
+        .btn-ghost:hover {
+            border-color: #fff;
+            background: rgba(255,255,255,.1);
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+    /* ── FOOTER ──────────────────────────────────── */
+    .site-footer {
+        background: var(--primary);
+        padding: 60px 0 0;
+        position: relative;
+    }
+
+        .site-footer::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            opacity: .08;
+        }
+
+        .site-footer .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1.5fr;
+            gap: 40px;
+        }
+
+    .footer-col h3 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #fff;
+        margin-bottom: 28px;
+        padding-bottom: 14px;
+        position: relative;
+    }
+
+        .footer-col h3::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 40px;
+            height: 2px;
+            background: #fff;
+        }
+
+    .footer-col p {
+        color: rgba(255,255,255,.85);
+        font-size: 14px;
+        line-height: 1.7;
+    }
+
+    .footer-links {
+        list-style: none;
+    }
+
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+
+        .footer-links a {
+            color: rgba(255,255,255,.85);
+            font-size: 14px;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+            .footer-links a:hover {
+                color: #fff;
+                padding-left: 6px;
+            }
+
+            .footer-links a i {
+                font-size: 11px;
+                color: #fff;
+            }
+
+    .social-links {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+        .social-links a {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+            .social-links a:hover {
+                background: #fff;
+                color: var(--primary);
+                border-color: transparent;
+            }
+    /* footer hours */
+    .hours-list {
+        list-style: none;
+    }
+
+        .hours-list li {
+            display: flex;
+            justify-content: space-between;
+            color: rgba(255,255,255,.85);
+            font-size: 13px;
+            padding: 5px 0;
+            border-bottom: 1px dashed rgba(255,255,255,.2);
+        }
+
+            .hours-list li:last-child {
+                border: none;
+            }
+    /* footer copyright */
+    .footer-bottom {
+        background: rgba(0,0,0,.1);
+        margin-top: 40px;
+        padding: 18px 24px;
+        text-align: center;
+        position: relative;
+        z-index: 1;
+    }
+
+        .footer-bottom p {
+            color: rgba(255,255,255,.75);
+            font-size: 13px;
+        }
+
+        .footer-bottom a {
+            color: #fff;
+            text-decoration: underline;
+        }
+
+            .footer-bottom a:hover {
+                opacity: .75;
+            }
+
+    /* ── SCROLL UP ───────────────────────────────── */
+    #scrollUp {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 44px;
+        height: 44px;
+        background: var(--primary);
+        color: #fff;
+        border-radius: var(--radius);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        box-shadow: 0 4px 14px rgba(26,118,209,.4);
+        cursor: pointer;
+        z-index: 9998;
+        transition: var(--transition);
+        opacity: 0;
+        pointer-events: none;
+    }
+
+        #scrollUp.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        #scrollUp:hover {
+            background: var(--dark);
+        }
+
+    /* ── RESPONSIVE ─────────────────────────────── */
+    @@media (max-width:992px) {
+        .schedule-grid {
+            grid-template-columns: repeat(2,1fr);
+        }
+
+        .dept-grid {
+            grid-template-columns: repeat(2,1fr);
+        }
+
+        .services-grid {
+            grid-template-columns: repeat(2,1fr);
+        }
+
+        .fun-facts .container {
+            grid-template-columns: repeat(2,1fr);
+        }
+
+        .site-footer .container {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .hero-img {
+            display: none;
+        }
+    }
+
+    @@media (max-width:768px) {
+        .topbar {
+            display: none;
+        }
+
+        .main-nav {
+            display: none;
+        }
+
+        .hero-text h1 {
+            font-size: 32px;
+        }
+
+        .hero {
+            padding: 50px 0 0;
+        }
+
+            .hero .container {
+                padding: 0 18px;
+            }
+
+        .schedule-strip .container {
+            transform: translateY(-20px);
+            padding: 0 18px;
+        }
+
+        .schedule-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .dept-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .services-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .fun-facts .container {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .site-footer .container {
+            grid-template-columns: 1fr;
+        }
+
+        .section-header h2 {
+            font-size: 26px;
+        }
+    }
+</style>
+
+<!-- ═══════════════════════════════════════════
+     TOPBAR
+════════════════════════════════════════════ -->
+<div class="topbar">
+    <div class="container">
+        <ul class="top-links">
+            <li><a asp-controller="Home" asp-action="Index"><i class="fas fa-home"></i> Home</a></li>
+            <li><a asp-controller="Departments" asp-action="Index">Departments</a></li>
+            <li><a asp-controller="Staffs" asp-action="Index">Doctors</a></li>
+        </ul>
+        <ul class="top-contact">
+            <li><i class="fas fa-phone"></i> Emergency: 123-456-7890</li>
+            <li><i class="fas fa-clock"></i> Mon–Sat: 08:00 – 20:00</li>
+        </ul>
+    </div>
 </div>
+
+<!-- ═══════════════════════════════════════════
+     HEADER / NAVBAR
+════════════════════════════════════════════ -->
+<div class="header-inner">
+    <div class="container">
+        <!-- Logo -->
+        <a asp-controller="Home" asp-action="Index" class="logo">
+            <div class="logo-icon">
+                <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="18" y="6" width="4" height="28" rx="2" fill="white" />
+                    <rect x="6" y="18" width="28" height="4" rx="2" fill="white" />
+                </svg>
+            </div>
+            <div class="logo-text">
+                <strong>CAREPLUS</strong>
+                <span>MEDICAL CENTER</span>
+            </div>
+        </a>
+
+        <!-- Nav links -->
+        <ul class="main-nav">
+            <li><a asp-controller="Home" asp-action="Index" class="active">Home</a></li>
+            <li><a asp-controller="Departments" asp-action="Index">Departments</a></li>
+            <li><a asp-controller="Staffs" asp-action="Index">Doctors</a></li>
+            <li><a asp-controller="Patients" asp-action="Index">Patients</a></li>
+            <li><a asp-controller="Appointments" asp-action="Index">Appointments</a></li>
+            <li style="margin-left:8px; padding-left:16px; border-left:1px solid #eee;">
+                <form asp-controller="Account" asp-action="Logout" method="post" style="margin:0;">
+                    <button type="submit" class="btn-logout-nav">
+                        <i class="fas fa-sign-out-alt" style="margin-right:5px;"></i>Logout
+                    </button>
+                </form>
+            </li>
+        </ul>
+
+        <!-- Book button -->
+        <a asp-controller="Appointments" asp-action="Create" class="btn-book">
+            <i class="fas fa-calendar-plus" style="margin-right:6px;"></i>Book Appointment
+        </a>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     HERO
+════════════════════════════════════════════ -->
+<div class="hero">
+    <div class="container">
+        <div class="hero-text">
+            <span class="badge"><i class="fas fa-shield-alt" style="margin-right:5px;"></i>Trusted Healthcare Provider</span>
+            <h1>Your Health,<br><span>Our Priority</span></h1>
+            <p>Compassionate, world-class medical care for you and your family — from our expert team of dedicated physicians.</p>
+            <div class="hero-btns">
+                <a asp-controller="Appointments" asp-action="Create" class="btn-primary">
+                    <i class="fas fa-calendar-check" style="margin-right:8px;"></i>Book Appointment
+                </a>
+                <a asp-controller="Departments" asp-action="Index" class="btn-outline">
+                    <i class="fas fa-hospital" style="margin-right:8px;"></i>Our Departments
+                </a>
+            </div>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <strong>15+</strong>
+                    <span>Years Experience</span>
+                </div>
+                <div class="hero-stat">
+                    <strong>50+</strong>
+                    <span>Specialist Doctors</span>
+                </div>
+                <div class="hero-stat">
+                    <strong>10k+</strong>
+                    <span>Happy Patients</span>
+                </div>
+            </div>
+        </div>
+        <div class="hero-img">
+            <div class="hero-img-box">
+                <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="80" cy="60" r="30" fill="#1A76D1" opacity="0.5" />
+                    <rect x="50" y="95" width="60" height="80" rx="12" fill="#1A76D1" opacity="0.4" />
+                    <circle cx="140" cy="80" r="22" fill="#1A76D1" opacity="0.3" />
+                    <rect x="118" y="107" width="44" height="60" rx="10" fill="#1A76D1" opacity="0.25" />
+                    <rect x="66" y="44" width="4" height="32" rx="2" fill="white" />
+                    <rect x="52" y="56" width="32" height="4" rx="2" fill="white" />
+                </svg>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCHEDULE STRIP (Quick Access Cards)
+════════════════════════════════════════════ -->
+<div class="schedule-strip">
+    <div class="container">
+        <div class="schedule-grid">
+            <a asp-controller="Appointments" asp-action="Index" class="schedule-card">
+                <span class="sc-label">Manage</span>
+                <h4>Appointments</h4>
+                <p>View & manage all scheduled appointments</p>
+                <i class="fas fa-calendar-alt sc-icon"></i>
+            </a>
+            <a asp-controller="Staffs" asp-action="Index" class="schedule-card" style="background:#2289e4;">
+                <span class="sc-label">Our Team</span>
+                <h4>Medical Staff</h4>
+                <p>Browse our specialist doctors & staff</p>
+                <i class="fas fa-user-md sc-icon"></i>
+            </a>
+            <a asp-controller="Patients" asp-action="Index" class="schedule-card" style="background:#1560ad;">
+                <span class="sc-label">Records</span>
+                <h4>Patient List</h4>
+                <p>Access & manage patient records</p>
+                <i class="fas fa-procedures sc-icon"></i>
+            </a>
+            <a asp-controller="Patient_Medical_Profile" asp-action="Index" class="schedule-card" style="background:#0f4f90;">
+                <span class="sc-label">Health Data</span>
+                <h4>Medical Profiles</h4>
+                <p>Complete health histories & reports</p>
+                <i class="fas fa-file-medical sc-icon"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     DEPARTMENTS
+════════════════════════════════════════════ -->
+<section class="depts">
+    <div class="container">
+        <div class="section-header">
+            <span class="overline">What We Offer</span>
+            <h2>Our Departments</h2>
+            <p>Specialized medical care across multiple disciplines, delivered by expert physicians and support staff.</p>
+        </div>
+        <div class="dept-grid">
+            <a asp-controller="Appointments" asp-action="Index" class="dept-card">
+                <div class="dept-icon-wrap">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <h3>Appointments</h3>
+                <p>Schedule & track visits with our doctors</p>
+            </a>
+            <a asp-controller="Departments" asp-action="Index" class="dept-card">
+                <div class="dept-icon-wrap">
+                    <i class="fas fa-hospital-alt"></i>
+                </div>
+                <h3>Departments</h3>
+                <p>Explore all medical specialties & units</p>
+            </a>
+            <a asp-controller="Staffs" asp-action="Index" class="dept-card">
+                <div class="dept-icon-wrap">
+                    <i class="fas fa-user-md"></i>
+                </div>
+                <h3>Medical Staff</h3>
+                <p>Meet our certified doctors & specialists</p>
+            </a>
+            <a asp-controller="Patients" asp-action="Index" class="dept-card">
+                <div class="dept-icon-wrap">
+                    <i class="fas fa-procedures"></i>
+                </div>
+                <h3>Patients</h3>
+                <p>Manage patient profiles & data records</p>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     FEATURED SERVICES
+════════════════════════════════════════════ -->
+<section class="services">
+    <div class="container">
+        <div class="section-header">
+            <span class="overline">What We Provide</span>
+            <h2>Featured Services</h2>
+            <p>Comprehensive digital tools to streamline patient care and clinical workflow.</p>
+        </div>
+        <div class="services-grid">
+            <a asp-controller="Patient_Medical_Profile" asp-action="Index" class="service-card">
+                <div class="service-img">
+                    <i class="fas fa-file-medical-alt"></i>
+                </div>
+                <div class="service-body">
+                    <h3>Medical Profiles</h3>
+                    <p>View and manage complete patient medical records, history, and health data all in one place.</p>
+                </div>
+            </a>
+            <a asp-controller="Appointments" asp-action="Create" class="service-card">
+                <div class="service-img">
+                    <i class="fas fa-calendar-plus"></i>
+                </div>
+                <div class="service-body">
+                    <h3>Book Appointment</h3>
+                    <p>Easily schedule appointments with our specialized medical staff at your convenience.</p>
+                </div>
+            </a>
+            <a asp-controller="Staffs" asp-action="Index" class="service-card">
+                <div class="service-img">
+                    <i class="fas fa-stethoscope"></i>
+                </div>
+                <div class="service-body">
+                    <h3>Find a Doctor</h3>
+                    <p>Browse our team of experienced doctors and find the right specialist for your needs.</p>
+                </div>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     FUN FACTS / STATS
+════════════════════════════════════════════ -->
+<div class="fun-facts">
+    <div class="container">
+        <div class="fact-item">
+            <div class="fact-icon"><i class="fas fa-smile"></i></div>
+            <div class="fact-content">
+                <strong>10,000+</strong>
+                <span>Happy Patients</span>
+            </div>
+        </div>
+        <div class="fact-item">
+            <div class="fact-icon"><i class="fas fa-user-md"></i></div>
+            <div class="fact-content">
+                <strong>50+</strong>
+                <span>Expert Doctors</span>
+            </div>
+        </div>
+        <div class="fact-item">
+            <div class="fact-icon"><i class="fas fa-hospital"></i></div>
+            <div class="fact-content">
+                <strong>3</strong>
+                <span>Departments</span>
+            </div>
+        </div>
+        <div class="fact-item">
+            <div class="fact-icon"><i class="fas fa-award"></i></div>
+            <div class="fact-content">
+                <strong>15+</strong>
+                <span>Years of Care</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     CALL TO ACTION
+════════════════════════════════════════════ -->
+<section class="cta-section">
+    <div class="container">
+        <h2>Ready to Take Control of Your Health?</h2>
+        <p>Book your appointment today and experience world-class healthcare from our dedicated medical team.</p>
+        <div class="cta-btns">
+            <a asp-controller="Appointments" asp-action="Create" class="btn-white">
+                <i class="fas fa-calendar-plus" style="margin-right:8px;"></i>Book Appointment Now
+            </a>
+            <a asp-controller="Departments" asp-action="Index" class="btn-ghost">
+                <i class="fas fa-info-circle" style="margin-right:8px;"></i>Learn More
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════ -->
+<footer class="site-footer">
+    <div class="container">
+        <!-- About col -->
+        <div class="footer-col">
+            <h3>CarePlus Medical</h3>
+            <p>Providing compassionate, high-quality healthcare to patients and families since 2010. Your health is our highest priority.</p>
+            <div class="social-links">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-linkedin-in"></i></a>
+            </div>
+        </div>
+        <!-- Quick links -->
+        <div class="footer-col">
+            <h3>Quick Links</h3>
+            <ul class="footer-links">
+                <li><a asp-controller="Home" asp-action="Index"><i class="fas fa-angle-right"></i> Home</a></li>
+                <li><a asp-controller="Departments" asp-action="Index"><i class="fas fa-angle-right"></i> Departments</a></li>
+                <li><a asp-controller="Staffs" asp-action="Index"><i class="fas fa-angle-right"></i> Doctors</a></li>
+                <li><a asp-controller="Patients" asp-action="Index"><i class="fas fa-angle-right"></i> Patients</a></li>
+                <li><a asp-controller="Appointments" asp-action="Index"><i class="fas fa-angle-right"></i> Appointments</a></li>
+            </ul>
+        </div>
+        <!-- Services -->
+        <div class="footer-col">
+            <h3>Services</h3>
+            <ul class="footer-links">
+                <li><a asp-controller="Patient_Medical_Profile" asp-action="Index"><i class="fas fa-angle-right"></i> Medical Profiles</a></li>
+                <li><a asp-controller="Appointments" asp-action="Create"><i class="fas fa-angle-right"></i> Book Appointment</a></li>
+                <li><a asp-controller="Staffs" asp-action="Index"><i class="fas fa-angle-right"></i> Find a Doctor</a></li>
+            </ul>
+        </div>
+        <!-- Working Hours -->
+        <div class="footer-col">
+            <h3>Working Hours</h3>
+            <ul class="hours-list">
+                <li><span>Mon – Fri</span><span>08:00 – 20:00</span></li>
+                <li><span>Saturday</span><span>08:00 – 18:00</span></li>
+                <li><span>Sunday</span><span>10:00 – 14:00</span></li>
+                <li><span>Emergency</span><span>24 / 7</span></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <p>
+            &copy; @DateTime.Now.Year CarePlus Medical Center. All Rights Reserved.
+            Designed with <i class="fas fa-heart" style="color:#fff; font-size:11px;"></i> for better healthcare.
+        </p>
+    </div>
+</footer>
+
+<!-- Scroll Up Button -->
+<div id="scrollUp" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+    <i class="fas fa-arrow-up"></i>
+</div>
+
+<script>
+    window.addEventListener('scroll', function() {
+        document.getElementById('scrollUp').classList.toggle('show', window.scrollY > 300);
+    });
+</script>
