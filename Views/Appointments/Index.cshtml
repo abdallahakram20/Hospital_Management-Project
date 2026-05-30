@@ -286,7 +286,8 @@
         }
     </div>
 
-    @if (!Model.Any())
+    @* تم تعديل الشرط هنا لتجنب الـ NullReferenceException *@
+    @if (Model == null || !Model.Any())
     {
         <div class="mp-card">
             <div class="empty-state">
@@ -313,15 +314,15 @@
                         </div>
 
                         <div style="margin-bottom: 16px;">
-                            @if (item.Status == "Available")
+                            @if (item.Status == Hospital_Management_Project.Models.AppointmentStatus.Available)
                             {
                                 <span class="badge-modern bg-light-success"><i class="bi bi-check-circle-fill"></i> Available</span>
                             }
-                            else if (item.Status == "Booked")
+                            else if (item.Status == Hospital_Management_Project.Models.AppointmentStatus.Booked)
                             {
                                 <span class="badge-modern bg-light-warning"><i class="bi bi-bookmark-dash-fill"></i> Booked</span>
                             }
-                            else if (item.Status == "Cancelled")
+                            else if (item.Status == Hospital_Management_Project.Models.AppointmentStatus.Cancelled)
                             {
                                 <span class="badge-modern bg-light-danger"><i class="bi bi-x-circle-fill"></i> Cancelled</span>
                             }
@@ -345,15 +346,16 @@
 
                         <div class="mp-actions" style="justify-content: stretch;">
                             <a asp-action="Details" asp-route-id="@item.AppointmentId" class="mp-btn mp-btn-info" style="flex: 1; justify-content: center;">
-                                <i class="bi bi-eye-fill"></i> View Full Details
+                                <i class="bi bi-eye-fill"></i> View Details
                             </a>
 
-                            @if (item.Status == "Booked")
+                            @if (item.Status == Hospital_Management_Project.Models.AppointmentStatus.Booked)
                             {
                                 <form asp-action="CancelAppointment" method="post" style="flex: 1; display:flex;">
                                     <input type="hidden" name="id" value="@item.AppointmentId" />
+                                    @* تم توحيد لغة رسالة التأكيد هنا إلى الإنجليزية لتطابق واجهة المستخدم *@
                                     <button type="submit" class="mp-btn mp-btn-danger" style="width: 100%; justify-content: center;"
-                                            onclick="return confirm('هل أنت متأكد من إلغاء هذا الموعد؟\n\nملاحظة: لا يمكن الإلغاء إذا بقى أقل من 24 ساعة على الموعد.');">
+                                            onclick="return confirm('Are you sure you want to cancel this appointment?\n\nNote: Cancellation is not allowed if less than 24 hours remain.');">
                                         <i class="bi bi-x-square-fill"></i> Cancel
                                     </button>
                                 </form>
@@ -386,15 +388,15 @@
                                 <tr>
                                     <td style="font-weight:600; color: var(--text-main);">@item.Visit_Date.ToString("yyyy-MM-dd hh:mm tt")</td>
                                     <td>
-                                        @if (item.Status == "Available")
+                                        @if (item.Status == Hospital_Management_Project.Models.AppointmentStatus.Available)
                                         {
                                             <span class="badge-modern bg-light-success"><i class="bi bi-check-circle-fill"></i> Available</span>
                                         }
-                                        else if (item.Status == "Booked")
+                                        else if (item.Status == Hospital_Management_Project.Models.AppointmentStatus.Booked)
                                         {
                                             <span class="badge-modern bg-light-warning"><i class="bi bi-bookmark-dash-fill"></i> Booked</span>
                                         }
-                                        else if (item.Status == "Cancelled")
+                                        else if (item.Status == Hospital_Management_Project.Models.AppointmentStatus.Cancelled)
                                         {
                                             <span class="badge-modern bg-light-danger"><i class="bi bi-x-circle-fill"></i> Cancelled</span>
                                         }
@@ -416,8 +418,8 @@
                                             <a asp-action="Edit" asp-route-id="@item.AppointmentId" class="mp-btn mp-btn-warning" title="Edit">
                                                 <i class="bi bi-pencil-square"></i>
                                             </a>
-                                            <a asp-action="Delete" asp-route-id="@item.AppointmentId" class="mp-btn mp-btn-danger" title="Delete"
-                                               onclick="return confirm('Are you sure you want to delete this appointment?');">
+                                            @* تم حذف الـ onclick المزدوجة هنا للاكتفاء بصفحة الحذف المستقلة والآمنة *@
+                                            <a asp-action="Delete" asp-route-id="@item.AppointmentId" class="mp-btn mp-btn-danger" title="Delete">
                                                 <i class="bi bi-trash-fill"></i>
                                             </a>
                                         </div>

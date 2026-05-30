@@ -1,19 +1,20 @@
 ﻿@model Hospital_Management_Project.Models.Appointment
 @{
     ViewData["Title"] = "Create Appointment Slot";
+    bool isPatient = User.IsInRole("Patient");
 }
 
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
 <style>
     :root {
-        --primary: #1A76D1; 
-        --primary-dark: #145db3; 
-        --primary-light: #e8f2fc; 
+        --primary: #1A76D1;
+        --primary-dark: #145db3;
+        --primary-light: #e8f2fc;
         --primary-gradient: linear-gradient(135deg, #1A76D1, #3b92ec);
-        --bg-page: #f4f8fc; 
+        --bg-page: #f4f8fc;
         --card-bg: #ffffff;
-        --text-main: #1e293b; 
+        --text-main: #1e293b;
         --text-muted: #64748b;
         --input-bg: #f8fafc;
         --input-border: #cbd5e1;
@@ -34,24 +35,31 @@
         margin: 0 auto;
     }
 
-    .page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 32px;
+    .form-card {
+        background: var(--card-bg);
+        border-radius: 24px;
+        box-shadow: 0 20px 40px -10px rgba(26, 118, 209, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+        padding: 40px;
+        border: 1px solid rgba(26, 118, 209, 0.08);
     }
 
-    .header-text h2 {
+    .card-header {
+        margin-bottom: 32px;
+        border-bottom: 2px solid var(--primary-light);
+        padding-bottom: 20px;
+    }
+
+    .card-title {
         font-size: 28px;
         font-weight: 700;
         color: var(--text-main);
-        margin: 0;
+        margin: 0 0 8px 0;
         display: flex;
         align-items: center;
         gap: 12px;
     }
 
-        .header-text h2 i {
+        .card-title i {
             color: var(--primary);
             background: var(--primary-light);
             padding: 10px;
@@ -59,137 +67,83 @@
             font-size: 24px;
         }
 
-    .btn-back {
-        background: var(--card-bg);
-        color: var(--primary);
-        border: 1px solid var(--input-border);
-        border-radius: 12px;
-        padding: 10px 20px;
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        text-decoration: none;
-        transition: all .2s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    .card-subtitle {
+        color: var(--text-muted);
+        font-size: 15px;
+        margin: 0;
     }
-
-        .btn-back:hover {
-            background: var(--primary-light);
-            border-color: var(--primary);
-            color: var(--primary-dark);
-            transform: translateY(-1px);
-        }
-
-    .form-card {
-        background: var(--card-bg);
-        border-radius: 24px;
-        padding: 48px;
-        box-shadow: 0 20px 40px -10px rgba(26, 118, 209, 0.08), 0 4px 6px -2px rgba(0,0,0,0.02);
-        border: 1px solid rgba(26, 118, 209, 0.1);
-        position: relative;
-        overflow: hidden;
-    }
-
-        .form-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 6px;
-            background: var(--primary-gradient);
-        }
 
     .form-grid {
         display: grid;
-        grid-template-columns: 1fr 1fr;
-        column-gap: 24px;
-        row-gap: 28px;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+        margin-bottom: 32px;
     }
 
-    .form-group-full {
-        grid-column: 1 / -1;
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        position: relative;
     }
+
+        .form-group.full-width {
+            grid-column: span 2;
+        }
 
     .custom-label {
         font-size: 14px;
         font-weight: 600;
         color: var(--text-main);
-        margin-bottom: 10px;
-        display: block;
     }
 
-    .custom-input,
-    .custom-select {
-        width: 100%;
-        background: var(--input-bg);
-        border: 1.5px solid var(--input-border);
+    .custom-input {
+        background-color: var(--input-bg);
+        border: 1px solid var(--input-border);
         border-radius: 12px;
-        padding: 14px 18px;
+        padding: 14px 16px;
         font-size: 15px;
-        font-family: inherit;
         color: var(--text-main);
-        outline: none;
-        transition: all .3s ease;
-        box-sizing: border-box;
+        font-family: inherit;
+        transition: all 0.2s ease;
     }
 
-        .custom-input::placeholder {
-            color: #94a3b8;
-        }
-
-        .custom-input:hover,
-        .custom-select:hover {
-            background: #f1f5f9;
-            border-color: #94a3b8;
-        }
-
-        .custom-input:focus,
-        .custom-select:focus {
-            background: var(--card-bg);
+        .custom-input:focus {
+            outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 4px var(--primary-light);
+            background-color: #ffffff;
+            box-shadow: 0 0 0 4px rgba(26, 118, 209, 0.1);
         }
 
-    .text-danger {
-        color: var(--danger);
-        font-size: 13px;
-        margin-top: 6px;
-        display: block;
-        font-weight: 500;
+    select.custom-input {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2364748b' class='bi bi-chevron-down' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C./svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 16px center;
+        background-size: 16px;
+        padding-right: 40px;
     }
 
     .btn-submit {
         background: var(--primary-gradient);
         color: #ffffff;
         border: none;
-        border-radius: 14px;
+        border-radius: 12px;
         padding: 16px 32px;
         font-size: 16px;
-        font-weight: 700;
+        font-weight: 600;
         cursor: pointer;
-        font-family: inherit;
-        transition: all .3s ease;
-        width: 100%;
-        display: flex;
-        justify-content: center;
+        display: inline-flex;
         align-items: center;
         gap: 10px;
-        margin-top: 16px;
-        box-shadow: 0 10px 20px -5px rgba(26, 118, 209, 0.4);
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 12px rgba(26, 118, 209, 0.2);
     }
 
         .btn-submit:hover {
             transform: translateY(-2px);
-            box-shadow: 0 15px 25px -5px rgba(26, 118, 209, 0.5);
+            box-shadow: 0 6px 20px rgba(26, 118, 209, 0.3);
             background: var(--primary-dark);
-        }
-
-        .btn-submit:active {
-            transform: translateY(0);
         }
 
     .autocomplete-wrapper {
@@ -198,19 +152,19 @@
 
     .suggestions-list {
         position: absolute;
-        top: calc(100% + 4px);
+        top: 100%;
         left: 0;
         right: 0;
-        background: var(--card-bg);
+        background: #ffffff;
         border: 1px solid var(--input-border);
         border-radius: 12px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        z-index: 1000;
-        max-height: 220px;
-        overflow-y: auto;
-        margin: 0;
-        padding: 8px 0;
+        margin-top: 6px;
+        padding: 0;
         list-style: none;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 1000;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
         display: none;
     }
 
@@ -219,17 +173,30 @@
         }
 
     .suggestion-item {
-        padding: 12px 20px;
-        font-size: 15px;
-        color: var(--text-main);
+        padding: 12px 16px;
         cursor: pointer;
-        transition: background .2s;
+        transition: background 0.15s ease;
     }
 
         .suggestion-item:hover {
-            background: var(--primary-light);
+            background-color: var(--primary-light);
             color: var(--primary-dark);
-            font-weight: 600;
+        }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-muted);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 24px;
+        transition: color 0.2s ease;
+    }
+
+        .back-link:hover {
+            color: var(--primary);
         }
 
     @@media (max-width: 768px) {
@@ -237,106 +204,96 @@
             grid-template-columns: 1fr;
         }
 
-        .form-card {
-            padding: 32px 24px;
-        }
-
-        .page-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 16px;
+        .form-group.full-width {
+            grid-column: span 1;
         }
     }
 </style>
 
 <div class="page-container">
-    <div class="page-header">
-        <div class="header-text">
-            <h2><i class="bi bi-calendar-check"></i> Create Appointment</h2>
-        </div>
-        <a asp-action="Index" class="btn-back">
-            <i class="bi bi-arrow-left"></i> Back to List
-        </a>
-    </div>
+    <a asp-action="Index" class="back-link">
+        <i class="bi bi-arrow-left"></i> Back to Dashboard
+    </a>
 
     <div class="form-card">
+        <div class="card-header">
+            <h2 class="card-title">
+                <i class="bi bi-calendar-plus"></i>
+                @(isPatient ? "Book an Appointment" : "Create Appointment Slot")
+            </h2>
+            <p class="card-subtitle">
+                @(isPatient ? "Fill in the details below to request your official appointment slot." : "Generate clinical records or future reservation slots within system schema.")
+            </p>
+        </div>
+
         <form asp-action="Create">
-            @Html.AntiForgeryToken()
-            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
             <div class="form-grid">
-                <div class="form-group">
-                    <label class="custom-label">Patient Name</label>
-                    <div class="autocomplete-wrapper">
-                        <input type="text" id="patientSearch" class="custom-input" placeholder="Search patient by name..." autocomplete="off" />
-                        <ul id="patientSuggestions" class="suggestions-list"></ul>
+                @if (isPatient)
+                {
+                    <div class="form-group">
+                        <label asp-for="StaffId" class="custom-label">Select Doctor (Optional)</label>
+                        <select asp-for="StaffId" class="custom-input" asp-items="ViewBag.StaffId">
+                            <option value="">-- No Preferred Doctor / Any --</option>
+                        </select>
+                        <span asp-validation-for="StaffId" class="text-danger"></span>
                     </div>
-                    <input type="hidden" asp-for="PatientId" id="PatientId" />
-                    <span asp-validation-for="PatientId" class="text-danger"></span>
-                </div>
 
-                <div class="form-group">
-                    <label asp-for="StaffId" class="custom-label">Assign Doctor</label>
-                    <select asp-for="StaffId" class="custom-select" asp-items="@(ViewBag.StaffList as SelectList)">
-                        <option value="">-- Select Doctor --</option>
-                    </select>
-                    <span asp-validation-for="StaffId" class="text-danger"></span>
-                </div>
+                    <div class="form-group">
+                        <label asp-for="Visit_Date" class="custom-label">Preferred Visit Date & Time</label>
+                        <input asp-for="Visit_Date" class="custom-input" type="datetime-local" required />
+                        <span asp-validation-for="Visit_Date" class="text-danger"></span>
+                    </div>
 
-                <div class="form-group">
-                    <label asp-for="Visit_Date" class="custom-label">Visit Date & Time</label>
-                    <input asp-for="Visit_Date" class="custom-input" type="datetime-local" />
-                    <span asp-validation-for="Visit_Date" class="text-danger"></span>
-                </div>
+                    <div class="form-group full-width">
+                        <label asp-for="Reason" class="custom-label">Reason for Visit / Main Complaint</label>
+                        <textarea asp-for="Reason" class="custom-input" rows="5" maxlength="500" placeholder="Please describe your symptoms, medical concerns, or reasons for scheduling this appointment (Maximum 500 characters)..." required></textarea>
+                        <span asp-validation-for="Reason" class="text-danger"></span>
+                    </div>
+                }
+                else
+                {
+                    <div class="form-group autocomplete-wrapper">
+                        <label class="custom-label">Search Patient</label>
+                        <input type="text" id="patientSearch" class="custom-input" placeholder="Type patient name..." autocomplete="off" />
+                        <input type="hidden" asp-for="PatientId" />
+                        <ul id="patientSuggestions" class="suggestions-list"></ul>
+                        <span asp-validation-for="PatientId" class="text-danger"></span>
+                    </div>
 
-                <div class="form-group">
-                    <label asp-for="Status" class="custom-label">Initial Status</label>
-                    <input asp-for="Status" class="custom-input" placeholder="e.g., Available, Booked" />
-                    <span asp-validation-for="Status" class="text-danger"></span>
-                </div>
+                    <div class="form-group">
+                        <label asp-for="StaffId" class="custom-label">Assign Doctor</label>
+                        <select asp-for="StaffId" class="custom-input" asp-items="ViewBag.StaffId">
+                            <option value="">-- Select Doctor --</option>
+                        </select>
+                        <span asp-validation-for="StaffId" class="text-danger"></span>
+                    </div>
 
-                <div class="form-group form-group-full">
-                    <label asp-for="Reason" class="custom-label">Reason for Visit</label>
-                    <input asp-for="Reason" class="custom-input" placeholder="Optional clinical reason" />
-                    <span asp-validation-for="Reason" class="text-danger"></span>
-                </div>
+                    <div class="form-group">
+                        <label asp-for="Visit_Date" class="custom-label">Visit Date</label>
+                        <input asp-for="Visit_Date" class="custom-input" type="datetime-local" />
+                        <span asp-validation-for="Visit_Date" class="text-danger"></span>
+                    </div>
 
-                <div class="form-group">
-                    <label asp-for="Diagnosis" class="custom-label">Diagnosis</label>
-                    <input asp-for="Diagnosis" class="custom-input" placeholder="Diagnosis description" />
-                    <span asp-validation-for="Diagnosis" class="text-danger"></span>
-                </div>
+                    <div class="form-group">
+                        <label asp-for="Status" class="custom-label">Status</label>
+                        <select asp-for="Status" class="custom-input" asp-items="Html.GetEnumSelectList<Hospital_Management_Project.Models.AppointmentStatus>()"></select>
+                        <span asp-validation-for="Status" class="text-danger"></span>
+                    </div>
 
-                <div class="form-group">
-                    <label asp-for="Medication" class="custom-label">Prescribed Medication</label>
-                    <input asp-for="Medication" class="custom-input" placeholder="Medication list" />
-                    <span asp-validation-for="Medication" class="text-danger"></span>
-                </div>
-
-                <div class="form-group">
-                    <label asp-for="Treatment_Plan" class="custom-label">Treatment Plan</label>
-                    <input asp-for="Treatment_Plan" class="custom-input" placeholder="Follow-up treatment plan" />
-                    <span asp-validation-for="Treatment_Plan" class="text-danger"></span>
-                </div>
-
-                <div class="form-group">
-                    <label asp-for="Common_tests" class="custom-label">Required Common Tests</label>
-                    <input asp-for="Common_tests" class="custom-input" placeholder="e.g., Blood test, X-Ray" />
-                    <span asp-validation-for="Common_tests" class="text-danger"></span>
-                </div>
-
-                <div class="form-group form-group-full">
-                    <label asp-for="Notes" class="custom-label">Clinical Notes</label>
-                    <input asp-for="Notes" class="custom-input" placeholder="Any additional clinical notes" />
-                    <span asp-validation-for="Notes" class="text-danger"></span>
-                </div>
-
-                <div class="form-group form-group-full">
-                    <button type="submit" class="btn-submit">
-                        <i class="bi bi-check-circle-fill"></i> Confirm Appointment
-                    </button>
-                </div>
+                    <div class="form-group full-width">
+                        <label asp-for="Reason" class="custom-label">Reason</label>
+                        <input asp-for="Reason" class="custom-input" placeholder="Initial symptoms description..." />
+                        <span asp-validation-for="Reason" class="text-danger"></span>
+                    </div>
+                }
             </div>
+
+            <button type="submit" class="btn-submit">
+                <i class="bi bi-plus-circle-fill"></i>
+                @(isPatient ? "Submit Appointment Request" : "Confirm Appointment")
+            </button>
         </form>
     </div>
 </div>
@@ -346,50 +303,53 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 
-    <script>
-        document.getElementById('patientSearch').addEventListener('input', function () {
-            const term = this.value;
-            const list = document.getElementById('patientSuggestions');
-
-            if (term.length < 1) {
-                list.innerHTML = '';
-                list.classList.remove('active');
-                return;
-            }
-
-            fetch(`/Appointments/SearchPatients?term=${encodeURIComponent(term)}`)
-                .then(res => res.json())
-                .then(data => {
-                    list.innerHTML = '';
-
-                    if(data.length > 0) {
-                        list.classList.add('active');
-                        data.forEach(p => {
-                            const li = document.createElement('li');
-                            li.className = 'suggestion-item';
-                            li.textContent = p.name;
-                            li.addEventListener('click', function () {
-                                document.getElementById('patientSearch').value = p.name;
-                                document.getElementById('PatientId').value = p.id;
-                                list.innerHTML = '';
-                                list.classList.remove('active');
-                            });
-                            list.appendChild(li);
-                        });
-                    } else {
-                        list.classList.remove('active');
-                    }
-                });
-        });
-
-        document.addEventListener('click', function (e) {
-            if (!e.target.closest('.autocomplete-wrapper')) {
+    @if (!isPatient)
+    {
+        <script>
+            document.getElementById('patientSearch').addEventListener('input', function (e) {
+                const term = e.target.value;
                 const list = document.getElementById('patientSuggestions');
-                if(list) {
+
+                if (term.length < 2) {
                     list.innerHTML = '';
                     list.classList.remove('active');
+                    return;
                 }
-            }
-        });
-    </script>
+
+                fetch(`/Appointments/SearchPatients?term=${encodeURIComponent(term)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        list.innerHTML = '';
+
+                        if(data.length > 0) {
+                            list.classList.add('active');
+                            data.forEach(p => {
+                                const li = document.createElement('li');
+                                li.className = 'suggestion-item';
+                                li.textContent = p.name;
+                                li.addEventListener('click', function () {
+                                    document.getElementById('patientSearch').value = p.name;
+                                    document.getElementById('PatientId').value = p.id;
+                                    list.innerHTML = '';
+                                    list.classList.remove('active');
+                                });
+                                list.appendChild(li);
+                            });
+                        } else {
+                            list.classList.remove('active');
+                        }
+                    });
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!e.target.closest('.autocomplete-wrapper')) {
+                    const list = document.getElementById('patientSuggestions');
+                    if(list) {
+                        list.innerHTML = '';
+                        list.classList.remove('active');
+                    }
+                }
+            });
+        </script>
+    }
 }

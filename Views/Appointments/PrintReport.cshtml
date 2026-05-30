@@ -1,4 +1,4 @@
-﻿@model IEnumerable<Hospital_Management_Project.Models.Appointment>
+﻿@model Hospital_Management_Project.Models.Appointment
 @{
     Layout = null;
 }
@@ -8,7 +8,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Appointment Report - @DateTime.Now.ToString("yyyy-MM-dd")</title>
+    <title>Medical Report - @Model.Patient?.FName @Model.Patient?.LName</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -49,112 +49,14 @@
 
         .profile-page {
             width: 100%;
-            max-width: 1350px;
+            max-width: 900px;
             padding: 0 20px;
-        }
-
-        .profile-breadcrumb {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 13px;
-            margin-bottom: 20px;
-        }
-
-        .profile-breadcrumb a {
-            color: var(--primary);
-            text-decoration: none;
-            transition: var(--tr);
-        }
-
-        .profile-breadcrumb a:hover {
-            text-decoration: underline;
-            color: var(--primary-dk);
-        }
-
-        .profile-breadcrumb i {
-            font-size: 10px;
-            color: var(--muted);
-        }
-
-        .profile-header {
-            background: var(--white);
-            border-radius: var(--radius);
-            padding: 28px 36px;
-            margin-bottom: 28px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 16px;
-            box-shadow: var(--shadow);
-            border-left: 4px solid var(--primary);
-        }
-
-        .profile-header h2 {
-            font-size: 22px;
-            font-weight: 700;
-            color: var(--dark);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin: 0 0 4px 0;
-        }
-
-        .profile-header h2 i {
-            color: var(--primary);
-        }
-
-        .profile-header p {
-            font-size: 13px;
-            color: var(--muted);
-            margin: 0;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 12px;
-        }
-
-        .btn-action {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 10px 20px;
-            border-radius: var(--radius);
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            border: none;
-            transition: var(--tr);
-        }
-
-        .btn-back {
-            background: #f1f5f9;
-            color: #475569;
-        }
-
-        .btn-back:hover {
-            background: #e2e8f0;
-            color: #1e293b;
-        }
-
-        .btn-print {
-            background: var(--primary);
-            color: var(--white);
-        }
-
-        .btn-print:hover {
-            background: var(--primary-dk);
-            box-shadow: 0 4px 12px rgba(26, 118, 209, 0.2);
         }
 
         .profile-card {
             background: var(--white);
             border-radius: var(--radius);
-            padding: 40px 50px;
+            padding: 50px;
             box-shadow: var(--shadow);
             border: 1px solid var(--border);
         }
@@ -177,12 +79,10 @@
             gap: 12px;
         }
 
-        .report-date {
-            text-align: left;
-            font-size: 13px;
+        .hospital-branding p {
+            font-size: 14px;
             color: var(--muted);
-            font-weight: 600;
-            margin-top: 15px;
+            margin: 0;
         }
 
         .report-title {
@@ -191,44 +91,41 @@
             font-weight: 700;
             margin-bottom: 35px;
             color: var(--dark);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .report-table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 30px;
+            border: 1px solid var(--border);
         }
 
         .report-table th {
             background-color: var(--light-bg);
             color: var(--primary-dk);
             font-weight: 700;
-            font-size: 14px;
-            padding: 14px 12px;
+            font-size: 15px;
+            padding: 16px;
             text-align: left;
-            border-bottom: 2px solid var(--primary);
+            width: 250px;
+            border-bottom: 1px solid var(--border);
+            border-right: 1px solid var(--border);
         }
 
         .report-table td {
-            padding: 12px;
-            font-size: 14px;
+            padding: 16px;
+            font-size: 15px;
             color: var(--dark);
             border-bottom: 1px solid var(--border);
             text-align: left;
             vertical-align: middle;
-        }
-
-        .report-table tr:nth-child(even) {
-            background-color: #fafbfc;
-        }
-
-        .print-status {
-            font-weight: 700;
-            font-size: 13px;
+            font-weight: 500;
         }
 
         .signatures {
-            margin-top: 60px;
+            margin-top: 80px;
             display: flex;
             justify-content: space-between;
             padding-top: 20px;
@@ -236,33 +133,26 @@
 
         .sign-box {
             text-align: center;
-            width: 220px;
+            width: 250px;
         }
 
         .sign-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--muted);
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--dark);
         }
 
         .sign-line {
-            border-bottom: 1px dashed var(--muted);
-            height: 40px;
+            border-bottom: 1.5px dashed var(--dark);
+            height: 50px;
             margin-bottom: 10px;
         }
 
-        .mixed-dir {
-            direction: auto;
-        }
-
+        /* إخفاء أي خلفيات للورقة أثناء الطباعة الفعلية */
         @@media print {
             @@page {
-                size: A4 landscape;
+                size: A4 portrait;
                 margin: 15mm;
-            }
-            .profile-breadcrumb,
-            .header-actions {
-                display: none !important;
             }
             body { 
                 background: #fff !important; 
@@ -278,31 +168,6 @@
 </head>
 <body>
     <div class="profile-page">
-
-        <div class="profile-breadcrumb">
-            <a asp-controller="Home" asp-action="Index"><i class="fas fa-home"></i> Home</a>
-            <i class="fas fa-chevron-right"></i>
-            <a asp-action="Index">Appointments</a>
-            <i class="fas fa-chevron-right"></i>
-            <span>Print Report</span>
-        </div>
-
-        <div class="profile-header">
-            <div>
-                <h2><i class="fas fa-print"></i> Appointments Report</h2>
-                <p>Official medical records and attendance summary</p>
-            </div>
-            <div class="header-actions">
-                <a asp-action="Index" class="btn-action btn-back">
-                    <i class="fas fa-arrow-left"></i> Back to List
-                </a>
-                
-                <button onclick="triggerPrintWithRefresh()" class="btn-action btn-print">
-                    <i class="fas fa-print"></i> Print Report
-                </button>
-            </div>
-        </div>
-
         <div class="profile-card">
             <div class="hospital-branding">
                 <h1><i class="fas fa-hospital"></i> Grand Hospital</h1>
@@ -310,99 +175,65 @@
             </div>
 
             <div class="report-title">
-                Official Clinical Appointments Record
+                Patient Medical Report
             </div>
 
             <table class="report-table">
-                <thead>
-                    <tr>
-                        <th>Visit Date & Time</th>
-                        <th>Status</th>
-                        <th>Reason / Complaint</th>
-                        <th>Diagnosis</th>
-                        <th>Prescribed Medication</th>
-                        <th>Treatment Plan</th>
-                        <th>Physician Notes</th>
-                        <th>Required Tests</th>
-                    </tr>
-                </thead>
                 <tbody>
-                    @if (!Model.Any())
-                    {
-                        <tr>
-                            <td colspan="8" style="text-align: center; padding: 40px; color: var(--muted);">
-                                <i class="fas fa-calendar-times" style="font-size: 24px; display: block; margin-bottom: 10px; color: var(--muted);"></i>
-                                No active clinical appointment records found for printing.
-                            </td>
-                        </tr>
-                    }
-                    else
-                    {
-                        @foreach (var item in Model)
-                        {
-                            <tr>
-                                <td style="font-weight: 700;">
-                                    @Html.DisplayFor(modelItem => item.Visit_Date)
-                                </td>
-                                <td>
-                                    @if (item.Status == "Available" || item.Status == "متاح")
-                                    {
-                                        <span class="print-status" style="color: #059669;"><i class="fas fa-check-circle"></i> Available</span>
-                                    }
-                                    else if (item.Status == "Booked" || item.Status == "محجوز")
-                                    {
-                                        <span class="print-status" style="color: #b45309;"><i class="fas fa-bookmark"></i> Booked</span>
-                                    }
-                                    else if (item.Status == "Cancelled" || item.Status == "ملغي")
-                                    {
-                                        <span class="print-status" style="color: #dc2626;"><i class="fas fa-times-circle"></i> Cancelled</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="print-status">@item.Status</span>
-                                    }
-                                </td>
-                                <td class="mixed-dir">@(string.IsNullOrEmpty(item.Reason) ? "Not specified" : item.Reason)</td>
-                                <td class="mixed-dir">@(string.IsNullOrEmpty(item.Diagnosis) ? "Awaiting clinical examination" : item.Diagnosis)</td>
-                                <td class="mixed-dir">@(string.IsNullOrEmpty(item.Medication) ? "None" : item.Medication)</td>
-                                <td class="mixed-dir">@(string.IsNullOrEmpty(item.Treatment_Plan) ? "None" : item.Treatment_Plan)</td>
-                                <td class="mixed-dir">@(string.IsNullOrEmpty(item.Notes) ? "-" : item.Notes)</td>
-                                <td class="mixed-dir">@(string.IsNullOrEmpty(item.Common_tests) ? "Not required" : item.Common_tests)</td>
-                            </tr>
-                        }
-                    }
+                    <tr>
+                        <th><i class="fas fa-user"></i> Patient Name</th>
+                        <td>@(Model.Patient?.FName) @(Model.Patient?.LName)</td>
+                    </tr>
+                    <tr>
+                        <th><i class="fas fa-user-md"></i> Attending Physician</th>
+                        <td>Dr. @(Model.Staff?.Fname) @(Model.Staff?.Lname)</td>
+                    </tr>
+                    <tr>
+                        <th><i class="fas fa-calendar-alt"></i> Visit Date & Time</th>
+                        <td>@Model.Visit_Date.ToString("yyyy-MM-dd | hh:mm tt")</td>
+                    </tr>
+                    <tr>
+                        <th><i class="fas fa-comment-medical"></i> Reason for Visit</th>
+                        <td>@(string.IsNullOrEmpty(Model.Reason) ? "N/A" : Model.Reason)</td>
+                    </tr>
+                    <tr>
+                        <th><i class="fas fa-stethoscope"></i> Official Diagnosis</th>
+                        <td style="color: var(--primary-dk); font-weight: 700;">@(string.IsNullOrEmpty(Model.Diagnosis) ? "Pending Clinical Check" : Model.Diagnosis)</td>
+                    </tr>
+                    <tr>
+                        <th><i class="fas fa-pills"></i> Prescribed Medication</th>
+                        <td>@(string.IsNullOrEmpty(Model.Medication) ? "None" : Model.Medication)</td>
+                    </tr>
+                    <tr>
+                        <th><i class="fas fa-vial"></i> Required Tests</th>
+                        <td>@(string.IsNullOrEmpty(Model.Common_tests) ? "None Required" : Model.Common_tests)</td>
+                    </tr>
+                    <tr>
+                        <th><i class="fas fa-file-medical-alt"></i> Treatment Plan & Notes</th>
+                        <td>
+                            <strong>Plan:</strong> @(string.IsNullOrEmpty(Model.Treatment_Plan) ? "None" : Model.Treatment_Plan) <br/><br/>
+                            <strong>Notes:</strong> @(string.IsNullOrEmpty(Model.Notes) ? "-" : Model.Notes)
+                        </td>
+                    </tr>
                 </tbody>
             </table>
 
             <div class="signatures">
                 <div class="sign-box">
-                    <span class="sign-title">Medical Records Officer</span>
                     <div class="sign-line"></div>
+                    <span class="sign-title">Patient Signature</span>
                 </div>
                 <div class="sign-box">
-                    <span class="sign-title">Medical Director</span>
                     <div class="sign-line"></div>
+                    <span class="sign-title">Doctor Signature</span>
                 </div>
             </div>
-
         </div>
     </div>
 
     <script>
-        function triggerPrintWithRefresh() {
-           
-            var currentUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
-            window.location.href = currentUrl + "?doPrint=true";
-        }
-
         window.onload = function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('doPrint') === 'true') {
-                
-                window.history.replaceState({}, document.title, window.location.pathname);
-               
-                window.print();
-            }
+            window.print();
         }
     </script>
 </body>

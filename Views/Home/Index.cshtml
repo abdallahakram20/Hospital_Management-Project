@@ -92,6 +92,65 @@
             color: var(--primary);
         }
 
+    /* ── LANGUAGE DROPDOWN ──────────────────────── */
+    .lang-dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+        .lang-dropdown .lang-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            list-style: none;
+            padding: 8px 0;
+            min-width: 140px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: var(--transition);
+            z-index: 1000;
+        }
+
+        .lang-dropdown:hover .lang-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+    .lang-menu li a {
+        display: flex !important;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        color: var(--dark) !important;
+        font-size: 13px;
+        transition: var(--transition);
+    }
+
+        .lang-menu li a:hover {
+            background: var(--light-bg);
+            color: var(--primary) !important;
+        }
+
+    /* إخفاء شريط جوجل الافتراضي للحفاظ على شكل الموقع */
+    .skiptranslate iframe {
+        display: none !important;
+    }
+
+    body {
+        top: 0px !important;
+    }
+
+    #google_translate_element {
+        display: none !important;
+    }
+
+
     /* ── HEADER ─────────────────────────────────── */
     .header-inner {
         background: var(--white);
@@ -101,6 +160,7 @@
         z-index: 999;
         animation: fadeInDown .4s ease;
     }
+
     @@keyframes fadeInDown {
         from {
             opacity: 0;
@@ -1068,15 +1128,22 @@
     }
 </style>
 
-<!-- ═══════════════════════════════════════════
-     TOPBAR
-════════════════════════════════════════════ -->
 <div class="topbar">
     <div class="container">
         <ul class="top-links">
             <li><a asp-controller="Home" asp-action="Index"><i class="fas fa-home"></i> Home</a></li>
             <li><a asp-controller="Departments" asp-action="Index">Departments</a></li>
             <li><a asp-controller="Staffs" asp-action="Index">Doctors</a></li>
+
+            <li class="lang-dropdown">
+                <a href="javascript:void(0)"><i class="fas fa-globe"></i> Language <i class="fas fa-chevron-down" style="font-size:10px; margin-left:4px;"></i></a>
+                <ul class="lang-menu">
+                    <li><a href="javascript:void(0)" onclick="changeLanguage('en', 'en')">🇬🇧 English</a></li>
+                    <li><a href="javascript:void(0)" onclick="changeLanguage('en', 'ar')">🇪🇬 العربية</a></li>
+                    <li><a href="javascript:void(0)" onclick="changeLanguage('en', 'fr')">🇫🇷 Français</a></li>
+                    <li><a href="javascript:void(0)" onclick="changeLanguage('en', 'de')">🇩🇪 Deutsch</a></li>
+                </ul>
+            </li>
         </ul>
         <ul class="top-contact">
             <li><i class="fas fa-phone"></i> Emergency: 123-456-7890</li>
@@ -1085,12 +1152,8 @@
     </div>
 </div>
 
-<!-- ═══════════════════════════════════════════
-     HEADER / NAVBAR
-════════════════════════════════════════════ -->
 <div class="header-inner">
     <div class="container">
-        <!-- Logo -->
         <a asp-controller="Home" asp-action="Index" class="logo">
             <div class="logo-icon">
                 <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1104,7 +1167,6 @@
             </div>
         </a>
 
-        <!-- Nav links -->
         <ul class="main-nav">
             <li><a asp-controller="Home" asp-action="Index" class="active">Home</a></li>
             <li><a asp-controller="Departments" asp-action="Index">Departments</a></li>
@@ -1120,16 +1182,12 @@
             </li>
         </ul>
 
-        <!-- Book button -->
         <a asp-controller="Appointments" asp-action="Create" class="btn-book">
             <i class="fas fa-calendar-plus" style="margin-right:6px;"></i>Book Appointment
         </a>
     </div>
 </div>
 
-<!-- ═══════════════════════════════════════════
-     HERO
-════════════════════════════════════════════ -->
 <div class="hero">
     <div class="container">
         <div class="hero-text">
@@ -1174,9 +1232,6 @@
     </div>
 </div>
 
-<!-- ═══════════════════════════════════════════
-     SCHEDULE STRIP (Quick Access Cards)
-════════════════════════════════════════════ -->
 <div class="schedule-strip">
     <div class="container">
         <div class="schedule-grid">
@@ -1208,9 +1263,6 @@
     </div>
 </div>
 
-<!-- ═══════════════════════════════════════════
-     DEPARTMENTS
-════════════════════════════════════════════ -->
 <section class="depts">
     <div class="container">
         <div class="section-header">
@@ -1251,9 +1303,6 @@
     </div>
 </section>
 
-<!-- ═══════════════════════════════════════════
-     FEATURED SERVICES
-════════════════════════════════════════════ -->
 <section class="services">
     <div class="container">
         <div class="section-header">
@@ -1293,9 +1342,6 @@
     </div>
 </section>
 
-<!-- ═══════════════════════════════════════════
-     FUN FACTS / STATS
-════════════════════════════════════════════ -->
 <div class="fun-facts">
     <div class="container">
         <div class="fact-item">
@@ -1329,9 +1375,6 @@
     </div>
 </div>
 
-<!-- ═══════════════════════════════════════════
-     CALL TO ACTION
-════════════════════════════════════════════ -->
 <section class="cta-section">
     <div class="container">
         <h2>Ready to Take Control of Your Health?</h2>
@@ -1347,12 +1390,8 @@
     </div>
 </section>
 
-<!-- ═══════════════════════════════════════════
-     FOOTER
-════════════════════════════════════════════ -->
 <footer class="site-footer">
     <div class="container">
-        <!-- About col -->
         <div class="footer-col">
             <h3>CarePlus Medical</h3>
             <p>Providing compassionate, high-quality healthcare to patients and families since 2010. Your health is our highest priority.</p>
@@ -1363,7 +1402,6 @@
                 <a href="#"><i class="fab fa-linkedin-in"></i></a>
             </div>
         </div>
-        <!-- Quick links -->
         <div class="footer-col">
             <h3>Quick Links</h3>
             <ul class="footer-links">
@@ -1374,7 +1412,6 @@
                 <li><a asp-controller="Appointments" asp-action="Index"><i class="fas fa-angle-right"></i> Appointments</a></li>
             </ul>
         </div>
-        <!-- Services -->
         <div class="footer-col">
             <h3>Services</h3>
             <ul class="footer-links">
@@ -1383,7 +1420,6 @@
                 <li><a asp-controller="Staffs" asp-action="Index"><i class="fas fa-angle-right"></i> Find a Doctor</a></li>
             </ul>
         </div>
-        <!-- Working Hours -->
         <div class="footer-col">
             <h3>Working Hours</h3>
             <ul class="hours-list">
@@ -1403,13 +1439,46 @@
     </div>
 </footer>
 
-<!-- Scroll Up Button -->
 <div id="scrollUp" onclick="window.scrollTo({top:0,behavior:'smooth'})">
     <i class="fas fa-arrow-up"></i>
 </div>
 
-<script>
+<div id="google_translate_element"></div>
+
+<script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+<script type="text/javascript">
+    // تهيئة مترجم جوجل
+    function googleTranslateElementInit() {
+    new google.translate.TranslateElement({
+    pageLanguage: 'en', // اللغة الأساسية للموقع
+    includedLanguages: 'en,ar,fr,de', // اللغات المتاحة
+    autoDisplay: false
+    }, 'google_translate_element');
+    }
+
+    // دالة لتغيير اللغة فوراً بدون ريفريش
+    function changeLanguage(sourceLang, targetLang) {
+    // 1. تحديث الـ Cookie عشان لما يروح لصفحة تانية تفضل اللغة زي ما هي
+    var cookieValue = '/' + sourceLang + '/' + targetLang;
+    document.cookie = "googtrans=" + cookieValue + "; path=/";
+    document.cookie = "googtrans=" + cookieValue + "; domain=" + window.location.hostname + "; path=/";
+
+    // 2. البحث عن القائمة المخفية الخاصة بجوجل وتغييرها مباشرة
+    var selectElement = document.querySelector('.goog-te-combo');
+    if (selectElement) {
+    selectElement.value = targetLang;
+    selectElement.dispatchEvent(new Event('change')); // تطبيق الترجمة فوراً
+    } else {
+    // حل بديل في حالة تأخر تحميل سكربت جوجل
+    window.location.reload();
+    }
+    }
+
+    // سكريبت السكرول للأعلى
     window.addEventListener('scroll', function() {
-        document.getElementById('scrollUp').classList.toggle('show', window.scrollY > 300);
+    var scrollBtn = document.getElementById('scrollUp');
+    if(scrollBtn) {
+    scrollBtn.classList.toggle('show', window.scrollY > 300);
+    }
     });
 </script>

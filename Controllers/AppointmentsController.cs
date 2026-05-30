@@ -11,7 +11,8 @@ using System.Threading.Tasks;
 
 namespace Hospital_Management_Project.Controllers
 {
-    [Authorize] // Enforce login for all users across all actions unless specified otherwise
+    [Authorize]
+    [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
     public class AppointmentsController : Controller
     {
         private readonly AppDbContext _context;
@@ -29,19 +30,16 @@ namespace Hospital_Management_Project.Controllers
 
             var appointmentsQuery = _context.Appointment.Include(a => a.Patient).Include(a => a.Staff).AsQueryable();
 
-            // 1. If Doctor: View only their own assigned appointments via linked Email
             if (userRole == "Doctor")
             {
                 appointmentsQuery = appointmentsQuery.Where(a => a.Staff!.Email == currentUserIdentifier);
             }
-            // 2. If Patient: View only their personal booked appointments
             else if (userRole == "Patient")
             {
                 appointmentsQuery = appointmentsQuery.Where(a => a.Patient!.user_name == currentUserIdentifier);
             }
 
-            // 3. If Admin or Receptionist: Can see and manage all appointments
-            return View(await appointmentsQuery.ToListAsync());
+            return View(await appointmentsQuery.OrderByDescending(a => a.Visit_Date).ToListAsync());
         }
 
         // GET: Appointments/Details/5
@@ -56,204 +54,174 @@ namespace Hospital_Management_Project.Controllers
 
             if (appointment == null) return NotFound();
 
-            var currentUserIdentifier = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var userRole = User.FindFirstValue(ClaimTypes.Role);
-
-            if (userRole == "Patient" && appointment.Patient?.user_name != currentUserIdentifier)
-            {
-                return RedirectToAction("AccessDenied", "Account");
-            }
-            if (userRole == "Doctor" && appointment.Staff?.Email != currentUserIdentifier)
-            {
-                return RedirectToAction("AccessDenied", "Account");
-            }
-
             return View(appointment);
         }
 
         // GET: Appointments/Create
-        [Authorize(Roles = "Admin,Doctor,Receptionist,Staff,Patient")]
         public IActionResult Create()
         {
-            var filteredDoctors = _context.Staff
-                .Where(s => s.Position != "Admin")
-                .Select(s => new
-                {
-                    StaffId = s.StaffId,
-                    FullName = s.Fname + " " + s.Lname
-                })
+            var patients = _context.Patient.Select(p => new { p.PatientId, FullName = p.FName + " " + p.LName }).ToList();
+
+            // 🌟 التعديل هنا: جلب الأطباء فقط بالاعتماد على حقل Position
+            var staff = _context.Staff
+                .Where(s => s.Position == "Doctor") // نجلب من وظيفته طبيب فقط
+                .Select(s => new { s.StaffId, FullName = s.Fname + " " + s.Lname })
                 .ToList();
 
-            ViewData["StaffList"] = new SelectList(filteredDoctors, "StaffId", "FullName");
+            ViewData["PatientId"] = new SelectList(patients, "PatientId", "FullName");
+            ViewData["StaffId"] = new SelectList(staff, "StaffId", "FullName");
             return View();
         }
 
         // POST: Appointments/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin,Doctor,Receptionist,Staff,Patient")]
-        public async Task<IActionResult> Create([Bind("AppointmentId,Visit_Date,Status,Reason,Diagnosis,Medication,Treatment_Plan,Notes,Common_tests,PatientId,StaffId")] Appointment appointment)
+        public async Task<IActionResult> Create([Bind("AppointmentId,PatientId,StaffId,Visit_Date,Reason,Diagnosis,Medication,Common_tests,Treatment_Plan,Notes")] Appointment appointment)
         {
-            if (appointment.Visit_Date < DateTime.Now)
+            // 🌟 الحل هنا: تعيين الـ PatientId تلقائياً للمريض بناءً على حسابه المفتوح
+            if (User.IsInRole("Patient"))
             {
-                ModelState.AddModelError("Visit_Date", "Cannot create an appointment slot in a date/time that has already passed!");
-            }
+                var currentUserName = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var currentPatient = await _context.Patient.FirstOrDefaultAsync(p => p.user_name == currentUserName);
 
-            var userRole = User.FindFirstValue(ClaimTypes.Role);
-
-            if (userRole == "Patient")
-            {
-                var patientUserName = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                var patient = await _context.Patient.FirstOrDefaultAsync(p => p.user_name == patientUserName);
-
-                if (patient != null)
+                if (currentPatient != null)
                 {
-                    appointment.PatientId = patient.PatientId;
-                    appointment.Status = "Booked";
+                    appointment.PatientId = currentPatient.PatientId;
                 }
+
+                // إزالة الحقل من التحقق حتى لا يعترض الـ ModelState إذا كان فارغاً من شاشة المريض
+                ModelState.Remove("PatientId");
             }
 
             if (ModelState.IsValid)
             {
-                if (string.IsNullOrEmpty(appointment.Status))
-                {
-                    appointment.Status = "Available";
-                }
+                appointment.Status = AppointmentStatus.Booked;
 
                 _context.Add(appointment);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(); // الآن سيتم الحفظ بنجاح دون أخطاء الـ Foreign Key
+                TempData["Success"] = "Appointment created successfully!";
                 return RedirectToAction(nameof(Index));
             }
 
-            var filteredDoctors = _context.Staff
-                .Where(s => s.Position != "Admin")
-                .Select(s => new
-                {
-                    StaffId = s.StaffId,
-                    FullName = s.Fname + " " + s.Lname
-                })
+            // إعادة تعبئة القوائم في حال فشل التحقق (Validation)
+            var patients = _context.Patient.Select(p => new { p.PatientId, FullName = p.FName + " " + p.LName }).ToList();
+
+            var staff = _context.Staff
+                .Where(s => s.Position == "Doctor")
+                .Select(s => new { s.StaffId, FullName = s.Fname + " " + s.Lname })
                 .ToList();
 
-            ViewData["StaffList"] = new SelectList(filteredDoctors, "StaffId", "FullName", appointment.StaffId);
+            ViewData["PatientId"] = new SelectList(patients, "PatientId", "FullName", appointment.PatientId);
+            ViewData["StaffId"] = new SelectList(staff, "StaffId", "FullName", appointment.StaffId);
             return View(appointment);
         }
 
         // GET: Appointments/Edit/5
-        [Authorize(Roles = "Admin,Doctor,Receptionist,Staff,Patient")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
 
-            var appointment = await _context.Appointment.Include(a => a.Staff).Include(a => a.Patient).FirstOrDefaultAsync(a => a.AppointmentId == id);
+            var appointment = await _context.Appointment.FindAsync(id);
             if (appointment == null) return NotFound();
 
-            var currentUserIdentifier = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var patients = _context.Patient.Select(p => new { p.PatientId, FullName = p.FName + " " + p.LName }).ToList();
 
-            if (User.IsInRole("Doctor"))
-            {
-                if (appointment.Staff?.Email != currentUserIdentifier)
-                {
-                    return RedirectToAction("AccessDenied", "Account");
-                }
-            }
-
-            if (User.IsInRole("Patient"))
-            {
-                if (appointment.Patient?.user_name != currentUserIdentifier)
-                {
-                    return RedirectToAction("AccessDenied", "Account");
-                }
-            }
-
-            var patients = _context.Patient
-                .Select(p => new { id = p.PatientId, name = p.FName + " " + p.LName })
+            var staff = _context.Staff
+                .Where(s => s.Position == "Doctor")
+                .Select(s => new { s.StaffId, FullName = s.Fname + " " + s.Lname })
                 .ToList();
 
-            var filteredDoctors = _context.Staff
-                .Where(s => s.Position != "Admin")
-                .Select(s => new
-                {
-                    StaffId = s.StaffId,
-                    FullName = s.Fname + " " + s.Lname
-                })
-                .ToList();
-
-            ViewData["Patients"] = new SelectList(patients, "id", "name", appointment.PatientId);
-            ViewData["StaffList"] = new SelectList(filteredDoctors, "StaffId", "FullName", appointment.StaffId);
-
+            ViewData["PatientId"] = new SelectList(patients, "PatientId", "FullName", appointment.PatientId);
+            ViewData["StaffId"] = new SelectList(staff, "StaffId", "FullName", appointment.StaffId);
             return View(appointment);
         }
 
         // POST: Appointments/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin,Doctor,Receptionist,Staff,Patient")]
-        public async Task<IActionResult> Edit(int id, [Bind("AppointmentId,Visit_Date,Status,Reason,Diagnosis,Medication,Treatment_Plan,Notes,Common_tests,PatientId,StaffId")] Appointment appointment)
+        public async Task<IActionResult> Edit(int id, [Bind("AppointmentId,PatientId,StaffId,Visit_Date,Reason,Status,Diagnosis,Medication,Treatment_Plan,Common_tests,Notes")] Appointment appointment)
         {
             if (id != appointment.AppointmentId) return NotFound();
-
-            var currentUserIdentifier = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var originalAppointment = await _context.Appointment.AsNoTracking().Include(a => a.Staff).Include(a => a.Patient).FirstOrDefaultAsync(a => a.AppointmentId == id);
-
-            if (originalAppointment == null) return NotFound();
-
-            if (User.IsInRole("Doctor") && originalAppointment.Staff?.Email != currentUserIdentifier)
-            {
-                return RedirectToAction("AccessDenied", "Account");
-            }
-
-            if (User.IsInRole("Patient"))
-            {
-                if (originalAppointment.Patient?.user_name != currentUserIdentifier)
-                {
-                    return RedirectToAction("AccessDenied", "Account");
-                }
-
-                appointment.Diagnosis = originalAppointment.Diagnosis;
-                appointment.Medication = originalAppointment.Medication;
-                appointment.Treatment_Plan = originalAppointment.Treatment_Plan;
-                appointment.Notes = originalAppointment.Notes;
-                appointment.Common_tests = originalAppointment.Common_tests;
-                appointment.Status = originalAppointment.Status;
-                appointment.PatientId = originalAppointment.PatientId;
-            }
 
             if (ModelState.IsValid)
             {
                 try
                 {
+                    var originalAppointment = await _context.Appointment.AsNoTracking().FirstOrDefaultAsync(a => a.AppointmentId == id);
+                    if (originalAppointment == null) return NotFound();
+
+                    if (User.IsInRole("Patient"))
+                    {
+                        appointment.Diagnosis = originalAppointment.Diagnosis;
+                        appointment.Medication = originalAppointment.Medication;
+                        appointment.Treatment_Plan = originalAppointment.Treatment_Plan;
+                        appointment.Common_tests = originalAppointment.Common_tests;
+                        appointment.Notes = originalAppointment.Notes;
+                        appointment.Status = originalAppointment.Status;
+                        appointment.StaffId = originalAppointment.StaffId;
+                        appointment.PatientId = originalAppointment.PatientId;
+                    }
+                    else
+                    {
+                        if (string.IsNullOrEmpty(appointment.Diagnosis))
+                        {
+                            ModelState.AddModelError("Diagnosis", "The Diagnosis field is required for Doctors/Staff.");
+
+                            var pList = _context.Patient.Select(p => new { p.PatientId, FullName = p.FName + " " + p.LName }).ToList();
+
+                            var sList = _context.Staff
+                                .Where(s => s.Position == "Doctor")
+                                .Select(s => new { s.StaffId, FullName = s.Fname + " " + s.Lname })
+                                .ToList();
+
+                            ViewData["PatientId"] = new SelectList(pList, "PatientId", "FullName", appointment.PatientId);
+                            ViewData["StaffId"] = new SelectList(sList, "StaffId", "FullName", appointment.StaffId);
+
+                            return View(appointment);
+                        }
+                    }
+
                     _context.Update(appointment);
                     await _context.SaveChangesAsync();
+                    TempData["Success"] = "Appointment updated successfully!";
                     return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!AppointmentExists(appointment.AppointmentId)) return NotFound();
-                    else throw;
+                    if (!AppointmentExists(appointment.AppointmentId))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        var pList = _context.Patient.Select(p => new { p.PatientId, FullName = p.FName + " " + p.LName }).ToList();
+
+                        var sList = _context.Staff
+                            .Where(s => s.Position == "Doctor")
+                            .Select(s => new { s.StaffId, FullName = s.Fname + " " + s.Lname })
+                            .ToList();
+
+                        ViewData["PatientId"] = new SelectList(pList, "PatientId", "FullName", appointment.PatientId);
+                        ViewData["StaffId"] = new SelectList(sList, "StaffId", "FullName", appointment.StaffId);
+                        throw;
+                    }
                 }
             }
 
-            var patients = _context.Patient
-                .Select(p => new { id = p.PatientId, name = p.FName + " " + p.LName })
+            var patientsFail = _context.Patient.Select(p => new { p.PatientId, FullName = p.FName + " " + p.LName }).ToList();
+
+            var staffFail = _context.Staff
+                .Where(s => s.Position == "Doctor")
+                .Select(s => new { s.StaffId, FullName = s.Fname + " " + s.Lname })
                 .ToList();
 
-            var filteredDoctors = _context.Staff
-                .Where(s => s.Position != "Admin")
-                .Select(s => new
-                {
-                    StaffId = s.StaffId,
-                    FullName = s.Fname + " " + s.Lname
-                })
-                .ToList();
-
-            ViewData["Patients"] = new SelectList(patients, "id", "name", appointment.PatientId);
-            ViewData["StaffList"] = new SelectList(filteredDoctors, "StaffId", "FullName", appointment.StaffId);
+            ViewData["PatientId"] = new SelectList(patientsFail, "PatientId", "FullName", appointment.PatientId);
+            ViewData["StaffId"] = new SelectList(staffFail, "StaffId", "FullName", appointment.StaffId);
 
             return View(appointment);
         }
 
         // GET: Appointments/Delete/5
-        [Authorize(Roles = "Admin,Receptionist")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -262,6 +230,7 @@ namespace Hospital_Management_Project.Controllers
                 .Include(a => a.Patient)
                 .Include(a => a.Staff)
                 .FirstOrDefaultAsync(m => m.AppointmentId == id);
+
             if (appointment == null) return NotFound();
 
             return View(appointment);
@@ -270,7 +239,6 @@ namespace Hospital_Management_Project.Controllers
         // POST: Appointments/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin,Receptionist")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var appointment = await _context.Appointment.FindAsync(id);
@@ -280,6 +248,7 @@ namespace Hospital_Management_Project.Controllers
             }
 
             await _context.SaveChangesAsync();
+            TempData["Success"] = "Appointment deleted successfully!";
             return RedirectToAction(nameof(Index));
         }
 
@@ -288,186 +257,50 @@ namespace Hospital_Management_Project.Controllers
             return _context.Appointment.Any(e => e.AppointmentId == id);
         }
 
+        // AUTOCOMPLETE FOR PATIENT SEARCH
         [HttpGet]
-        public JsonResult SearchPatients(string term)
+        public async Task<IActionResult> SearchPatients(string term)
         {
-            var patients = _context.Patient
-                .Where(p => (p.FName + " " + p.LName).Contains(term) || p.FName.Contains(term) || p.LName.Contains(term))
+            if (string.IsNullOrEmpty(term))
+            {
+                return Json(new List<object>());
+            }
+
+            var patients = await _context.Patient
+                .Where(p => p.FName.Contains(term) || p.LName.Contains(term))
                 .Select(p => new { id = p.PatientId, name = p.FName + " " + p.LName })
                 .Take(10)
-                .ToList();
+                .ToListAsync();
+
             return Json(patients);
         }
 
-        // =========================================================================
-        //  دوال حجز وتعديل المواعيد للمريض
-        // =========================================================================
-
-        // GET: Appointments/BookAppointment/5
-        [HttpGet]
-        [Authorize(Roles = "Patient")]
-        public async Task<IActionResult> BookAppointment(int? id)
+        // PRINT REPORT
+        public async Task<IActionResult> PrintReport(DateTime? fromDate, DateTime? toDate, int? staffId, string status)
         {
-            if (id == null) return NotFound();
-
-            var appointment = await _context.Appointment.FindAsync(id);
-            if (appointment == null) return NotFound();
-
-            // فحص هل الموعد محجوز مسبقاً (تم تعديل الشرط ليتناسب مع int)
-            if (appointment.PatientId > 0)
-            {
-                TempData["Error"] = "This appointment slot has already been booked!";
-                return RedirectToAction("Details", "Staffs", new { id = appointment.StaffId });
-            }
-
-            return View(appointment);
-        }
-
-        // POST: Appointments/ConfirmBookAppointment
-        [Authorize(Roles = "Patient")]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ConfirmBookAppointment(int AppointmentId)
-        {
-            var appointment = await _context.Appointment.FindAsync(AppointmentId);
-            if (appointment == null) return NotFound();
-
-            if (appointment.Status != "Available" && appointment.Status != "متاح" && appointment.PatientId > 0)
-            {
-                TempData["Error"] = "This appointment slot has already been booked!";
-                return RedirectToAction("Details", "Staffs", new { id = appointment.StaffId });
-            }
-
-            var patientUserName = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var patient = await _context.Patient.FirstOrDefaultAsync(p => p.user_name == patientUserName);
-
-            if (patient != null)
-            {
-                bool hasConflict = await _context.Appointment.AnyAsync(a =>
-                    a.PatientId == patient.PatientId &&
-                    a.Visit_Date == appointment.Visit_Date &&
-                    a.AppointmentId != AppointmentId);
-
-                if (hasConflict)
-                {
-                    TempData["Error"] = "Sorry, you already have another appointment booked at this exact date and time!";
-                    return RedirectToAction("Details", "Staffs", new { id = appointment.StaffId });
-                }
-
-                appointment.PatientId = patient.PatientId;
-                appointment.Status = "Booked";
-
-                _context.Update(appointment);
-                await _context.SaveChangesAsync();
-                TempData["Success"] = "The appointment has been successfully booked!";
-            }
-            else
-            {
-                TempData["Error"] = "Patient profile data could not be found.";
-            }
-
-            return RedirectToAction("Details", "Staffs", new { id = appointment.StaffId });
-        }
-
-        // GET: Appointments/ChangeAppointment/5
-        [HttpGet]
-        [Authorize(Roles = "Patient")]
-        public async Task<IActionResult> ChangeAppointment(int? id)
-        {
-            if (id == null) return NotFound();
-
-            var appointment = await _context.Appointment.FindAsync(id);
-            if (appointment == null) return NotFound();
-
-            DateTime appointmentDateTime = appointment.Visit_Date;
-            if ((appointmentDateTime - DateTime.Now).TotalHours <= 12)
-            {
-                TempData["Error"] = "Action denied! It is prohibited to change appointments with less than 12 hours remaining.";
-                return RedirectToAction("Details", "Staffs", new { id = appointment.StaffId });
-            }
-
-            // تم تعديل الشرط هنا ليفحص الـ 0 بدلاً من null
-            ViewData["AlternativeAppointments"] = await _context.Appointment
-                .Where(a => a.StaffId == appointment.StaffId && a.PatientId == 0)
-                .ToListAsync();
-
-            return View(appointment);
-        }
-
-        // POST: Appointments/ConfirmChangeAppointment
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Patient")]
-        public async Task<IActionResult> ConfirmChangeAppointment(int currentAppointmentId, int newAppointmentId)
-        {
-            var currentAppointment = await _context.Appointment.FindAsync(currentAppointmentId);
-            var newAppointment = await _context.Appointment.FindAsync(newAppointmentId);
-
-            if (currentAppointment == null || newAppointment == null) return NotFound();
-
-            DateTime currentDateTime = currentAppointment.Visit_Date;
-            if ((currentDateTime - DateTime.Now).TotalHours <= 12)
-            {
-                TempData["Error"] = "Action denied! Time lock is active (Less than 12 hours remaining).";
-                return RedirectToAction("Details", "Staffs", new { id = currentAppointment.StaffId });
-            }
-
-            newAppointment.PatientId = currentAppointment.PatientId;
-            newAppointment.Status = "Booked";
-
-            // تم التعديل هنا: إسناد 0 بدلاً من null لحل خطأ الكومبايلر CS0037
-            currentAppointment.PatientId = 0;
-            currentAppointment.Status = "Available";
-
-            _context.Update(currentAppointment);
-            _context.Update(newAppointment);
-            await _context.SaveChangesAsync();
-
-            TempData["Success"] = "Your appointment has been successfully rescheduled to the new slot!";
-            return RedirectToAction("Details", "Staffs", new { id = newAppointment.StaffId });
-        }
-
-
-        // GET: Appointments/PatientMedicalProfile/5
-        public async Task<IActionResult> PatientMedicalProfile(int? id)
-        {
-            if (id == null) return NotFound();
-
-            var medicalProfile = await _context.Set<Patient_Medical_Profile>()
-                .Include(p => p.Patient)
-                .FirstOrDefaultAsync(m => m.ProfileId == id);
-
-            if (medicalProfile == null) return NotFound();
-
-            var currentUserIdentifier = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var userRole = User.FindFirstValue(ClaimTypes.Role);
-
-            if (userRole == "Patient" && medicalProfile.Patient?.user_name != currentUserIdentifier)
-            {
-                return RedirectToAction("AccessDenied", "Account");
-            }
-
-            return View(medicalProfile);
-        }
-
-        // GET: Appointments/PrintReport
-        public async Task<IActionResult> PrintReport()
-        {
-            var currentUserIdentifier = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var userRole = User.FindFirstValue(ClaimTypes.Role);
-
             var appointmentsQuery = _context.Appointment
                 .Include(a => a.Patient)
                 .Include(a => a.Staff)
                 .AsQueryable();
 
-            if (userRole == "Doctor")
+            if (fromDate.HasValue)
             {
-                appointmentsQuery = appointmentsQuery.Where(a => a.Staff!.Email == currentUserIdentifier);
+                appointmentsQuery = appointmentsQuery.Where(a => a.Visit_Date >= fromDate.Value);
             }
-            else if (userRole == "Patient")
+
+            if (toDate.HasValue)
             {
-                appointmentsQuery = appointmentsQuery.Where(a => a.Patient!.user_name == currentUserIdentifier);
+                appointmentsQuery = appointmentsQuery.Where(a => a.Visit_Date <= toDate.Value);
+            }
+
+            if (staffId.HasValue)
+            {
+                appointmentsQuery = appointmentsQuery.Where(a => a.StaffId == staffId.Value);
+            }
+
+            if (!string.IsNullOrEmpty(status))
+            {
+                appointmentsQuery = appointmentsQuery.Where(a => a.Status.ToString() == status);
             }
 
             var reportData = await appointmentsQuery.OrderByDescending(a => a.Visit_Date).ToListAsync();
@@ -475,8 +308,22 @@ namespace Hospital_Management_Project.Controllers
             return View("PrintReport", reportData);
         }
 
-        //                   CANCEL APPOINTMENT (Patient Only) 
+        // PRINT SINGLE APPOINTMENT (For Patient & Doctor)
+        public async Task<IActionResult> Print(int? id)
+        {
+            if (id == null) return NotFound();
 
+            var appointment = await _context.Appointment
+                .Include(a => a.Patient)
+                .Include(a => a.Staff)
+                .FirstOrDefaultAsync(m => m.AppointmentId == id);
+
+            if (appointment == null) return NotFound();
+
+            return View(appointment);
+        }
+
+        // CANCEL APPOINTMENT (Patient Only)
         [HttpPost]
         [Authorize(Roles = "Patient")]
         [ValidateAntiForgeryToken]
@@ -486,8 +333,7 @@ namespace Hospital_Management_Project.Controllers
                 .Include(a => a.Patient)
                 .FirstOrDefaultAsync(a => a.AppointmentId == id);
 
-            if (appointment == null)
-                return NotFound();
+            if (appointment == null) return NotFound();
 
             var currentUserName = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (appointment.Patient?.user_name != currentUserName)
@@ -501,7 +347,7 @@ namespace Hospital_Management_Project.Controllers
                 return RedirectToAction("Index");
             }
 
-            appointment.Status = "Cancelled";
+            appointment.Status = AppointmentStatus.Cancelled;
             appointment.Notes += $"\n[Cancelled by patient on {DateTime.Now:yyyy-MM-dd HH:mm}]";
 
             await _context.SaveChangesAsync();

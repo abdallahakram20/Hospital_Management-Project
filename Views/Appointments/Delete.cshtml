@@ -265,7 +265,7 @@
                     <i class="bi bi-question-circle-fill"></i> @Html.DisplayNameFor(model => model.Reason)
                 </span>
                 <span class="info-value">
-                    @(string.IsNullOrEmpty(Model.Reason) ? "N/A" : Model.Reason)
+                    @(string.IsNullOrEmpty(Model?.Reason) ? "N/A" : Model.Reason)
                 </span>
             </div>
 
@@ -274,7 +274,7 @@
                     <i class="bi bi-heart-pulse-fill"></i> @Html.DisplayNameFor(model => model.Diagnosis)
                 </span>
                 <span class="info-value">
-                    @(string.IsNullOrEmpty(Model.Diagnosis) ? "Pending Clinical Check" : Model.Diagnosis)
+                    @(string.IsNullOrEmpty(Model?.Diagnosis) ? "Pending Clinical Check" : Model.Diagnosis)
                 </span>
             </div>
 
@@ -283,7 +283,7 @@
                     <i class="bi bi-capsule"></i> @Html.DisplayNameFor(model => model.Medication)
                 </span>
                 <span class="info-value">
-                    @(string.IsNullOrEmpty(Model.Medication) ? "None" : Model.Medication)
+                    @(string.IsNullOrEmpty(Model?.Medication) ? "None" : Model.Medication)
                 </span>
             </div>
 
@@ -292,7 +292,7 @@
                     <i class="bi bi-clipboard2-pulse"></i> @Html.DisplayNameFor(model => model.Common_tests)
                 </span>
                 <span class="info-value">
-                    @(string.IsNullOrEmpty(Model.Common_tests) ? "None Required" : Model.Common_tests)
+                    @(string.IsNullOrEmpty(Model?.Common_tests) ? "None Required" : Model.Common_tests)
                 </span>
             </div>
 
@@ -301,7 +301,7 @@
                     <i class="bi bi-journal-medical"></i> @Html.DisplayNameFor(model => model.Treatment_Plan)
                 </span>
                 <span class="info-value">
-                    @(string.IsNullOrEmpty(Model.Treatment_Plan) ? "None" : Model.Treatment_Plan)
+                    @(string.IsNullOrEmpty(Model?.Treatment_Plan) ? "None" : Model.Treatment_Plan)
                 </span>
             </div>
 
@@ -310,7 +310,7 @@
                     <i class="bi bi-sticky-fill"></i> @Html.DisplayNameFor(model => model.Notes)
                 </span>
                 <span class="info-value">
-                    @(string.IsNullOrEmpty(Model.Notes) ? "-" : Model.Notes)
+                    @(string.IsNullOrEmpty(Model?.Notes) ? "-" : Model.Notes)
                 </span>
             </div>
         </div>

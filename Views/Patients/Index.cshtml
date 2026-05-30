@@ -10,12 +10,11 @@
 
 <style>
     :root {
-        /* ألوان عصرية وجذابة */
         --primary: #2563eb;
         --primary-dk: #1d4ed8;
         --dark: #1e293b;
         --muted: #64748b;
-        --body-bg: #f1f5f9; /* لون خلفية الصفحة الأساسي لكسر الفراغ */
+        --body-bg: #f1f5f9;
         --light-bg: #f8fafc;
         --white: #ffffff;
         --danger: #ef4444;
@@ -39,17 +38,15 @@
         font-family: 'Poppins', sans-serif;
         font-size: 14px;
         color: var(--muted);
-        background-color: var(--body-bg); /* إضافة الخلفية هنا */
+        background-color: var(--body-bg);
     }
 
-    /* Page wrapper */
     .mp-page {
         padding: 40px 30px;
         max-width: 1280px;
         margin: 0 auto;
     }
 
-    /* Page Header */
     .mp-page-header {
         background: linear-gradient(to right, var(--white), var(--light-bg));
         border-radius: var(--radius);
@@ -87,7 +84,6 @@
             color: var(--muted);
         }
 
-    /* Breadcrumb */
     .mp-breadcrumb {
         display: flex;
         align-items: center;
@@ -111,7 +107,6 @@
             color: #94a3b8;
         }
 
-    /* Card */
     .mp-card {
         background: var(--white);
         border-radius: var(--radius);
@@ -121,7 +116,6 @@
         border: 1px solid #e2e8f0;
     }
 
-    /* Search bar */
     .mp-search-bar {
         display: flex;
         gap: 12px;
@@ -154,7 +148,6 @@
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
         }
 
-    /* Buttons */
     .mp-btn {
         display: inline-flex;
         align-items: center;
@@ -246,7 +239,6 @@
         font-size: 12px;
     }
 
-    /* Table Enhancements */
     .mp-table-wrap {
         overflow-x: auto;
         border-radius: var(--radius);
@@ -261,7 +253,7 @@
     }
 
         .mp-table thead th {
-            background: var(--dark); /* خلفية داكنة غنية للرأس */
+            background: var(--dark);
             color: #f8fafc;
             font-size: 13px;
             font-weight: 600;
@@ -270,12 +262,11 @@
             padding: 16px 20px;
             white-space: nowrap;
             text-align: left;
-            border-bottom: 3px solid var(--primary); /* خط أزرق سفلي للرأس */
+            border-bottom: 3px solid var(--primary);
         }
 
-        /* توحيد اتجاه النص ليتناسب مع الجدول (حسب لغة المحتوى) */
         .mp-table th, .mp-table td {
-            text-align: left; /* أو right لو الموقع بالعربي */
+            text-align: left;
         }
 
         .mp-table tbody td {
@@ -286,7 +277,6 @@
             vertical-align: middle;
         }
 
-        /* إضافة تمييز لوني بين الصفوف (Zebra Striping) */
         .mp-table tbody tr:nth-child(even) td {
             background-color: #f8fafc;
         }
@@ -295,13 +285,11 @@
             border-bottom: none;
         }
 
-        /* تأثير الـ Hover على الصفوف بالكامل */
         .mp-table tbody tr:hover td {
             background-color: #eff6ff;
             color: var(--primary-dk);
         }
 
-    /* Badge */
     .mp-badge {
         display: inline-flex;
         align-items: center;
@@ -324,7 +312,6 @@
         border: 1px solid #a7f3d0;
     }
 
-    /* Actions cell */
     .mp-actions {
         display: flex;
         gap: 8px;
@@ -332,7 +319,6 @@
         justify-content: center;
     }
 
-    /* Pagination */
     .mp-pagination {
         display: flex;
         justify-content: space-between;
@@ -392,7 +378,6 @@
             background: #f1f5f9;
         }
 
-    /* Empty state */
     .mp-empty {
         text-align: center;
         padding: 80px 20px;
@@ -431,20 +416,18 @@
 </style>
 
 <div class="mp-page">
-
-    <!-- Breadcrumb -->
     <div class="mp-breadcrumb">
         <a asp-controller="Home" asp-action="Index"><i class="fas fa-home"></i> Home</a>
         <i class="fas fa-chevron-right"></i>
         <span>Patients</span>
     </div>
 
-    <!-- Page Header -->
     <div class="mp-page-header">
         <div class="ph-left">
             <h2><i class="fas fa-procedures"></i> Patients List</h2>
             <p>Maintain and manage all registered hospital patient profiles</p>
         </div>
+
         @if (!User.IsInRole("Patient"))
         {
             <a asp-action="Create" class="mp-btn mp-btn-primary">
@@ -453,17 +436,10 @@
         }
     </div>
 
-    <!-- Main Card -->
     <div class="mp-card">
-
-        <!-- Search -->
         <form asp-action="Index" method="get">
             <div class="mp-search-bar">
-                <input type="text"
-                       name="searchString"
-                       placeholder="Search by name or ID..."
-                       value="@ViewData["CurrentFilter"]"
-                       class="mp-search-input" />
+                <input type="text" name="searchString" placeholder="Search by name or ID..." value="@ViewData["CurrentFilter"]" class="mp-search-input" />
                 <button type="submit" class="mp-btn mp-btn-primary">
                     <i class="fas fa-search"></i> Search
                 </button>
@@ -473,7 +449,6 @@
             </div>
         </form>
 
-        <!-- Table -->
         @if (!Model.Any())
         {
             <div class="mp-empty">
@@ -519,15 +494,22 @@
                                 }
                                 <td>
                                     <div class="mp-actions">
-                                        <a asp-action="Edit" asp-route-id="@item.PatientId" class="mp-btn mp-btn-warning mp-btn-sm">
-                                            <i class="fas fa-edit"></i> Edit
-                                        </a>
+
+                                        @if (User.IsInRole("Admin"))
+                                        {
+                                            <a asp-action="Edit" asp-route-id="@item.PatientId" class="mp-btn mp-btn-warning mp-btn-sm">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </a>
+                                        }
+
                                         <a asp-action="Details" asp-route-id="@item.PatientId" class="mp-btn mp-btn-info mp-btn-sm">
                                             <i class="fas fa-eye"></i> Details
                                         </a>
+
                                         <a asp-action="PrintReport" asp-route-id="@item.PatientId" class="mp-btn mp-btn-print mp-btn-sm">
                                             <i class="fas fa-print"></i> Print
                                         </a>
+
                                         @if (User.IsInRole("Admin"))
                                         {
                                             <a asp-action="Delete" asp-route-id="@item.PatientId" class="mp-btn mp-btn-danger mp-btn-sm">
@@ -542,7 +524,6 @@
                 </table>
             </div>
 
-            <!-- Pagination -->
             @if (ViewBag.TotalPages > 1)
             {
                 <div class="mp-pagination">

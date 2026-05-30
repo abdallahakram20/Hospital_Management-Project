@@ -12,6 +12,7 @@ using System.Security.Claims;
 namespace Hospital_Management_Project.Controllers
 {
     [Authorize] // Enforce authentication across the entire controller
+    [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
     public class Patient_Medical_ProfileController : Controller
     {
         private readonly AppDbContext _context;

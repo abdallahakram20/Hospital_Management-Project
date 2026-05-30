@@ -13,7 +13,8 @@ using System.Threading.Tasks;
 
 namespace Hospital_Management_Project.Controllers
 {
-    [Authorize] // Secure the entire Controller - requires login for all operations
+    [Authorize]
+    [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
     public class StaffsController(AppDbContext context, IWebHostEnvironment webHostEnvironment) : Controller
     {
         private readonly AppDbContext _context = context;
@@ -50,24 +51,26 @@ namespace Hospital_Management_Project.Controllers
         {
             if (id == null) return NotFound();
 
-            // Added .Include(s => s.Appointments) to ensure loading the doctor's appointments on the details page
             var staff = await _context.Staff
                 .Include(s => s.Department)
                 .Include(s => s.Appointments)
                 .FirstOrDefaultAsync(m => m.StaffId == id);
 
-            if (staff == null) return NotFound();
+            // 🌟 تعديل احترافي: إرجاع المستخدم مع رسالة بدلاً من شاشة 404
+            if (staff == null)
+            {
+                TempData["Error"] = "Staff member not found or may have been deleted.";
+                return RedirectToAction(nameof(Index));
+            }
 
             var userEmail = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userRole = User.FindFirstValue(ClaimTypes.Role);
 
-            // 1. If the current user is "Patient" -> pass the doctor's data and display the page immediately without blocking
             if (string.Equals(userRole, "Patient", StringComparison.OrdinalIgnoreCase))
             {
                 return View(staff);
             }
 
-            // 2. Protection for other staff: If not Admin and does not own this personal account, deny access
             if (!string.Equals(userRole, "Admin", StringComparison.OrdinalIgnoreCase) && staff.Email != userEmail)
             {
                 return Forbid();
@@ -122,7 +125,11 @@ namespace Hospital_Management_Project.Controllers
             if (id == null) return NotFound();
 
             var staff = await _context.Staff.FindAsync(id);
-            if (staff == null) return NotFound();
+            if (staff == null)
+            {
+                TempData["Error"] = "Staff member not found.";
+                return RedirectToAction(nameof(Index));
+            }
 
             var currentUserEmail = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userRole = User.FindFirstValue(ClaimTypes.Role);
@@ -207,7 +214,11 @@ namespace Hospital_Management_Project.Controllers
             if (id == null) return NotFound();
 
             var staff = await _context.Staff.FindAsync(id);
-            if (staff == null) return NotFound();
+            if (staff == null)
+            {
+                TempData["Error"] = "Staff member not found.";
+                return RedirectToAction(nameof(Index));
+            }
 
             var currentUserEmail = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userRole = User.FindFirstValue(ClaimTypes.Role);
@@ -251,7 +262,12 @@ namespace Hospital_Management_Project.Controllers
                 .Include(s => s.Department)
                 .FirstOrDefaultAsync(m => m.StaffId == id);
 
-            if (staff == null) return NotFound();
+            // 🌟 تعديل احترافي: منع خطأ 404 إذا كان الموظف محذوف مسبقاً
+            if (staff == null)
+            {
+                TempData["Error"] = "Staff member not found or already deleted.";
+                return RedirectToAction(nameof(Index));
+            }
 
             return View(staff);
         }
@@ -275,9 +291,14 @@ namespace Hospital_Management_Project.Controllers
                     }
                 }
                 _context.Staff.Remove(staff);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Staff member deleted successfully!";
+            }
+            else
+            {
+                TempData["Error"] = "Staff member not found or already deleted.";
             }
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
@@ -325,8 +346,7 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // ==========================================
-        // Managing booking, modification, and cancellation of appointments from the patient side 
-        // (Fully corrected without null and with 12-hour condition)
+        // Managing booking, modification, and cancellation of appointments from the patient side
         // ==========================================
 
         // GET: Staffs/BookAppointment/5
@@ -362,15 +382,17 @@ namespace Hospital_Management_Project.Controllers
                 return RedirectToAction(nameof(Details), new { id = appointment.StaffId });
             }
 
-            try
+            var patientUserName = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var patient = await _context.Patient.FirstOrDefaultAsync(p => p.user_name == patientUserName);
+
+            if (patient == null)
             {
-                var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                appointment.PatientId = !string.IsNullOrEmpty(userIdClaim) ? int.Parse(userIdClaim) : 1;
+                TempData["Error"] = "Patient profile data could not be found.";
+                return RedirectToAction(nameof(Details), new { id = appointment.StaffId });
             }
-            catch
-            {
-                appointment.PatientId = 1;
-            }
+
+            appointment.PatientId = patient.PatientId;
+            appointment.Status = AppointmentStatus.Booked;
 
             _context.Update(appointment);
             await _context.SaveChangesAsync();
@@ -385,8 +407,21 @@ namespace Hospital_Management_Project.Controllers
         {
             if (id == null) return NotFound();
 
-            var appointment = await _context.Set<Appointment>().FindAsync(id);
-            if (appointment == null) return NotFound();
+            var appointment = await _context.Set<Appointment>()
+                .Include(a => a.Patient)
+                .FirstOrDefaultAsync(a => a.AppointmentId == id);
+
+            if (appointment == null)
+            {
+                TempData["Error"] = "Appointment not found.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var patientUserName = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (appointment.Patient?.user_name != patientUserName)
+            {
+                return RedirectToAction("AccessDenied", "Account");
+            }
 
             DateTime appointmentDateTime = appointment.Visit_Date;
             double hoursLeft = (appointmentDateTime - DateTime.Now).TotalHours;
@@ -397,7 +432,8 @@ namespace Hospital_Management_Project.Controllers
                 return RedirectToAction(nameof(Details), new { id = appointment.StaffId });
             }
 
-            appointment.PatientId = 0; // Reset to 0 to make it available again instead of using null
+            appointment.PatientId = 0;
+            appointment.Status = AppointmentStatus.Available;
             _context.Update(appointment);
             await _context.SaveChangesAsync();
 
@@ -453,7 +489,10 @@ namespace Hospital_Management_Project.Controllers
             }
 
             newAppointment.PatientId = currentAppointment.PatientId;
+            newAppointment.Status = AppointmentStatus.Booked;
+
             currentAppointment.PatientId = 0;
+            currentAppointment.Status = AppointmentStatus.Available;
 
             _context.Update(currentAppointment);
             _context.Update(newAppointment);

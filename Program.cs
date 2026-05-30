@@ -55,9 +55,9 @@ namespace Hospital_Management_Project
 
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Account}/{action=Login}/{id?}");
+                pattern: "{controller=Home}/{action=Index}/{id?}");
 
-            // --- Database Automated Data Seeding ---
+            // --- Database Automated Data Seeding & Migrations ---
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
@@ -65,41 +65,11 @@ namespace Hospital_Management_Project
                 {
                     var context = services.GetRequiredService<AppDbContext>();
 
-                    // التحديث الصح: تطبيق المايجريشنز تلقائياً بدون مسح البيانات مسبقاً
+                    // تطبيق المايجريشنز تلقائياً بدون مسح البيانات مسبقاً
                     context.Database.Migrate();
 
-                    // Seed Department table if empty
-                    if (!context.Department.Any())
-                    {
-                        context.Department.Add(new Department
-                        {
-                            DeptName = "Administration",
-                            DeptFloor = "Ground Floor"
-                        });
-                        context.SaveChanges();
-                    }
-
-                    var adminEmail = "admin@hospital.com";
-                    var adminExists = context.Staff.Any(s => s.Email.ToLower() == adminEmail);
-
-                    if (!adminExists)
-                    {
-                        var adminDept = context.Department.FirstOrDefault(d => d.DeptName == "Administration")
-                                         ?? context.Department.First();
-
-                        var adminUser = new Staff
-                        {
-                            Fname = "Abdallah",
-                            Lname = "Akram",
-                            Email = adminEmail,
-                            Position = "Admin",
-                            DepartmentId = adminDept.DepartmentId,
-                            Password = BCrypt.Net.BCrypt.HashPassword("kali")
-                        };
-
-                        context.Staff.Add(adminUser);
-                        context.SaveChanges();
-                    }
+                    // استدعاء دالة بناء البيانات الأساسية (القسم والآدمين فقط)
+                    SeedDatabase(context);
                 }
                 catch (Exception ex)
                 {
@@ -108,7 +78,43 @@ namespace Hospital_Management_Project
                 }
             }
 
+            // أمر تشغيل التطبيق (نسخة واحدة فقط لمنع الأخطاء)
             app.Run();
+
+            // دالة الـ Seeding النظيفة (أقسام أساسية + حساب الآدمين فقط)
+            void SeedDatabase(AppDbContext context)
+            {
+                // 1. فحص وإضافة قسم الإدارة الأساسي إذا لم يكن موجوداً
+                var adminDept = context.Department.FirstOrDefault(d => d.DeptName == "Administration");
+                if (adminDept == null)
+                {
+                    adminDept = new Department
+                    {
+                        DeptName = "Administration",
+                        DeptFloor = "Ground Floor"
+                    };
+                    context.Department.Add(adminDept);
+                    context.SaveChanges();
+                }
+
+                // 2. فحص وإضافة حساب الآدمين الرئيسي فقط (البريد: admin@hospital.com والباسورد: admin123)
+                if (!context.Staff.Any(s => s.Email == "admin@hospital.com"))
+                {
+                    context.Staff.Add(new Staff
+                    {
+                        Fname = "Admin",
+                        Lname = "User",
+                        Position = "Admin",
+                        Email = "admin@hospital.com",
+                        Password = BCrypt.Net.BCrypt.HashPassword("admin123"), // الباسورد الافتراضي للدخول
+                        DepartmentId = adminDept.DepartmentId
+                    });
+                    context.SaveChanges();
+                }
+
+                // تم حذف (الدكاترة، موظفي الاستقبال، المرضى، والمواعيد التلقائية) بالكامل بناءً على طلبك.
+                Console.WriteLine("✅ Database initialized successfully with Admin account only!");
+            }
         }
     }
 }

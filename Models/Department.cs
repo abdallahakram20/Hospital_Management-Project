@@ -10,10 +10,10 @@ namespace Hospital_Management_Project.Models
 
         [Required]
         [MaxLength(50)]
-        public string DeptName { get; set; }
+        public string? DeptName { get; set; }
         [Required]
         [MaxLength(50)]
-        public string DeptFloor { get; set; }
+        public string? DeptFloor { get; set; }
 
         // Relation Between Department & Staff (1 Department many Staff) 
         public ICollection<Staff>? Staffs { get; set; }

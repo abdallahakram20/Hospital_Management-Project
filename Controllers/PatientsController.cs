@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 namespace Hospital_Management_Project.Controllers
 {
     [Authorize]
+    [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
     public class PatientsController : Controller
     {
         private readonly AppDbContext _context;
@@ -82,7 +83,6 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // GET: Patients/PrintReport/5
-        // ميزة الطباعة: متاح للدكتور، الستاف، والمريض نفسه لطباعة تقريره الخاص
         [Authorize(Roles = "Admin,Doctor,Receptionist,Nurse,Staff,Patient")]
         public async Task<IActionResult> PrintReport(int? id)
         {
@@ -91,7 +91,6 @@ namespace Hospital_Management_Project.Controllers
             var patient = await _context.Patient.FirstOrDefaultAsync(m => m.PatientId == id);
             if (patient == null) return NotFound();
 
-            // Security Check: التأكد من أن المريض لا يستطيع طباعة تقرير مريض آخر
             if (User.IsInRole("Patient"))
             {
                 var currentUser = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -101,7 +100,6 @@ namespace Hospital_Management_Project.Controllers
                 }
             }
 
-            // سنقوم بعرض صفحة مخصصة للطباعة بدون القوائم الجانبية أو الـ Navbar
             return View(patient);
         }
 
@@ -146,6 +144,8 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // GET: Patients/Edit
+        // 🌟 التعديل هنا: السماح للأدمن والمريض فقط برؤية صفحة التعديل ومنع الأطباء والموظفين
+        [Authorize(Roles = "Admin,Patient")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
@@ -168,6 +168,8 @@ namespace Hospital_Management_Project.Controllers
         // POST: Patients/Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
+        // 🌟 التعديل هنا أيضاً: حماية تنفيذ دالة التعديل
+        [Authorize(Roles = "Admin,Patient")]
         public async Task<IActionResult> Edit(int id, [Bind("PatientId,FName,LName,Address,Phone,Gender")] Patient patient)
         {
             if (id != patient.PatientId) return NotFound();

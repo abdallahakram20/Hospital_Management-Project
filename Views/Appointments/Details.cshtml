@@ -160,6 +160,7 @@
         border-top: 1px solid var(--input-border);
         padding-top: 32px;
         margin-top: 20px;
+        flex-wrap: wrap;
     }
 
     .btn-action {
@@ -173,7 +174,23 @@
         align-items: center;
         gap: 10px;
         font-family: inherit;
+        cursor: pointer;
     }
+
+    /* ستايل زر الطباعة */
+    .btn-print {
+        background: #10b981;
+        color: #fff;
+        border: none;
+        box-shadow: 0 10px 20px -5px rgba(16, 185, 129, 0.4);
+    }
+
+        .btn-print:hover {
+            background: #059669;
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px -5px rgba(16, 185, 129, 0.5);
+            color: #fff;
+        }
 
     .btn-edit {
         background: var(--primary-gradient);
@@ -202,6 +219,46 @@
             border-color: var(--primary);
             transform: translateY(-2px);
         }
+
+    @@media print {
+        body {
+            background-color: #fff;
+            color: #000;
+        }
+
+        .action-btns {
+            display: none !important; /* إخفاء الأزرار أثناء الطباعة */
+        }
+
+        .page-container {
+            padding: 0;
+            margin: 0;
+            max-width: 100%;
+        }
+
+        .details-wrapper {
+            box-shadow: none;
+            border: none;
+            padding: 0;
+        }
+
+        .page-header {
+            box-shadow: none;
+            border-left: 6px solid #000;
+            padding: 15px 20px;
+        }
+
+        .info-item {
+            border: 1px solid #ccc;
+            background: #fff;
+            break-inside: avoid; /* يمنع انقسام المربع بين صفحتين أثناء الطباعة */
+        }
+        /* تحويل بعض الألوان الغامقة لتكون واضحة في الطباعة العادية */
+        .status-badge {
+            border: 1px solid #000;
+            color: #000;
+        }
+    }
 
     @@media (max-width: 768px) {
         .page-container {
@@ -251,19 +308,19 @@
                     <i class="bi bi-info-circle"></i> @Html.DisplayNameFor(m => m.Status)
                 </div>
                 <div class="info-value">
-                    @if (Model?.Status == "Available")
+                    @if (Model?.Status == Hospital_Management_Project.Models.AppointmentStatus.Available)
                     {
                         <span class="status-badge status-available">
                             <i class="bi bi-check-circle-fill"></i> Available
                         </span>
                     }
-                    else if (Model?.Status == "Booked")
+                    else if (Model?.Status == Hospital_Management_Project.Models.AppointmentStatus.Booked)
                     {
                         <span class="status-badge status-booked">
                             <i class="bi bi-bookmark-fill"></i> Booked
                         </span>
                     }
-                    else if (Model?.Status == "Cancelled")
+                    else if (Model?.Status == Hospital_Management_Project.Models.AppointmentStatus.Cancelled)
                     {
                         <span class="status-badge status-cancelled">
                             <i class="bi bi-x-circle-fill"></i> Cancelled
@@ -334,6 +391,10 @@
         </div>
 
         <div class="action-btns">
+            <button type="button" onclick="window.print()" class="btn-action btn-print">
+                <i class="bi bi-printer"></i> Print Report
+            </button>
+
             <a asp-action="Edit" asp-route-id="@Model?.AppointmentId" class="btn-action btn-edit">
                 <i class="bi bi-pencil-square"></i> Edit Appointment
             </a>

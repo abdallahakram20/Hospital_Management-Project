@@ -1,12 +1,14 @@
-﻿using System.Security.Claims;
+﻿using Hospital_Management_Project.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Hospital_Management_Project.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace Hospital_Management_Project.Controllers
 {
@@ -20,8 +22,6 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // 1. GET: Account/Login
-        // Displays the authentication portal interface
-
         [HttpGet]
         public IActionResult Login()
         {
@@ -29,70 +29,126 @@ namespace Hospital_Management_Project.Controllers
             {
                 return RedirectToAction("Index", "Home");
             }
+
             return View();
         }
 
         // 2. POST: Account/Login
-        // Processes identity verification inputs for both Staff and Patients
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginView model)
         {
+            // توحيد المعرف: إيميل لو موظف، واسم مستخدم لو مريض
+            string loginIdentifier = model.UserType == "Staff" ? model.Email : model.UserName;
+            loginIdentifier = loginIdentifier?.Trim().ToLower();
+
+            if (string.IsNullOrEmpty(loginIdentifier))
+            {
+                ModelState.AddModelError(string.Empty, "Please enter your credentials.");
+                return View(model);
+            }
+
+            // ✅ 1. فحص محاولات الدخول الفاشلة
+            var failedAttempts = await _context.LoginAttempts
+                .Where(la => la.Email.ToLower() == loginIdentifier &&
+                              la.AttemptTime > DateTime.Now.AddMinutes(-15) &&
+                             !la.Success)
+                .CountAsync();
+
+            if (failedAttempts >= 5)
+            {
+                ModelState.AddModelError("", "Account locked. Try again after 15 minutes");
+                return View(model);
+            }
+
+            bool loginSuccess = false;
+
             try
             {
+                // ... محاولة الدخول ...
                 if (model.UserType == "Staff")
                 {
-                    // Protection: Force validation evaluation against lowercase emails to ensure matching accuracy
-
-                    var inputEmail = model.Email?.Trim().ToLower();
-                    var staff = await _context.Staff.FirstOrDefaultAsync(s => s.Email.ToLower() == inputEmail);
+                    var staff = await _context.Staff.FirstOrDefaultAsync(s => s.Email.ToLower() == loginIdentifier);
 
                     if (staff != null && BCrypt.Net.BCrypt.Verify(model.Password, staff.Password))
                     {
-                        await SignInUser(staff.Email!, staff.Position ?? "Staff", staff.Fname + " " + staff.Lname);
-                        return RedirectToAction("Index", "Home");
+                        await SignInUser(
+                            identifier: staff.Email!,
+                            emailOrUsername: staff.Email!,
+                            role: staff.Position ?? "Staff",
+                            fullName: staff.Fname + " " + staff.Lname
+                        );
+                        loginSuccess = true;
                     }
                 }
                 else if (model.UserType == "Patient")
                 {
-                    var patient = await _context.Patient.FirstOrDefaultAsync(p => p.user_name == model.UserName);
+                    var patient = await _context.Patient.FirstOrDefaultAsync(p => p.user_name.ToLower() == loginIdentifier);
 
                     if (patient != null && BCrypt.Net.BCrypt.Verify(model.Password, patient.Password))
                     {
-                        await SignInUser(patient.user_name!, "Patient", patient.FName + " " + patient.LName);
-                        return RedirectToAction("Index", "Home");
+                        await SignInUser(
+                            identifier: patient.user_name!,
+                            emailOrUsername: patient.user_name!,
+                            role: "Patient",
+                            fullName: patient.FName + " " + patient.LName
+                        );
+                        loginSuccess = true;
                     }
                 }
             }
             catch (BCrypt.Net.SaltParseException)
             {
                 ModelState.AddModelError(string.Empty, "Account uses an outdated security format. Please reset your password.");
-                return View(model);
+            }
+            catch (Exception)
+            {
+                ModelState.AddModelError(string.Empty, "An error occurred during authentication.");
             }
 
-            ModelState.AddModelError(string.Empty, "Invalid authentication parameters or account not found.");
+            // ✅ 2. تسجيل المحاولة في الداتا بيز سواء نجحت أو فشلت
+            var attempt = new LoginAttempt
+            {
+                Email = loginIdentifier, // بنخزن الإيميل أو اسم المستخدم
+                AttemptTime = DateTime.Now,
+                Success = loginSuccess
+            };
+
+            _context.LoginAttempts.Add(attempt);
+            await _context.SaveChangesAsync();
+
+            // ✅ 3. توجيه المستخدم لو العملية نجحت
+            if (loginSuccess)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            // في حالة الفشل نضيف رسالة خطأ (لو مكنش فيه رسالة انضافت فوق)
+            if (ModelState.ErrorCount == 0)
+            {
+                ModelState.AddModelError(string.Empty, "Invalid authentication parameters or account not found.");
+            }
+
             return View(model);
         }
 
-        // Helper Method: Establishes context principal claims and issues the encrypted security cookie wrapper
-        private async Task SignInUser(string identifier, string role, string fullName)
+        // Helper: بناء الـ Claims وعمل Sign In
+        private async Task SignInUser(string identifier, string emailOrUsername, string role, string fullName)
         {
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, identifier),
+                new Claim(ClaimTypes.Email, emailOrUsername),
                 new Claim(ClaimTypes.Name, fullName),
                 new Claim(ClaimTypes.Role, role)
             };
 
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 
-            // Security Policy: Inherit tracking parameters directly from Program.cs middleware setup (e.g., 20 mins sliding timeout)
-
             var authProperties = new AuthenticationProperties
             {
-                IsPersistent = false, // Session clears completely upon browser termination alongside idle timeout
-                AllowRefresh = true   // Permits automated cryptographic sliding renewal upon active client requests
+                IsPersistent = false,
+                AllowRefresh = true
             };
 
             await HttpContext.SignInAsync(
@@ -102,8 +158,6 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // 3. POST: Account/Logout
-        // Explicitly terminates current identity cookie sessions securely
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
@@ -113,25 +167,21 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // 4. GET: Account/AccessDenied
-        // Endpoint handler executed whenever unauthorized cross-role resource tampering is intercepted
-
         [HttpGet]
         public IActionResult AccessDenied()
         {
             return View();
         }
-        // 5. GET: Account/ForgotPassword
 
+        // 5. GET: Account/ForgotPassword
         [HttpGet]
         public IActionResult ForgotPassword(string userType)
         {
-
             ViewBag.UserType = userType;
             return View();
         }
 
         // 6. POST: Account/ForgotPassword
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ForgotPassword(string identifier, string userType)
@@ -159,7 +209,6 @@ namespace Hospital_Management_Project.Controllers
 
             if (userExists)
             {
-
                 string resetToken = Guid.NewGuid().ToString();
 
                 var resetLink = Url.Action("ResetPassword", "Account",
@@ -170,12 +219,10 @@ namespace Hospital_Management_Project.Controllers
             }
 
             ViewBag.Message = "If your account exists in our system, you will receive password reset instructions shortly.";
-
             return View("ForgotPasswordConfirmation");
         }
 
         // 7. GET: Account/ResetPassword
-        // يعرض صفحة كتابة الباسورد الجديد
         [HttpGet]
         public IActionResult ResetPassword(string token, string identifier, string userType)
         {
@@ -192,7 +239,6 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // 8. POST: Account/ResetPassword
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ResetPassword(string identifier, string userType, string newPassword, string confirmPassword)
@@ -228,6 +274,38 @@ namespace Hospital_Management_Project.Controllers
 
             TempData["SuccessMessage"] = "Your password has been reset successfully. Please login with your new password.";
             return RedirectToAction("Login");
+        }
+
+        // 9. POST: Account/CreateStaff
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> CreateStaff(Staff staff)
+        {
+            var existingStaff = await _context.Staff
+                .FirstOrDefaultAsync(s => s.Email.ToLower() == staff.Email.ToLower());
+
+            if (existingStaff != null)
+            {
+                ModelState.AddModelError("Email", "This email is already registered");
+                return View(staff);
+            }
+
+            if (ModelState.IsValid)
+            {
+                if (!string.IsNullOrEmpty(staff.Password))
+                {
+                    staff.Password = BCrypt.Net.BCrypt.HashPassword(staff.Password);
+                }
+
+                _context.Add(staff);
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "Staff account created successfully!";
+                return RedirectToAction("Index", "Staffs");
+            }
+
+            return View(staff);
         }
     }
 }
