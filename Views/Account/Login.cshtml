@@ -20,6 +20,7 @@
             body {
                 margin: 0;
                 font-family: 'DM Sans', sans-serif;
+                background-color: #E8F0FE;
             }
 
             .login-page-wrapper {
@@ -28,7 +29,7 @@
                 left: 0;
                 width: 100%;
                 height: 100vh;
-                background-color: #dff0f3;
+                background-color: #E8F0FE;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -40,7 +41,7 @@
             .login-container {
                 background: #ffffff;
                 border-radius: 24px;
-                box-shadow: 0 8px 32px rgba(59,191,191,0.08);
+                box-shadow: 0 10px 40px rgba(0, 86, 210, 0.12);
                 display: flex;
                 flex-direction: row;
                 max-width: 1000px;
@@ -60,7 +61,7 @@
 
             .login-right {
                 width: 50%;
-                background-color: #3BBFBF;
+                background: radial-gradient(circle at center, #0056D2 0%, #003CA3 100%);
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -68,7 +69,7 @@
             }
 
             .brand-title {
-                color: #1a2e35;
+                color: #0A1931;
                 font-family: 'Playfair Display', serif;
                 font-weight: 700;
                 font-size: 32px;
@@ -77,14 +78,15 @@
             }
 
             .brand-subtitle {
-                color: #5a7a82;
+                color: #0056D2;
                 font-size: 15px;
                 text-align: center;
                 margin-bottom: 30px;
+                font-weight: 600;
             }
 
             .nav-pills {
-                background: #f4f8f9;
+                background: #F0F4FA;
                 border-radius: 50px;
                 padding: 5px;
                 margin-bottom: 30px;
@@ -92,7 +94,7 @@
             }
 
                 .nav-pills .nav-link {
-                    color: #5a7a82;
+                    color: #657795;
                     border-radius: 50px;
                     padding: 10px 15px;
                     font-weight: 600;
@@ -100,56 +102,56 @@
                     transition: all 0.3s ease;
                 }
 
-                    .nav-pills .nav-link.active {
-                        background-color: #ffffff;
-                        color: #3BBFBF;
-                        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-                        font-weight: 700;
-                        border: none;
-                    }
+                .nav-pills .nav-link.active {
+                    background-color: #ffffff;
+                    color: #0056D2;
+                    box-shadow: 0 4px 12px rgba(0, 86, 210, 0.15);
+                    font-weight: 700;
+                    border: none;
+                }
 
             .form-label-custom {
                 font-size: 13px;
                 font-weight: 600;
-                color: #5a7a82;
+                color: #4A5568;
                 margin-bottom: 8px;
             }
 
             .custom-input {
-                border: 1px solid #dce4e6;
+                border: 1px solid #E2E8F0;
                 border-radius: 12px;
                 padding: 12px 15px;
-                background-color: #ffffff;
-                color: #1a2e35;
+                background-color: #F8FAFC;
+                color: #0A1931;
                 font-size: 14px;
                 box-shadow: none !important;
                 transition: all 0.3s ease;
             }
 
                 .custom-input::placeholder {
-                    color: #aebfc4;
+                    color: #94A3B8;
                 }
 
                 .custom-input:focus {
-                    border-color: #3BBFBF;
+                    border-color: #0056D2;
                     background-color: #ffffff;
-                    color: #1a2e35;
-                    box-shadow: 0 0 0 4px rgba(59,191,191,0.1) !important;
+                    color: #0A1931;
+                    box-shadow: 0 0 0 4px rgba(0, 86, 210, 0.15) !important;
                 }
 
             .toggle-password {
                 right: 15px !important;
                 top: 36px !important;
-                color: #aebfc4 !important;
+                color: #94A3B8 !important;
                 transition: color 0.2s;
             }
 
                 .toggle-password:hover {
-                    color: #3BBFBF !important;
+                    color: #0056D2 !important;
                 }
 
             .btn-custom {
-                background-color: #3BBFBF;
+                background-color: #0056D2;
                 color: #ffffff;
                 border-radius: 50px;
                 font-weight: 600;
@@ -158,31 +160,33 @@
                 border: none;
                 transition: all 0.2s ease;
                 margin-bottom: 15px;
+                box-shadow: 0 4px 14px rgba(0, 86, 210, 0.3);
             }
 
                 .btn-custom:hover {
-                    background-color: #2aa0a0;
+                    background-color: #0043A8;
                     transform: translateY(-2px);
                     color: #ffffff;
+                    box-shadow: 0 6px 20px rgba(0, 86, 210, 0.4);
                 }
 
             .register-container {
                 text-align: center;
                 margin-top: 20px;
                 padding-top: 20px;
-                border-top: 1px dashed #dce4e6;
+                border-top: 1px dashed #E2E8F0;
             }
 
             .register-text {
                 font-size: 13px;
-                color: #5a7a82;
+                color: #657795;
                 margin-bottom: 12px;
             }
 
             .btn-register-outline {
                 background-color: transparent;
-                color: #3BBFBF;
-                border: 2px solid #3BBFBF;
+                color: #0056D2;
+                border: 2px solid #0056D2;
                 border-radius: 50px;
                 font-weight: 600;
                 font-size: 14px;
@@ -197,22 +201,22 @@
             }
 
                 .btn-register-outline:hover {
-                    background-color: #3BBFBF;
+                    background-color: #0056D2;
                     color: #ffffff;
                     transform: translateY(-1px);
-                    box-shadow: 0 4px 12px rgba(59,191,191,0.15);
+                    box-shadow: 0 4px 12px rgba(0, 86, 210, 0.2);
                 }
 
             .options-row {
                 font-size: 13px;
-                color: #5a7a82;
+                color: #657795;
                 margin-top: 15px;
                 margin-bottom: 25px;
                 align-items: center;
             }
 
                 .options-row a {
-                    color: #3BBFBF;
+                    color: #0056D2;
                     text-decoration: none;
                     font-weight: 600;
                 }
@@ -222,7 +226,7 @@
                     }
 
                 .options-row input[type="checkbox"] {
-                    accent-color: #3BBFBF;
+                    accent-color: #0056D2;
                     width: 16px;
                     height: 16px;
                     cursor: pointer;
@@ -236,23 +240,23 @@
                 }
 
             .alert-custom {
-                background-color: #eaf6f6;
+                background-color: #EDF4FF;
                 border-radius: 12px;
                 padding: 15px;
-                color: #5a7a82;
+                color: #1E3A8A;
                 font-size: 13px;
                 display: flex;
                 align-items: flex-start;
                 gap: 10px;
-                border-left: 4px solid #3BBFBF;
+                border-left: 4px solid #0056D2;
             }
 
                 .alert-custom i {
-                    color: #3BBFBF;
+                    color: #0056D2;
                 }
 
                 .alert-custom strong {
-                    color: #1a2e35;
+                    color: #0A1931;
                 }
 
             .circle-graphic-wrapper {
@@ -268,7 +272,7 @@
                 position: absolute;
                 width: 260px;
                 height: 260px;
-                border: 2px dashed rgba(255, 255, 255, 0.4);
+                border: 2px dashed rgba(255, 255, 255, 0.3);
                 border-radius: 50%;
                 animation: spin 40s linear infinite;
             }
@@ -284,18 +288,18 @@
                 width: 150px;
                 height: 150px;
                 background: #ffffff;
-                border: 6px solid #eaf6f6;
+                border: 6px solid #EDF4FF;
                 border-radius: 50%;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
                 z-index: 10;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                box-shadow: 0 10px 30px rgba(0,0,0,0.15);
             }
 
                 .center-circle h3 {
-                    color: #1a2e35;
+                    color: #0A1931;
                     margin: 0;
                     font-family: 'Playfair Display', serif;
                     font-weight: 700;
@@ -303,7 +307,7 @@
                 }
 
                 .center-circle p {
-                    color: #3BBFBF;
+                    color: #0056D2;
                     margin: 0;
                     font-size: 11px;
                     font-weight: 600;
@@ -314,63 +318,24 @@
                 width: 40px;
                 height: 40px;
                 background: #ffffff;
-                color: #3BBFBF;
+                color: #0056D2;
                 border-radius: 50%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 font-size: 18px;
                 z-index: 5;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+                box-shadow: 0 4px 15px rgba(0,0,0,0.15);
             }
 
-            .node-1 {
-                top: 0;
-                left: 50%;
-                transform: translate(-50%, -50%);
-            }
-
-            .node-2 {
-                top: 14.6%;
-                left: 85.3%;
-                transform: translate(-50%, -50%);
-            }
-
-            .node-3 {
-                top: 50%;
-                left: 100%;
-                transform: translate(-50%, -50%);
-            }
-
-            .node-4 {
-                top: 85.3%;
-                left: 85.3%;
-                transform: translate(-50%, -50%);
-            }
-
-            .node-5 {
-                top: 100%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-            }
-
-            .node-6 {
-                top: 85.3%;
-                left: 14.6%;
-                transform: translate(-50%, -50%);
-            }
-
-            .node-7 {
-                top: 50%;
-                left: 0;
-                transform: translate(-50%, -50%);
-            }
-
-            .node-8 {
-                top: 14.6%;
-                left: 14.6%;
-                transform: translate(-50%, -50%);
-            }
+            .node-1 { top: 0; left: 50%; transform: translate(-50%, -50%); }
+            .node-2 { top: 14.6%; left: 85.3%; transform: translate(-50%, -50%); }
+            .node-3 { top: 50%; left: 100%; transform: translate(-50%, -50%); }
+            .node-4 { top: 85.3%; left: 85.3%; transform: translate(-50%, -50%); }
+            .node-5 { top: 100%; left: 50%; transform: translate(-50%, -50%); }
+            .node-6 { top: 85.3%; left: 14.6%; transform: translate(-50%, -50%); }
+            .node-7 { top: 50%; left: 0; transform: translate(-50%, -50%); }
+            .node-8 { top: 14.6%; left: 14.6%; transform: translate(-50%, -50%); }
 
             .bottom-buildings {
                 position: absolute;
@@ -378,7 +343,7 @@
                 left: 0;
                 width: 100%;
                 height: 40px;
-                background-image: url('data:image/svg+xml;utf8,<svg opacity="0.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 20"><rect x="5" y="10" width="8" height="10" fill="%23ffffff"/><rect x="18" y="5" width="12" height="15" fill="%23ffffff"/><rect x="35" y="12" width="10" height="8" fill="%23ffffff"/><rect x="50" y="8" width="12" height="12" fill="%23ffffff"/><rect x="68" y="3" width="15" height="17" fill="%23ffffff"/><rect x="88" y="11" width="8" height="9" fill="%23ffffff"/></svg>');
+                background-image: url('data:image/svg+xml;utf8,<svg opacity="0.15" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 20"><rect x="5" y="10" width="8" height="10" fill="%23ffffff"/><rect x="18" y="5" width="12" height="15" fill="%23ffffff"/><rect x="35" y="12" width="10" height="8" fill="%23ffffff"/><rect x="50" y="8" width="12" height="12" fill="%23ffffff"/><rect x="68" y="3" width="15" height="17" fill="%23ffffff"/><rect x="88" y="11" width="8" height="9" fill="%23ffffff"/></svg>');
                 background-repeat: repeat-x;
                 background-position: bottom;
                 background-size: 150px;
@@ -530,23 +495,23 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-        const togglePasswordIcons = document.querySelectorAll('.toggle-password');
+            const togglePasswordIcons = document.querySelectorAll('.toggle-password');
 
-        togglePasswordIcons.forEach(function (icon) {
-        icon.addEventListener('click', function () {
-        const input = this.parentElement.querySelector('input');
+            togglePasswordIcons.forEach(function (icon) {
+                icon.addEventListener('click', function () {
+                    const input = this.parentElement.querySelector('input');
 
-        if (input.type === 'password') {
-        input.type = 'text';
-        this.classList.remove('bi-eye-slash');
-        this.classList.add('bi-eye');
-        } else {
-        input.type = 'password';
-        this.classList.remove('bi-eye');
-        this.classList.add('bi-eye-slash');
-        }
-        });
-        });
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        this.classList.remove('bi-eye-slash');
+                        this.classList.add('bi-eye');
+                    } else {
+                        input.type = 'password';
+                        this.classList.remove('bi-eye');
+                        this.classList.add('bi-eye-slash');
+                    }
+                });
+            });
         });
     </script>
 </body>

@@ -20,3 +20,38 @@ html {
 body {
   margin-bottom: 60px;
 }
+/* أضف هذا في نهاية ملف site.css */
+
+.hero-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+    padding: 80px 0;
+}
+
+.hero-content {
+    flex: 1;
+}
+
+.hero-image-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.large-hero-logo {
+    max-width: 100%;
+    max-height: 450px; /* يمكنك زيادة أو تقليل هذا الرقم للتحكم في حجم اللوجو الكبير */
+    height: auto;
+    object-fit: contain;
+}
+
+/* لجعل التصميم متجاوب مع الشاشات الصغيرة والموبايل */
+@media (max-width: 768px) {
+    .hero-wrapper {
+        flex-direction: column;
+        text-align: center;
+    }
+}
