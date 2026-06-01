@@ -10,9 +10,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Clinic Departments - Medicare</title>
+    
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
     
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
     <style>
         body {
             background-color: #f3f8ff;
@@ -75,7 +78,6 @@
             box-shadow: 0 12px 30px rgba(0, 82, 204, 0.02);
         }
 
-        /* تحديد الصف باللون الأزرق بالكامل المتطابق مع التصميم */
         .table-thead {
             background: #0052cc !important;
         }
@@ -128,41 +130,6 @@
         .btn-delete-icon { color: #ef4444; border-color: #fee2e2; }
         .btn-delete-icon:hover { background-color: #ef4444; color: #fff; border-color: #ef4444; }
 
-        .status-btn-link {
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            padding: 5px 14px;
-            border: none;
-            display: inline-block;
-            text-decoration: none;
-            transition: opacity 0.2s;
-        }
-        
-        .status-btn-link:hover {
-            opacity: 0.85;
-            color: inherit;
-        }
-
-        .bg-confirmed { background-color: #e6f4ea; color: #1e7e34; }
-        .bg-pending { background-color: #e8f0fe; color: #1a73e8; }
-
-        .timeline-dot {
-            position: relative;
-            padding-left: 20px;
-        }
-
-        .timeline-dot::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 6px;
-            width: 8px;
-            height: 8px;
-            background-color: #1a73e8;
-            border-radius: 50%;
-        }
-
         .floor-badge {
             background-color: #eef5ff; 
             color: #0052cc; 
@@ -172,6 +139,195 @@
             font-weight: 600;
             display: inline-block;
             border: none;
+        }
+
+        /* تنسيقات الفوتر الأزرق العريض المعتمد */
+        .custom-hospital-footer {
+            background-color: #1565c0; 
+            color: #ffffff !important;
+            font-family: system-ui, -apple-system, sans-serif;
+            margin-top: 60px;
+            width: 100%;
+        }
+
+        .hospital-footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .hospital-footer-top {
+            padding: 60px 0 40px 0;
+        }
+
+        .hospital-footer-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+
+        .hospital-footer-col {
+            flex: 1;
+            min-width: 220px;
+        }
+
+        .hospital-footer-heading {
+            color: #ffffff;
+            font-size: 19px;
+            font-weight: 700;
+            margin-bottom: 25px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .hospital-footer-heading::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 40px;
+            height: 2px;
+            background-color: #ffffff;
+        }
+
+        .hospital-footer-text {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .hospital-footer-socials {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .h-social-btn {
+            width: 36px;
+            height: 36px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff !important;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .h-social-btn:hover {
+            background-color: rgba(255, 255, 255, 0.25);
+        }
+
+        .hospital-footer-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .hospital-footer-links li {
+            margin-bottom: 12px;
+        }
+
+        .hospital-footer-links a {
+            color: rgba(255, 255, 255, 0.8) !important;
+            text-decoration: none;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s, color 0.2s;
+        }
+
+        .hospital-footer-links a i {
+            font-size: 10px;
+        }
+
+        .hospital-footer-links a:hover {
+            color: #ffffff !important;
+            transform: translateX(5px);
+        }
+
+        .hospital-footer-hours {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .hours-line {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.15);
+            padding-bottom: 6px;
+        }
+
+        .hours-line strong {
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        .emergency-line {
+            border-bottom: none;
+        }
+
+        .emergency-line strong {
+            font-weight: 700;
+            border-bottom: 1px solid #ffffff;
+        }
+
+        .hospital-footer-bottom {
+            background-color: rgba(0, 0, 0, 0.1);
+            padding: 20px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .bottom-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .copyright-text {
+            font-size: 13.5px;
+            color: rgba(255, 255, 255, 0.7);
+            margin: 0;
+        }
+
+        .copyright-text i {
+            color: #ffffff;
+            font-size: 12px;
+        }
+
+        .h-scroll-top {
+            width: 36px;
+            height: 36px;
+            background-color: rgba(255, 255, 255, 0.15);
+            color: #ffffff !important;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .h-scroll-top:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px);
+        }
+
+        @@media (max-width: 768px) {
+            .hospital-footer-row {
+                flex-direction: column;
+            }
+            .bottom-flex {
+                flex-direction: column;
+                text-align: center;
+            }
         }
     </style>
 </head>
@@ -305,98 +461,78 @@
                 </div>
             </div>
         </div>
+    </div>
+</div>
 
-      @*  <div class="col-lg-4">
-            <div class="card p-4 border-0 custom-card h-100" style="min-height: 520px;">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="fw-bold m-0" style="color: #0a1931;">Appointments Today</h5>
-                    <a href="@Url.Action("Index", "Appointments")" class="text-decoration-none small fw-bold" style="color: #0052cc;">View all</a>
-                </div>
-
-                <div class="d-flex flex-column gap-3">
-                    <div class="d-flex align-items-center justify-content-between p-2 border-bottom pb-3">
-                        <div class="d-flex align-items-center">
-                            <div class="text-center me-3" style="min-width: 65px;">
-                                <div class="fw-bold text-dark m-0" style="font-size: 0.95rem;">09:00 AM</div>
-                                <small class="text-muted d-block" style="font-size: 0.75rem; font-weight: 600;">PM</small>
-                            </div>
-                            <div class="timeline-dot" style="border-left: 2px solid #eef5ff; padding-left: 15px;">
-                                <div class="fw-bold text-dark" style="font-size: 0.95rem;">John Doe</div>
-                                <small class="text-muted d-block" style="font-size: 0.85rem;">Cardiology</small>
-                            </div>
-                        </div>
-                        <a href="@Url.Action("Index", "Appointments")" class="status-btn-link bg-confirmed">Confirmed</a>
-                    </div>
-
-                    <div class="d-flex align-items-center justify-content-between p-2 border-bottom pb-3">
-                        <div class="d-flex align-items-center">
-                            <div class="text-center me-3" style="min-width: 65px;">
-                                <div class="fw-bold text-dark m-0" style="font-size: 0.95rem;">10:30 AM</div>
-                                <small class="text-muted d-block" style="font-size: 0.75rem; font-weight: 600;">PM</small>
-                            </div>
-                            <div class="timeline-dot" style="border-left: 2px solid #eef5ff; padding-left: 15px;">
-                                <div class="fw-bold text-dark" style="font-size: 0.95rem;">Sarah Smith</div>
-                                <small class="text-muted d-block" style="font-size: 0.85rem;">Pediatrics</small>
-                            </div>
-                        </div>
-                        <a href="@Url.Action("Index", "Appointments")" class="status-btn-link bg-confirmed">Confirmed</a>
-                    </div>
-
-                    <div class="d-flex align-items-center justify-content-between p-2 border-bottom pb-3">
-                        <div class="d-flex align-items-center">
-                            <div class="text-center me-3" style="min-width: 65px;">
-                                <div class="fw-bold text-dark m-0" style="font-size: 0.95rem;">12:00 PM</div>
-                                <small class="text-muted d-block" style="font-size: 0.75rem; font-weight: 600;">PM</small>
-                            </div>
-                            <div class="timeline-dot" style="border-left: 2px solid #eef5ff; padding-left: 15px;">
-                                <div class="fw-bold text-dark" style="font-size: 0.95rem;">Michael Brown</div>
-                                <small class="text-muted d-block" style="font-size: 0.85rem;">Orthopedics</small>
-                            </div>
-                        </div>
-                        <a href="@Url.Action("Index", "Appointments")" class="status-btn-link bg-pending">Pending</a>
-                    </div>
-
-                    <div class="d-flex align-items-center justify-content-between p-2 border-bottom pb-3">
-                        <div class="d-flex align-items-center">
-                            <div class="text-center me-3" style="min-width: 65px;">
-                                <div class="fw-bold text-dark m-0" style="font-size: 0.95rem;">02:30 PM</div>
-                                <small class="text-muted d-block" style="font-size: 0.75rem; font-weight: 600;">PM</small>
-                            </div>
-                            <div class="timeline-dot" style="border-left: 2px solid #eef5ff; padding-left: 15px;">
-                                <div class="fw-bold text-dark" style="font-size: 0.95rem;">Emily Davis</div>
-                                <small class="text-muted d-block" style="font-size: 0.85rem;">Dermatology</small>
-                            </div>
-                        </div>
-                        <a href="@Url.Action("Index", "Appointments")" class="status-btn-link bg-confirmed">Confirmed</a>
-                    </div>
-
-                    <div class="d-flex align-items-center justify-content-between p-2 pb-1">
-                        <div class="d-flex align-items-center">
-                            <div class="text-center me-3" style="min-width: 65px;">
-                                <div class="fw-bold text-dark m-0" style="font-size: 0.95rem;">04:00 PM</div>
-                                <small class="text-muted d-block" style="font-size: 0.75rem; font-weight: 600;">PM</small>
-                            </div>
-                            <div class="timeline-dot" style="border-left: 2px solid #eef5ff; padding-left: 15px;">
-                                <div class="fw-bold text-dark" style="font-size: 0.95rem;">David Wilson</div>
-                                <small class="text-muted d-block" style="font-size: 0.85rem;">Neurology</small>
-                            </div>
-                        </div>
-                        <a href="@Url.Action("Index", "Appointments")" class="status-btn-link bg-pending">Pending</a>
+<footer class="custom-hospital-footer">
+    <div class="hospital-footer-top">
+        <div class="hospital-footer-container">
+            <div class="hospital-footer-row">
+                
+                <div class="hospital-footer-col">
+                    <h5 class="hospital-footer-heading">CarePlus Medical</h5>
+                    <p class="hospital-footer-text">Providing compassionate, high-quality healthcare to patients and families since 2010. Your health is our highest priority.</p>
+                    <div class="hospital-footer-socials">
+                        <a href="#" class="h-social-btn"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="h-social-btn"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="h-social-btn"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="h-social-btn"><i class="fab fa-linkedin-in"></i></a>
                     </div>
                 </div>
+
+                <div class="hospital-footer-col">
+                    <h5 class="hospital-footer-heading">Quick Links</h5>
+                    <ul class="hospital-footer-links">
+                        <li><a asp-controller="Home" asp-action="Index"><i class="fas fa-chevron-right"></i> Home</a></li>
+                        <li><a asp-controller="Departments" asp-action="Index"><i class="fas fa-chevron-right"></i> Departments</a></li>
+                        <li><a asp-controller="Staffs" asp-action="Index"><i class="fas fa-chevron-right"></i> Doctors</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Patients</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Appointments</a></li>
+                    </ul>
+                </div>
+
+                <div class="hospital-footer-col">
+                    <h5 class="hospital-footer-heading">Services</h5>
+                    <ul class="hospital-footer-links">
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Medical Profiles</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Book Appointment</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Find a Doctor</a></li>
+                    </ul>
+                </div>
+
+                <div class="hospital-footer-col">
+                    <h5 class="hospital-footer-heading">Working Hours</h5>
+                    <div class="hospital-footer-hours">
+                        <div class="hours-line">
+                            <span>Mon – Fri</span>
+                            <strong>08:00 – 20:00</strong>
+                        </div>
+                        <div class="hours-line">
+                            <span>Saturday</span>
+                            <strong>08:00 – 18:00</strong>
+                        </div>
+                        <div class="hours-line">
+                            <span>Sunday</span>
+                            <strong>10:00 – 14:00</strong>
+                        </div>
+                        <div class="hours-line emergency-line">
+                            <span>Emergency</span>
+                            <strong>24 / 7</strong>
+                        </div>
+                    </div>
+                </div>
+
             </div>
-        </div>*@
-
+        </div>
     </div>
 
-    <footer class="d-flex justify-content-between align-items-center mt-5 pt-3 text-muted small border-top" style="position: relative; z-index: 2;">
-        <div>© 2026 Medicare Hospital. All rights reserved.</div>
-        <div class="d-flex gap-3">
-            <a href="#" class="text-muted text-decoration-none">Privacy Policy</a>
-            <a href="#" class="text-muted text-decoration-none">Terms of Service</a>
-        </div>
-    </footer>
+    <div class="hospital-footer-bottom">
+    <div class="container text-center small text-white-50 position-relative py-2">
+        <p class="m-0" style="font-size: 13.5px; color: rgba(255,255,255,0.5);">&copy; 2026 CarePlus Medical Center. All Rights Reserved. Designed with <i class="fas fa-heart text-white mx-1" style="font-size: 12px;"></i> for better healthcare.</p>
+        <a href="#" class="h-scroll-top position-absolute end-0 top-50 translate-middle-y px-3" style="color: #fff;"><i class="fas fa-arrow-up"></i></a>
+    </div>
 </div>
+</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>

@@ -12,80 +12,165 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-      <style>
-            .welcome-badge {
-                display: inline-flex;
-                align-items: center;
-                gap: 8px;
-                background-color: #f8fafc;
-                padding: 8px 16px;
-                border-radius: 50px;
-                border: 1px solid #e2e8f0;
-                font-family: 'Poppins', sans-serif;
-                font-size: 14px;
-                color: #475569;
-                margin: 15px 20px 0 20px; /* مسافة من فوق وعلى الشمال */
-                box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-            }
+    <style>
+        /* الـ Badge الترحيبي الخاص بكِ */
+        .welcome-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background-color: #f8fafc;
+            padding: 8px 16px;
+            border-radius: 50px;
+            border: 1px solid #e2e8f0;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            color: #475569;
+            margin: 15px 20px 0 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .welcome-badge strong { color: #2563eb; font-weight: 700; }
 
-                .welcome-badge span {
-                    font-weight: 500;
-                }
+        /* ستايل الفوتر الأزرق العريض الأصلي ليفرش الشاشة بالكامل */
+        .main-hospital-footer {
+            background-color: #1565c0 !important; /* درجة الأزرق الزاهية المريحة للعين */
+            color: #ffffff !important;
+            font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+            margin-top: 60px;
+            width: 100%;
+            display: block;
+            clear: both;
+        }
 
-                .welcome-badge strong {
-                    color: #2563eb;
-                    font-weight: 700;
-                    letter-spacing: 0.3px;
-                }
+        .footer-top-section {
+            padding: 60px 0 40px 0;
+        }
 
-                .welcome-badge i {
-                    font-size: 15px;
-                    color: #f59e0b;
-                }
+        .footer-title-h5 {
+            color: #ffffff !important;
+            font-size: 19px;
+            font-weight: 700;
+            margin-bottom: 25px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-title-h5::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 35px;
+            height: 2px;
+            background-color: #ffffff;
+        }
+
+        .footer-desc-p {
+            color: rgba(255, 255, 255, 0.85) !important;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .footer-ul-links {
+            list-style: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        .footer-ul-links li {
+            margin-bottom: 12px;
+            list-style-type: none !important;
+        }
+
+        /* حركات الـ Hover التفاعلية عند مرور الماوس على اللينك */
+        .footer-ul-links a {
+            color: rgba(255, 255, 255, 0.85) !important;
+            text-decoration: none !important;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s ease, color 0.2s ease;
+        }
+
+        .footer-ul-links a:hover {
+            color: #ffffff !important;
+            transform: translateX(6px);
+        }
+
+        .footer-ul-links a i {
+            font-size: 10px;
+            opacity: 0.8;
+        }
+
+        .social-media-flex {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .sm-circle-link {
+            width: 36px;
+            height: 36px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff !important;
+            text-decoration: none !important;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .sm-circle-link:hover {
+            background-color: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .hours-row-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.85);
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.15);
+            padding-bottom: 6px;
+            margin-bottom: 10px;
+        }
+
+        .hours-row-item strong {
+            color: #ffffff;
+        }
+
+        .footer-bottom-rights {
+            background-color: rgba(0, 0, 0, 0.15);
+            padding: 20px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .scroll-to-top-arrow {
+            width: 36px;
+            height: 36px;
+            background-color: rgba(255, 255, 255, 0.15);
+            color: #ffffff !important;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none !important;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .scroll-to-top-arrow:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px);
+        }
     </style> 
 </head>
 <body>
     @{
-        // بنجيب اسم الكنترولر والأكشن الحاليين عشان نعرف إحنا في أي صفحة
         var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
         var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
-
-        // هنتأكد إننا في صفحة الـ Home (الرئيسية)
         bool isHomePage = (currentController == "Home" && currentAction == "Index");
     }
-
-    @* @if (isHomePage)
-    {
-        <div class="welcome-badge">
-            <i class="fas fa-hand-sparkles"></i>
-            <span>Welcome,</span>
-            <strong>Abdallah Akram</strong>
-        </div>
-    }
-    *@
-
-    @* الكود القديم بتاع الهيدر اللي إنت عامله كومنت (سابتهولك زي ما هو) *@
-    @* <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Hospital_Management_Project</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header> *@
 
     <div class="container">
         <main role="main" class="pb-3">
@@ -93,10 +178,74 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - Hospital_Management_Project - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <footer class="main-hospital-footer">
+        <div class="footer-top-section">
+            <div class="container">
+                <div class="row g-4">
+                    
+                    <div class="col-lg-3 col-md-6">
+                        <h5 class="footer-title-h5">CarePlus Medical</h5>
+                        <p class="footer-desc-p">Providing compassionate, high-quality healthcare to patients and families since 2010. Your health is our highest priority.</p>
+                        <div class="social-media-flex">
+                            <a href="#" class="sm-circle-link"><i class="fab fa-facebook-f"></i></a>
+                            <a href="#" class="sm-circle-link"><i class="fab fa-twitter"></i></a>
+                            <a href="#" class="sm-circle-link"><i class="fab fa-instagram"></i></a>
+                            <a href="#" class="sm-circle-link"><i class="fab fa-linkedin-in"></i></a>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <h5 class="footer-title-h5">Quick Links</h5>
+                        <ul class="footer-ul-links">
+                            <li><a asp-controller="Home" asp-action="Index"><i class="fas fa-chevron-right"></i> Home</a></li>
+                            <li><a asp-controller="Departments" asp-action="Index"><i class="fas fa-chevron-right"></i> Departments</a></li>
+                            <li><a asp-controller="Staffs" asp-action="Index"><i class="fas fa-chevron-right"></i> Doctors</a></li>
+                            <li><a asp-controller="Patients" asp-action="Index"><i class="fas fa-chevron-right"></i> Patients</a></li>
+                            <li><a asp-controller="Appointments" asp-action="Index"><i class="fas fa-chevron-right"></i> Appointments</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <h5 class="footer-title-h5">Services</h5>
+                        <ul class="footer-ul-links">
+                            <li><a asp-controller="Patient_Medical_Profile" asp-action="Index"><i class="fas fa-chevron-right"></i> Medical Profiles</a></li>
+                            <li><a asp-controller="Appointments" asp-action="Index"><i class="fas fa-chevron-right"></i> Book Appointment</a></li>
+                            <li><a asp-controller="Staffs" asp-action="Index"><i class="fas fa-chevron-right"></i> Find a Doctor</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <h5 class="footer-title-h5">Working Hours</h5>
+                        <div>
+                            <div class="hours-row-item">
+                                <span>Mon – Fri</span>
+                                <strong>08:00 – 20:00</strong>
+                            </div>
+                            <div class="hours-row-item">
+                                <span>Saturday</span>
+                                <strong>08:00 – 18:00</strong>
+                            </div>
+                            <div class="hours-row-item">
+                                <span>Sunday</span>
+                                <strong>10:00 – 14:00</strong>
+                            </div>
+                            <div class="hours-row-item" style="border-bottom: none; margin-bottom: 0;">
+                                <span>Emergency</span>
+                                <strong style="text-decoration: underline; font-weight: 700;">24 / 7</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
         </div>
+
+       <div class="footer-bottom-rights">
+    <div class="container text-center small text-white-50 position-relative py-2">
+        <p class="m-0" style="font-size: 13.5px;">&copy; 2026 CarePlus Medical Center. All Rights Reserved. Designed with <i class="fas fa-heart text-white mx-1" style="font-size: 12px;"></i> for better healthcare.</p>
+        <a href="#" class="scroll-to-top-arrow position-absolute end-0 top-50 translate-middle-y px-3"><i class="fas fa-arrow-up"></i></a>
+    </div>
+</div>
     </footer>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
