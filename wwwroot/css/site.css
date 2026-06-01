@@ -54,4 +54,18 @@ body {
         flex-direction: column;
         text-align: center;
     }
+
+}
+
+html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box;
+}
+
+
+.footer-bottom-rights, .hospital-footer-bottom {
+    margin-bottom: 0 !important;
+    position: relative;
+    clear: both;
 }
