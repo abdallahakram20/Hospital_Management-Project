@@ -2,7 +2,6 @@
 
 @{
     ViewData["Title"] = "Patient Details";
-    Layout = null;
 }
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -24,33 +23,138 @@
         font-family: 'Poppins', sans-serif;
         background-color: var(--body-bg);
         color: var(--dark);
-        margin: 0; padding: 0;
+        margin: 0;
+        padding: 0;
     }
 
-    .mp-page { padding: 40px 30px; max-width: 800px; margin: 0 auto; }
-    .mp-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 20px; }
-    .mp-breadcrumb a { color: var(--primary); text-decoration: none; }
+    .mp-page {
+        padding: 40px 30px;
+        max-width: 800px;
+        margin: 0 auto;
+    }
 
-    .mp-card { background: var(--white); border-radius: var(--radius); padding: 36px; box-shadow: var(--shadow); position: relative; }
-    
-    .mp-profile-header { display: flex; align-items: center; gap: 20px; padding-bottom: 24px; border-bottom: 1px solid #e2e8f0; margin-bottom: 24px; }
-    .mp-avatar { width: 70px; height: 70px; background: #eff6ff; color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; }
-    
-    .mp-profile-title h3 { font-size: 22px; font-weight: 700; color: var(--dark); margin: 0; }
-    .mp-profile-title p { font-size: 13px; color: var(--muted); margin: 4px 0 0 0; }
+    .mp-breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        margin-bottom: 20px;
+    }
 
-    .mp-details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-    @@media (max-width: 500px) { .mp-details-grid { grid-template-columns: 1fr; } }
+        .mp-breadcrumb a {
+            color: var(--primary);
+            text-decoration: none;
+        }
 
-    .mp-detail-item { display: flex; flex-direction: column; gap: 4px; background: var(--light-bg); padding: 14px 18px; border-radius: var(--radius); border: 1px solid #sube8f0; }
-    .mp-detail-label { font-size: 12px; text-transform: uppercase; color: var(--muted); font-weight: 600; letter-spacing: .5px; }
-    .mp-detail-value { font-size: 15px; color: var(--dark); font-weight: 500; }
+    .mp-card {
+        background: var(--white);
+        border-radius: var(--radius);
+        padding: 36px;
+        box-shadow: var(--shadow);
+        position: relative;
+    }
 
-    .mp-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0; }
-    
-    .mp-btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: var(--radius); font-size: 13.5px; font-weight: 600; text-decoration: none; transition: all .3s; }
-    .mp-btn-secondary { background: #e2e8f0; color: var(--dark); }
-    .mp-btn-warning { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
+    .mp-profile-header {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding-bottom: 24px;
+        border-bottom: 1px solid #e2e8f0;
+        margin-bottom: 24px;
+    }
+
+    .mp-avatar {
+        width: 70px;
+        height: 70px;
+        background: #eff6ff;
+        color: var(--primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+    }
+
+    .mp-profile-title h3 {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--dark);
+        margin: 0;
+    }
+
+    .mp-profile-title p {
+        font-size: 13px;
+        color: var(--muted);
+        margin: 4px 0 0 0;
+    }
+
+    .mp-details-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+    }
+
+    @@media (max-width: 500px) {
+        .mp-details-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .mp-detail-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        background: var(--light-bg);
+        padding: 14px 18px;
+        border-radius: var(--radius);
+        border: 1px solid #sube8f0;
+    }
+
+    .mp-detail-label {
+        font-size: 12px;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 600;
+        letter-spacing: .5px;
+    }
+
+    .mp-detail-value {
+        font-size: 15px;
+        color: var(--dark);
+        font-weight: 500;
+    }
+
+    .mp-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .mp-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: var(--radius);
+        font-size: 13.5px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all .3s;
+    }
+
+    .mp-btn-secondary {
+        background: #e2e8f0;
+        color: var(--dark);
+    }
+
+    .mp-btn-warning {
+        background: #fffbeb;
+        color: #d97706;
+        border: 1px solid #fde68a;
+    }
 </style>
 
 <div class="mp-page">
@@ -67,7 +171,7 @@
             </div>
             <div class="mp-profile-title">
                 <h3>@Model.FName @Model.LName</h3>
-                  </div>
+            </div>
         </div>
 
         <div class="mp-details-grid">
@@ -101,3 +205,10 @@
         </div>
     </div>
 </div>
+
+<script>
+    // ✅ Back Button Fix
+    if (window.history.replaceState) {
+        window.history.replaceState(null, null, window.location.href);
+    }
+</script>

@@ -4,31 +4,20 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace Hospital_Management_Project.Controllers
 {
-    public class AccountController : Controller
+    public class AccountController(AppDbContext context) : Controller
     {
-        private readonly AppDbContext _context;
-
-        public AccountController(AppDbContext context)
-        {
-            _context = context;
-        }
+        private readonly AppDbContext _context = context;
 
         // 1. GET: Account/Login
         [HttpGet]
         public IActionResult Login()
         {
             if (User.Identity != null && User.Identity.IsAuthenticated)
-            {
                 return RedirectToAction("Index", "Home");
-            }
 
             return View();
         }
@@ -40,11 +29,19 @@ namespace Hospital_Management_Project.Controllers
         {
             // توحيد المعرف: إيميل لو موظف، واسم مستخدم لو مريض
             string loginIdentifier = model.UserType == "Staff" ? model.Email : model.UserName;
-            loginIdentifier = loginIdentifier?.Trim().ToLower();
+            loginIdentifier = loginIdentifier?.Trim().ToLower() ?? string.Empty;
 
             if (string.IsNullOrEmpty(loginIdentifier))
             {
                 ModelState.AddModelError(string.Empty, "Please enter your credentials.");
+                return View(model);
+            }
+
+            // ✅ التحقق من نطاق الإيميل @careplus.com للموظفين
+            if (model.UserType == "Staff" &&
+                !loginIdentifier.EndsWith("@careplus.com", StringComparison.OrdinalIgnoreCase))
+            {
+                ModelState.AddModelError(string.Empty, "Staff accounts must use a @careplus.com email address.");
                 return View(model);
             }
 
@@ -65,10 +62,10 @@ namespace Hospital_Management_Project.Controllers
 
             try
             {
-                // ... محاولة الدخول ...
                 if (model.UserType == "Staff")
                 {
-                    var staff = await _context.Staff.FirstOrDefaultAsync(s => s.Email.ToLower() == loginIdentifier);
+                    var staff = await _context.Staff.FirstOrDefaultAsync(
+                        s => s.Email.ToLower() == loginIdentifier);
 
                     if (staff != null && BCrypt.Net.BCrypt.Verify(model.Password, staff.Password))
                     {
@@ -83,7 +80,8 @@ namespace Hospital_Management_Project.Controllers
                 }
                 else if (model.UserType == "Patient")
                 {
-                    var patient = await _context.Patient.FirstOrDefaultAsync(p => p.user_name.ToLower() == loginIdentifier);
+                    var patient = await _context.Patient.FirstOrDefaultAsync(
+                        p => p.user_name.ToLower() == loginIdentifier);
 
                     if (patient != null && BCrypt.Net.BCrypt.Verify(model.Password, patient.Password))
                     {
@@ -107,27 +105,20 @@ namespace Hospital_Management_Project.Controllers
             }
 
             // ✅ 2. تسجيل المحاولة في الداتا بيز سواء نجحت أو فشلت
-            var attempt = new LoginAttempt
+            _context.LoginAttempts.Add(new LoginAttempt
             {
-                Email = loginIdentifier, // بنخزن الإيميل أو اسم المستخدم
+                Email = loginIdentifier,
                 AttemptTime = DateTime.Now,
                 Success = loginSuccess
-            };
-
-            _context.LoginAttempts.Add(attempt);
+            });
             await _context.SaveChangesAsync();
 
             // ✅ 3. توجيه المستخدم لو العملية نجحت
             if (loginSuccess)
-            {
                 return RedirectToAction("Index", "Home");
-            }
 
-            // في حالة الفشل نضيف رسالة خطأ (لو مكنش فيه رسالة انضافت فوق)
             if (ModelState.ErrorCount == 0)
-            {
                 ModelState.AddModelError(string.Empty, "Invalid authentication parameters or account not found.");
-            }
 
             return View(model);
         }
@@ -137,10 +128,10 @@ namespace Hospital_Management_Project.Controllers
         {
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, identifier),
-                new Claim(ClaimTypes.Email, emailOrUsername),
-                new Claim(ClaimTypes.Name, fullName),
-                new Claim(ClaimTypes.Role, role)
+                new(ClaimTypes.NameIdentifier, identifier),
+                new(ClaimTypes.Email, emailOrUsername),
+                new(ClaimTypes.Name, fullName),
+                new(ClaimTypes.Role, role)
             };
 
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -168,10 +159,7 @@ namespace Hospital_Management_Project.Controllers
 
         // 4. GET: Account/AccessDenied
         [HttpGet]
-        public IActionResult AccessDenied()
-        {
-            return View();
-        }
+        public IActionResult AccessDenied() => View();
 
         // 5. GET: Account/ForgotPassword
         [HttpGet]
@@ -198,21 +186,22 @@ namespace Hospital_Management_Project.Controllers
             if (userType == "Staff")
             {
                 var inputEmail = identifier.Trim().ToLower();
-                var staff = await _context.Staff.FirstOrDefaultAsync(s => s.Email.ToLower() == inputEmail);
+                var staff = await _context.Staff.FirstOrDefaultAsync(
+                    s => s.Email.ToLower() == inputEmail);
                 if (staff != null) userExists = true;
             }
             else if (userType == "Patient")
             {
-                var patient = await _context.Patient.FirstOrDefaultAsync(p => p.user_name == identifier.Trim());
+                var patient = await _context.Patient.FirstOrDefaultAsync(
+                    p => p.user_name == identifier.Trim());
                 if (patient != null) userExists = true;
             }
 
             if (userExists)
             {
                 string resetToken = Guid.NewGuid().ToString();
-
                 var resetLink = Url.Action("ResetPassword", "Account",
-                    new { token = resetToken, identifier = identifier, userType = userType },
+                    new { token = resetToken, identifier, userType },
                     protocol: HttpContext.Request.Scheme);
 
                 ViewBag.ResetLink = resetLink;
@@ -227,14 +216,11 @@ namespace Hospital_Management_Project.Controllers
         public IActionResult ResetPassword(string token, string identifier, string userType)
         {
             if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(identifier))
-            {
                 return RedirectToAction("Login");
-            }
 
             ViewBag.Token = token;
             ViewBag.Identifier = identifier;
             ViewBag.UserType = userType;
-
             return View();
         }
 
@@ -271,7 +257,6 @@ namespace Hospital_Management_Project.Controllers
             }
 
             await _context.SaveChangesAsync();
-
             TempData["SuccessMessage"] = "Your password has been reset successfully. Please login with your new password.";
             return RedirectToAction("Login");
         }
@@ -282,8 +267,16 @@ namespace Hospital_Management_Project.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateStaff(Staff staff)
         {
-            var existingStaff = await _context.Staff
-                .FirstOrDefaultAsync(s => s.Email.ToLower() == staff.Email.ToLower());
+            // ✅ التحقق من نطاق الإيميل @careplus.com
+            if (!string.IsNullOrEmpty(staff.Email) &&
+                !staff.Email.Trim().EndsWith("@careplus.com", StringComparison.OrdinalIgnoreCase))
+            {
+                ModelState.AddModelError("Email", "Only @careplus.com email addresses are accepted for staff accounts.");
+                return View(staff);
+            }
+
+            var existingStaff = await _context.Staff.FirstOrDefaultAsync(
+                s => s.Email.ToLower() == staff.Email.ToLower());
 
             if (existingStaff != null)
             {
@@ -294,13 +287,10 @@ namespace Hospital_Management_Project.Controllers
             if (ModelState.IsValid)
             {
                 if (!string.IsNullOrEmpty(staff.Password))
-                {
                     staff.Password = BCrypt.Net.BCrypt.HashPassword(staff.Password);
-                }
 
                 _context.Add(staff);
                 await _context.SaveChangesAsync();
-
                 TempData["SuccessMessage"] = "Staff account created successfully!";
                 return RedirectToAction("Index", "Staffs");
             }

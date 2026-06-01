@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-      <style>
+    <style>
             .welcome-badge {
                 display: inline-flex;
                 align-items: center;
@@ -24,7 +24,7 @@
                 font-family: 'Poppins', sans-serif;
                 font-size: 14px;
                 color: #475569;
-                margin: 15px 20px 0 20px; /* مسافة من فوق وعلى الشمال */
+                margin: 15px 20px 0 20px;
                 box-shadow: 0 2px 4px rgba(0,0,0,0.02);
             }
 
@@ -42,50 +42,20 @@
                     font-size: 15px;
                     color: #f59e0b;
                 }
-    </style> 
+    </style>
 </head>
 <body>
     @{
-        // بنجيب اسم الكنترولر والأكشن الحاليين عشان نعرف إحنا في أي صفحة
+        // جلب اسم الكنترولر والأكشن الحاليين
         var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
         var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
 
-        // هنتأكد إننا في صفحة الـ Home (الرئيسية)
+        // التأكد إذا كنا في صفحة الـ Home (الرئيسية)
         bool isHomePage = (currentController == "Home" && currentAction == "Index");
-    }
 
-    @* @if (isHomePage)
-    {
-        <div class="welcome-badge">
-            <i class="fas fa-hand-sparkles"></i>
-            <span>Welcome,</span>
-            <strong>Abdallah Akram</strong>
-        </div>
+        // التأكد إذا كنا في صفحة جدول (Index) لأي موديل (مواعيد، مرضى، إلخ)
+        bool isIndexPage = (currentAction == "Index");
     }
-    *@
-
-    @* الكود القديم بتاع الهيدر اللي إنت عامله كومنت (سابتهولك زي ما هو) *@
-    @* <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Hospital_Management_Project</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header> *@
 
     <div class="container">
         <main role="main" class="pb-3">
@@ -103,5 +73,39 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+
+    @* 🌟 التعديل الاحترافي والذكي لحل مشكلة زر الرجوع (Back Button) *@
+    <script>
+        (function () {
+        var isIndex = @isIndexPage.ToString().ToLower();
+
+        // ✅ لو إحنا في صفحة Index، نستبدل الـ history entry الحالية
+        // عشان لو المستخدم ضغط Back من Index يروح للـ Home مش للـ Delete/Edit
+        if (isIndex && window.history.replaceState) {
+        window.history.replaceState({ isIndex: true }, '', window.location.href);
+        }
+
+        window.addEventListener('pageshow', function (event) {
+        var currentUrl = window.location.href.toLowerCase();
+        var isActionPage = currentUrl.includes('/delete') ||
+        currentUrl.includes('/create') ||
+        currentUrl.includes('/edit');
+
+        // ✅ لو المتصفح رجع لصفحة Delete/Edit/Create من الـ bfcache
+        // نروح للـ Home فوراً بدل ما نعرض بيانات قديمة
+        if (event.persisted && isActionPage) {
+        window.location.replace('@Url.Action("Index", "Home")');
+        return;
+        }
+
+        // ✅ لو المتصفح رجع لصفحة Index من الـ bfcache
+        // نعمل hard reload من السيرفر عشان نجيب البيانات الحقيقية
+        if (event.persisted && isIndex) {
+        window.location.href = window.location.href.split('?')[0] +
+        '?_=' + new Date().getTime();
+        }
+        });
+        })();
+    </script>
 </body>
 </html>

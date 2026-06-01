@@ -2,7 +2,6 @@
 
 @{
     ViewData["Title"] = "Edit Patient";
-    Layout = null;
 }
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -260,9 +259,11 @@
     </div>
 
     <div class="mp-card">
-        <form asp-controller="Patient" asp-action="Edit" method="post">
+        <form asp-controller="Patients" asp-action="Edit" asp-route-id="@Model.PatientId" method="post">
             <div asp-validation-summary="ModelOnly" class="mp-field-error" style="margin-bottom:18px;"></div>
             <input type="hidden" asp-for="PatientId" />
+            <input type="hidden" asp-for="Password" />
+            <input type="hidden" asp-for="user_name" />
 
             <div class="mp-form-grid">
                 <div class="mp-form-group">
@@ -294,11 +295,7 @@
                     </select>
                     <span asp-validation-for="Gender" class="mp-field-error"></span>
                 </div>
-                <div class="mp-form-group full">
-                    <label class="mp-label"><i class="fas fa-id-badge"></i> Username</label>
-                    <input asp-for="user_name" class="mp-input" placeholder="Username" />
-                    <span asp-validation-for="user_name" class="mp-field-error"></span>
-                </div>
+
             </div>
 
             <hr class="mp-divider" />
@@ -315,8 +312,10 @@
     </div>
 </div>
 
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
+<script>
+    if (window.history.replaceState) {
+    window.history.replaceState(null, null, window.location.href);
     }
-}
+</script>

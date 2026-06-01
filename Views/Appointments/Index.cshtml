@@ -84,11 +84,11 @@
         box-shadow: 0 10px 20px -5px rgba(26, 118, 209, 0.4);
     }
 
-    .btn-create:hover {
-        background: var(--primary-dark);
-        transform: translateY(-2px);
-        color: #fff;
-    }
+        .btn-create:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            color: #fff;
+        }
 
     .mp-card {
         background: var(--card-bg);
@@ -109,10 +109,29 @@
         gap: 6px;
     }
 
-    .bg-light-success { background: #ecfdf5; color: var(--success); border: 1px solid #d1fae5; }
-    .bg-light-warning { background: #fffbeb; color: var(--warning); border: 1px solid #fde68a; }
-    .bg-light-danger { background: #fef2f2; color: var(--danger); border: 1px solid #fecaca; }
-    .bg-light-secondary { background: #f1f5f9; color: var(--text-muted); border: 1px solid #e2e8f0; }
+    .bg-light-success {
+        background: #ecfdf5;
+        color: var(--success);
+        border: 1px solid #d1fae5;
+    }
+
+    .bg-light-warning {
+        background: #fffbeb;
+        color: var(--warning);
+        border: 1px solid #fde68a;
+    }
+
+    .bg-light-danger {
+        background: #fef2f2;
+        color: var(--danger);
+        border: 1px solid #fecaca;
+    }
+
+    .bg-light-secondary {
+        background: #f1f5f9;
+        color: var(--text-muted);
+        border: 1px solid #e2e8f0;
+    }
 
     /* Table Design for Admin */
     .mp-table-wrap {
@@ -127,24 +146,28 @@
         white-space: nowrap;
     }
 
-    .mp-table thead th {
-        background: #f8fafc;
-        color: var(--text-main);
-        padding: 16px 20px;
-        font-weight: 700;
-        font-size: 14px;
-        text-align: left;
-        border-bottom: 2px solid #e2e8f0;
-    }
+        .mp-table thead th {
+            background: #f8fafc;
+            color: var(--text-main);
+            padding: 16px 20px;
+            font-weight: 700;
+            font-size: 14px;
+            text-align: left;
+            border-bottom: 2px solid #e2e8f0;
+        }
 
-    .mp-table td {
-        padding: 16px 20px;
-        border-bottom: 1px solid #f1f5f9;
-        font-size: 14px;
-    }
+        .mp-table td {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 14px;
+        }
 
     /* Actions Buttons */
-    .mp-actions { display: flex; gap: 6px; }
+    .mp-actions {
+        display: flex;
+        gap: 6px;
+    }
+
     .mp-btn {
         padding: 8px 14px;
         border-radius: 10px;
@@ -158,12 +181,37 @@
         border: 1px solid transparent;
     }
 
-    .mp-btn-info { background: var(--primary-light); color: var(--primary); }
-    .mp-btn-info:hover { background: var(--primary); color: white; }
-    .mp-btn-warning { background: #fffbeb; color: #d97706; border-color: #fde68a; }
-    .mp-btn-warning:hover { background: #f59e0b; color: white; }
-    .mp-btn-danger { background: #fef2f2; color: var(--danger); border-color: #fecaca; }
-    .mp-btn-danger:hover { background: var(--danger); color: white; }
+    .mp-btn-info {
+        background: var(--primary-light);
+        color: var(--primary);
+    }
+
+        .mp-btn-info:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+    .mp-btn-warning {
+        background: #fffbeb;
+        color: #d97706;
+        border-color: #fde68a;
+    }
+
+        .mp-btn-warning:hover {
+            background: #f59e0b;
+            color: white;
+        }
+
+    .mp-btn-danger {
+        background: #fef2f2;
+        color: var(--danger);
+        border-color: #fecaca;
+    }
+
+        .mp-btn-danger:hover {
+            background: var(--danger);
+            color: white;
+        }
 
     /* Patient Cards Grid Mode */
     .appointments-grid {
@@ -182,24 +230,51 @@
         transition: transform 0.2s;
     }
 
-    .appointment-card:hover { transform: translateY(-3px); }
-    .card-date-box { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-    .card-date-box i { font-size: 20px; color: var(--primary); background: var(--primary-light); padding: 10px; border-radius: 12px; }
-    .card-detail-line { font-size: 14px; margin-bottom: 10px; color: var(--text-muted); }
-    .card-detail-line strong { color: var(--text-main); }
+        .appointment-card:hover {
+            transform: translateY(-3px);
+        }
+
+    .card-date-box {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+        .card-date-box i {
+            font-size: 20px;
+            color: var(--primary);
+            background: var(--primary-light);
+            padding: 10px;
+            border-radius: 12px;
+        }
+
+    .card-detail-line {
+        font-size: 14px;
+        margin-bottom: 10px;
+        color: var(--text-muted);
+    }
+
+        .card-detail-line strong {
+            color: var(--text-main);
+        }
 
     /* تايم لاين كارت اليوم */
-    .timeline-dot { position: relative; padding-left: 20px; }
-    .timeline-dot::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 6px;
-        width: 8px;
-        height: 8px;
-        background-color: var(--primary);
-        border-radius: 50%;
+    .timeline-dot {
+        position: relative;
+        padding-left: 20px;
     }
+
+        .timeline-dot::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 6px;
+            width: 8px;
+            height: 8px;
+            background-color: var(--primary);
+            border-radius: 50%;
+        }
 </style>
 
 <div class="mp-page">
@@ -229,7 +304,7 @@
     else
     {
         <div class="row g-4">
-            
+
             <div class="col-xl-8 col-lg-7">
                 @if (isPatient)
                 {
@@ -398,7 +473,7 @@
                                             </small>
                                         </div>
                                     </div>
-                                    
+
                                     @if (app.Status == Hospital_Management_Project.Models.AppointmentStatus.Booked)
                                     {
                                         <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1" style="font-size: 11px;">Booked</span>
@@ -425,5 +500,27 @@
                 </div>
             </div>
 
-        </div> }
-</div> 
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            if (window.history.pushState) {
+                window.history.pushState(null, null, window.location.href);
+
+                window.addEventListener('popstate', function () {
+                    window.location.href = '@Url.Action("Index", "Home")';
+                });
+            }
+
+            // إضافة الـ pageshow المفقود لإجبار المتصفح على التحديث عند الرجوع
+            window.addEventListener('pageshow', function (event) {
+                if (event.persisted || (typeof window.performance != "undefined" && window.performance.getEntriesByType("navigation")[0]?.type === "back_forward")) {
+                    window.location.reload(true);
+                }
+            });
+        })();
+    </script>
+}

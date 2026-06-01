@@ -2,7 +2,6 @@
 
 @{
     ViewData["Title"] = "Patients Management";
-    Layout = null;
 }
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -563,3 +562,24 @@
         }
     </div>
 </div>
+<script>
+    (function () {
+        // ✅ 1. استبدال الـ history entry الحالية
+        history.replaceState({ page: 'patients-index' }, document.title, window.location.href);
+
+        // ✅ 2. لو المستخدم ضغط Back وهو في Index → روح للـ Home
+        window.addEventListener('popstate', function (e) {
+            if (e.state && e.state.page === 'patients-index') {
+                window.location.replace('/Home/Index');
+            }
+        });
+
+        // ✅ 3. لو المتصفح رجع للصفحة من الـ bfcache (Back button بعد Delete/Edit)
+        // نعمل hard reload من السيرفر عشان نجيب البيانات الحقيقية
+        window.addEventListener('pageshow', function (e) {
+            if (e.persisted) {
+                window.location.href = window.location.pathname + '?_=' + Date.now();
+            }
+        });
+    })();
+</script>

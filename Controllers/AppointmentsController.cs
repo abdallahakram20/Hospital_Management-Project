@@ -25,6 +25,11 @@ namespace Hospital_Management_Project.Controllers
         // GET: Appointments
         public async Task<IActionResult> Index()
         {
+            // ✅ منع Back Button Loop: إجبار المتصفح على عدم تخزين الصفحة في الـ history cache
+            Response.Headers.CacheControl = "no-cache, no-store, must-revalidate";
+            Response.Headers.Pragma = "no-cache";
+            Response.Headers.Expires = "0";
+
             var currentUserIdentifier = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userRole = User.FindFirstValue(ClaimTypes.Role);
 
@@ -62,9 +67,8 @@ namespace Hospital_Management_Project.Controllers
         {
             var patients = _context.Patient.Select(p => new { p.PatientId, FullName = p.FName + " " + p.LName }).ToList();
 
-            // 🌟 التعديل هنا: جلب الأطباء فقط بالاعتماد على حقل Position
             var staff = _context.Staff
-                .Where(s => s.Position == "Doctor") // نجلب من وظيفته طبيب فقط
+                .Where(s => s.Position == "Doctor")
                 .Select(s => new { s.StaffId, FullName = s.Fname + " " + s.Lname })
                 .ToList();
 
@@ -74,11 +78,15 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // POST: Appointments/Create
+        public async Task<IActionResult> CreateConfirmed()
+        {
+            return View();
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("AppointmentId,PatientId,StaffId,Visit_Date,Reason,Diagnosis,Medication,Common_tests,Treatment_Plan,Notes")] Appointment appointment)
         {
-            // 🌟 الحل هنا: تعيين الـ PatientId تلقائياً للمريض بناءً على حسابه المفتوح
             if (User.IsInRole("Patient"))
             {
                 var currentUserName = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -89,7 +97,6 @@ namespace Hospital_Management_Project.Controllers
                     appointment.PatientId = currentPatient.PatientId;
                 }
 
-                // إزالة الحقل من التحقق حتى لا يعترض الـ ModelState إذا كان فارغاً من شاشة المريض
                 ModelState.Remove("PatientId");
             }
 
@@ -98,14 +105,12 @@ namespace Hospital_Management_Project.Controllers
                 appointment.Status = AppointmentStatus.Booked;
 
                 _context.Add(appointment);
-                await _context.SaveChangesAsync(); // الآن سيتم الحفظ بنجاح دون أخطاء الـ Foreign Key
+                await _context.SaveChangesAsync();
                 TempData["Success"] = "Appointment created successfully!";
                 return RedirectToAction(nameof(Index));
             }
 
-            // إعادة تعبئة القوائم في حال فشل التحقق (Validation)
             var patients = _context.Patient.Select(p => new { p.PatientId, FullName = p.FName + " " + p.LName }).ToList();
-
             var staff = _context.Staff
                 .Where(s => s.Position == "Doctor")
                 .Select(s => new { s.StaffId, FullName = s.Fname + " " + s.Lname })
@@ -125,7 +130,6 @@ namespace Hospital_Management_Project.Controllers
             if (appointment == null) return NotFound();
 
             var patients = _context.Patient.Select(p => new { p.PatientId, FullName = p.FName + " " + p.LName }).ToList();
-
             var staff = _context.Staff
                 .Where(s => s.Position == "Doctor")
                 .Select(s => new { s.StaffId, FullName = s.Fname + " " + s.Lname })
@@ -168,7 +172,6 @@ namespace Hospital_Management_Project.Controllers
                             ModelState.AddModelError("Diagnosis", "The Diagnosis field is required for Doctors/Staff.");
 
                             var pList = _context.Patient.Select(p => new { p.PatientId, FullName = p.FName + " " + p.LName }).ToList();
-
                             var sList = _context.Staff
                                 .Where(s => s.Position == "Doctor")
                                 .Select(s => new { s.StaffId, FullName = s.Fname + " " + s.Lname })
@@ -195,7 +198,6 @@ namespace Hospital_Management_Project.Controllers
                     else
                     {
                         var pList = _context.Patient.Select(p => new { p.PatientId, FullName = p.FName + " " + p.LName }).ToList();
-
                         var sList = _context.Staff
                             .Where(s => s.Position == "Doctor")
                             .Select(s => new { s.StaffId, FullName = s.Fname + " " + s.Lname })
@@ -209,7 +211,6 @@ namespace Hospital_Management_Project.Controllers
             }
 
             var patientsFail = _context.Patient.Select(p => new { p.PatientId, FullName = p.FName + " " + p.LName }).ToList();
-
             var staffFail = _context.Staff
                 .Where(s => s.Position == "Doctor")
                 .Select(s => new { s.StaffId, FullName = s.Fname + " " + s.Lname })
@@ -222,6 +223,7 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // GET: Appointments/Delete/5
+        [HttpGet]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -245,10 +247,10 @@ namespace Hospital_Management_Project.Controllers
             if (appointment != null)
             {
                 _context.Appointment.Remove(appointment);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Appointment deleted successfully!";
             }
 
-            await _context.SaveChangesAsync();
-            TempData["Success"] = "Appointment deleted successfully!";
             return RedirectToAction(nameof(Index));
         }
 
@@ -257,18 +259,26 @@ namespace Hospital_Management_Project.Controllers
             return _context.Appointment.Any(e => e.AppointmentId == id);
         }
 
-        // AUTOCOMPLETE FOR PATIENT SEARCH
+        // AUTOCOMPLETE FOR PATIENT SEARCH (Modified for Case-Insensitive Search)
         [HttpGet]
-        public async Task<IActionResult> SearchPatients(string term)
+        [AllowAnonymous]
+        public async Task<JsonResult> SearchPatients(string term)
         {
             if (string.IsNullOrEmpty(term))
             {
                 return Json(new List<object>());
             }
 
+            var searchTerm = term.Trim().ToLower();
+
             var patients = await _context.Patient
-                .Where(p => p.FName.Contains(term) || p.LName.Contains(term))
-                .Select(p => new { id = p.PatientId, name = p.FName + " " + p.LName })
+                .Where(p => (!string.IsNullOrEmpty(p.FName) && p.FName.ToLower().Contains(searchTerm))
+                         || (!string.IsNullOrEmpty(p.LName) && p.LName.ToLower().Contains(searchTerm)))
+                .Select(p => new
+                {
+                    id = p.PatientId,
+                    name = p.FName + " " + p.LName
+                })
                 .Take(10)
                 .ToListAsync();
 
@@ -308,7 +318,7 @@ namespace Hospital_Management_Project.Controllers
             return View("PrintReport", reportData);
         }
 
-        // PRINT SINGLE APPOINTMENT (For Patient & Doctor)
+        // PRINT SINGLE APPOINTMENT
         public async Task<IActionResult> Print(int? id)
         {
             if (id == null) return NotFound();

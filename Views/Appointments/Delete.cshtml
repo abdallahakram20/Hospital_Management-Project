@@ -315,7 +315,8 @@
             </div>
         </div>
 
-        <form asp-action="Delete">
+        @* 🌟 التعديل هنا: إضافة method="post" ليرسل الطلب بشكل صحيح للـ Controller *@
+        <form asp-action="Delete" method="post">
             <input type="hidden" asp-for="AppointmentId" />
             <button type="submit" class="btn-delete">
                 <i class="bi bi-trash-fill"></i> Delete Appointment Permanently
@@ -323,3 +324,13 @@
         </form>
     </div>
 </div>
+
+<script>
+    // بمجرد ما الفورم يتبعت بنجاح، بنعدل السجل بتاع المتصفح
+    document.querySelector('form').addEventListener('submit', function () {
+        // بنشيل صفحة الـ Delete الحالية من الـ History ونستبدلها بالـ Index
+        if (window.history.replaceState) {
+            window.history.replaceState(null, null, '@Url.Action("Index", "Appointments")');
+        }
+    });
+</script>

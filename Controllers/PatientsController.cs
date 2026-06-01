@@ -28,10 +28,14 @@ namespace Hospital_Management_Project.Controllers
         [Authorize(Roles = "Admin,Doctor,Receptionist,Nurse,Staff")]
         public async Task<IActionResult> Index(string searchString, int page = 1)
         {
-            // التأكد من أن رقم الصفحة لا يقل عن 1
+            // ✅ منع Back Button Loop
+            Response.Headers.CacheControl = "no-cache, no-store, must-revalidate";
+            Response.Headers.Pragma = "no-cache";
+            Response.Headers.Expires = "0";
+
             if (page < 1) page = 1;
 
-            int pageSize = 20; // تحديد عدد الحالات في الصفحة الواحدة
+            int pageSize = 20;
             ViewData["CurrentFilter"] = searchString;
 
             var patientsQuery = from p in _context.Patient select p;
@@ -43,17 +47,14 @@ namespace Hospital_Management_Project.Controllers
                                             || s.PatientId.ToString() == searchString);
             }
 
-            // 1. حساب إجمالي عدد المرضى بعد الفلترة
             int totalPatients = await patientsQuery.CountAsync();
 
-            // 2. جلب بيانات الصفحة الحالية فقط باستخدام Skip و Take
             var patients = await patientsQuery
-                .OrderBy(p => p.PatientId) // الترتيب مهم جداً لضمان دقة الـ Pagination
+                .OrderBy(p => p.PatientId)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
 
-            // 3. إرسال بيانات التحكم في الصفحات للـ View
             ViewBag.CurrentPage = page;
             ViewBag.TotalPages = (int)Math.Ceiling((double)totalPatients / pageSize);
             ViewBag.HasPreviousPage = page > 1;
@@ -135,7 +136,8 @@ namespace Hospital_Management_Project.Controllers
 
                 if (User.Identity != null && User.Identity.IsAuthenticated && !User.IsInRole("Patient"))
                 {
-                    return RedirectToAction(nameof(Index));
+                    // 🌟 تعديل توجيه الأدمن والموظفين بشكل صريح لجدول المرضى
+                    return RedirectToAction("Index", "Patients");
                 }
 
                 return RedirectToAction("Login", "Account");
@@ -144,10 +146,13 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // GET: Patients/Edit
-        // 🌟 التعديل هنا: السماح للأدمن والمريض فقط برؤية صفحة التعديل ومنع الأطباء والموظفين
         [Authorize(Roles = "Admin,Patient")]
         public async Task<IActionResult> Edit(int? id)
         {
+            Response.Headers.CacheControl = "no-cache, no-store, must-revalidate";
+            Response.Headers.Pragma = "no-cache";
+            Response.Headers.Expires = "0";
+
             if (id == null) return NotFound();
 
             var patient = await _context.Patient.FindAsync(id);
@@ -168,9 +173,8 @@ namespace Hospital_Management_Project.Controllers
         // POST: Patients/Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
-        // 🌟 التعديل هنا أيضاً: حماية تنفيذ دالة التعديل
         [Authorize(Roles = "Admin,Patient")]
-        public async Task<IActionResult> Edit(int id, [Bind("PatientId,FName,LName,Address,Phone,Gender")] Patient patient)
+        public async Task<IActionResult> Edit(int id, [Bind("PatientId,FName,LName,Address,Phone,Gender,user_name,Password")] Patient patient)
         {
             if (id != patient.PatientId) return NotFound();
 
@@ -183,6 +187,9 @@ namespace Hospital_Management_Project.Controllers
                     return RedirectToAction("AccessDenied", "Account");
                 }
             }
+
+            // ✅ نتجاهل validation الـ Password لأننا بنجيبه من الـ DB مش من الفورم
+            ModelState.Remove("Password");
 
             if (ModelState.IsValid)
             {
@@ -204,10 +211,15 @@ namespace Hospital_Management_Project.Controllers
                     else throw;
                 }
 
+                // 🌟 التعديل الجوهري لحل الـ 404:
+                // المريض يتم توجيهه لصفحة تفاصيله الشخصية بدلاً من صفحة الـ Index المحجوبة عنه
                 if (User.IsInRole("Patient"))
-                    return RedirectToAction(nameof(Details), new { id = patient.PatientId });
+                {
+                    return RedirectToAction("Details", "Patients", new { id = patient.PatientId });
+                }
 
-                return RedirectToAction(nameof(Index));
+                // الأدمن يتم توجيهه بشكل صريح لجدول المرضى
+                return RedirectToAction("Index", "Patients");
             }
             return View(patient);
         }
@@ -216,6 +228,10 @@ namespace Hospital_Management_Project.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
+            Response.Headers.CacheControl = "no-cache, no-store, must-revalidate";
+            Response.Headers.Pragma = "no-cache";
+            Response.Headers.Expires = "0";
+
             if (id == null) return NotFound();
 
             var patient = await _context.Patient.FirstOrDefaultAsync(m => m.PatientId == id);
@@ -237,7 +253,9 @@ namespace Hospital_Management_Project.Controllers
             }
 
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+
+            // 🌟 تعديل توجيه الأدمن صراحةً بعد حذف المريض إلى قائمة المرضى
+            return RedirectToAction("Index", "Patients");
         }
 
         private bool PatientExists(int id)
@@ -284,7 +302,8 @@ namespace Hospital_Management_Project.Controllers
                 _context.Update(patient);
                 await _context.SaveChangesAsync();
 
-                return RedirectToAction(nameof(Index));
+                // 🌟 تعديل توجيه صريح
+                return RedirectToAction("Index", "Patients");
             }
 
             ModelState.AddModelError("", "Username cannot be empty.");

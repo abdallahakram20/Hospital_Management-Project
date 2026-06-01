@@ -102,13 +102,13 @@
                     transition: all 0.3s ease;
                 }
 
-                .nav-pills .nav-link.active {
-                    background-color: #ffffff;
-                    color: #0056D2;
-                    box-shadow: 0 4px 12px rgba(0, 86, 210, 0.15);
-                    font-weight: 700;
-                    border: none;
-                }
+                    .nav-pills .nav-link.active {
+                        background-color: #ffffff;
+                        color: #0056D2;
+                        box-shadow: 0 4px 12px rgba(0, 86, 210, 0.15);
+                        font-weight: 700;
+                        border: none;
+                    }
 
             .form-label-custom {
                 font-size: 13px;
@@ -328,14 +328,53 @@
                 box-shadow: 0 4px 15px rgba(0,0,0,0.15);
             }
 
-            .node-1 { top: 0; left: 50%; transform: translate(-50%, -50%); }
-            .node-2 { top: 14.6%; left: 85.3%; transform: translate(-50%, -50%); }
-            .node-3 { top: 50%; left: 100%; transform: translate(-50%, -50%); }
-            .node-4 { top: 85.3%; left: 85.3%; transform: translate(-50%, -50%); }
-            .node-5 { top: 100%; left: 50%; transform: translate(-50%, -50%); }
-            .node-6 { top: 85.3%; left: 14.6%; transform: translate(-50%, -50%); }
-            .node-7 { top: 50%; left: 0; transform: translate(-50%, -50%); }
-            .node-8 { top: 14.6%; left: 14.6%; transform: translate(-50%, -50%); }
+            .node-1 {
+                top: 0;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
+
+            .node-2 {
+                top: 14.6%;
+                left: 85.3%;
+                transform: translate(-50%, -50%);
+            }
+
+            .node-3 {
+                top: 50%;
+                left: 100%;
+                transform: translate(-50%, -50%);
+            }
+
+            .node-4 {
+                top: 85.3%;
+                left: 85.3%;
+                transform: translate(-50%, -50%);
+            }
+
+            .node-5 {
+                top: 100%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
+
+            .node-6 {
+                top: 85.3%;
+                left: 14.6%;
+                transform: translate(-50%, -50%);
+            }
+
+            .node-7 {
+                top: 50%;
+                left: 0;
+                transform: translate(-50%, -50%);
+            }
+
+            .node-8 {
+                top: 14.6%;
+                left: 14.6%;
+                transform: translate(-50%, -50%);
+            }
 
             .bottom-buildings {
                 position: absolute;
@@ -401,8 +440,13 @@
 
                             <div class="mb-4">
                                 <label asp-for="Email" class="form-label-custom">Staff Email Address</label>
-                                <input asp-for="Email" class="form-control custom-input" placeholder="staffmember@careplus.com" required />
+                                <input asp-for="Email" id="staffEmail" class="form-control custom-input" placeholder="staffmember@@careplus.com" required
+                                       pattern="^[^@@]+@@careplus\.com$"
+                                       title="Only @@careplus.com email addresses are accepted" />
                                 <span asp-validation-for="Email" class="text-danger small"></span>
+                                <div id="emailDomainHint" class="text-danger small mt-1" style="display:none;">
+                                    <i class="bi bi-exclamation-circle-fill"></i> Email must end with <strong>@@careplus.com</strong>
+                                </div>
                             </div>
 
                             <div class="mb-3 position-relative">
@@ -495,23 +539,51 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const togglePasswordIcons = document.querySelectorAll('.toggle-password');
+        const togglePasswordIcons = document.querySelectorAll('.toggle-password');
 
-            togglePasswordIcons.forEach(function (icon) {
-                icon.addEventListener('click', function () {
-                    const input = this.parentElement.querySelector('input');
+        togglePasswordIcons.forEach(function (icon) {
+        icon.addEventListener('click', function () {
+        const input = this.parentElement.querySelector('input');
 
-                    if (input.type === 'password') {
-                        input.type = 'text';
-                        this.classList.remove('bi-eye-slash');
-                        this.classList.add('bi-eye');
-                    } else {
-                        input.type = 'password';
-                        this.classList.remove('bi-eye');
-                        this.classList.add('bi-eye-slash');
-                    }
-                });
-            });
+        if (input.type === 'password') {
+        input.type = 'text';
+        this.classList.remove('bi-eye-slash');
+        this.classList.add('bi-eye');
+        } else {
+        input.type = 'password';
+        this.classList.remove('bi-eye');
+        this.classList.add('bi-eye-slash');
+        }
+        });
+        });
+
+        // ✅ @@careplus.com Domain Validation - Real-time hint
+        const staffEmailInput = document.getElementById('staffEmail');
+        const emailDomainHint = document.getElementById('emailDomainHint');
+
+        if (staffEmailInput) {
+        staffEmailInput.addEventListener('input', function () {
+        const val = this.value.trim().toLowerCase();
+        if (val.length > 0 && !val.endsWith('@@careplus.com')) {
+        emailDomainHint.style.display = 'block';
+        this.classList.add('is-invalid');
+        } else {
+        emailDomainHint.style.display = 'none';
+        this.classList.remove('is-invalid');
+        }
+        });
+
+        // منع submit لو الإيميل غلط
+        staffEmailInput.closest('form').addEventListener('submit', function (e) {
+        const val = staffEmailInput.value.trim().toLowerCase();
+        if (!val.endsWith('@@careplus.com')) {
+        e.preventDefault();
+        emailDomainHint.style.display = 'block';
+        staffEmailInput.classList.add('is-invalid');
+        staffEmailInput.focus();
+        }
+        });
+        }
         });
     </script>
 </body>

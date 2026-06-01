@@ -97,16 +97,16 @@ namespace Hospital_Management_Project
                     context.SaveChanges();
                 }
 
-                // 2. فحص وإضافة حساب الآدمين الرئيسي فقط (البريد: admin@hospital.com والباسورد: admin123)
-                if (!context.Staff.Any(s => s.Email == "admin@hospital.com"))
+                // 2. فحص وإضافة حساب الآدمين الرئيسي فقط (البريد: admin@careplus.com والباسورد: admin123)
+                if (!context.Staff.Any(s => s.Email == "admin@careplus.com"))
                 {
                     context.Staff.Add(new Staff
                     {
                         Fname = "Admin",
                         Lname = "User",
                         Position = "Admin",
-                        Email = "admin@hospital.com",
-                        Password = BCrypt.Net.BCrypt.HashPassword("admin123"), // الباسورد الافتراضي للدخول
+                        Email = "admin@careplus.com",
+                        Password = BCrypt.Net.BCrypt.HashPassword("kali"), // الباسورد الافتراضي للدخول
                         DepartmentId = adminDept.DepartmentId
                     });
                     context.SaveChanges();

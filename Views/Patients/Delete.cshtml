@@ -143,3 +143,18 @@
         </form>
     </div>
 </div>
+
+<script>
+    // ✅ منع bfcache: لو المتصفح رجع لهذه الصفحة من الـ cache، نروح للـ Index فوراً
+    window.addEventListener('pageshow', function (e) {
+        if (e.persisted) {
+            window.location.replace('/Patients');
+        }
+    });
+
+    // ✅ لما المستخدم يضغط زرار الحذف، نعمل redirect للـ Index في الـ history
+    // عشان المتصفح لو ضغط Back بعدين يروح للـ Index مش للـ Delete
+    document.querySelector('form').addEventListener('submit', function () {
+        history.replaceState(null, '', '/Patients');
+    });
+</script>
