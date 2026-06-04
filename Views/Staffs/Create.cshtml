@@ -171,7 +171,6 @@
             background: var(--primary-light);
         }
 
-    /* منطقة التحكم الخاصة بقص الصورة */
     .crop-wrapper {
         display: none;
         max-width: 100%;
@@ -188,7 +187,6 @@
             max-width: 100%;
         }
 
-    /* جعل جايد القص دائري ليناسب أبعاد الـ Avatar في المشروع */
     .cropper-view-box, .cropper-face {
         border-radius: 50%;
     }
@@ -258,6 +256,19 @@
                     <span asp-validation-for="DepartmentId" class="text-danger small"></span>
                 </div>
 
+                <!-- 💡 تمت إضافة خانات الوقت للأدمن هنا 💡 -->
+                @if (User.IsInRole("Admin"))
+                {
+                    <div class="form-group">
+                        <label class="custom-label"><i class="bi bi-clock"></i> Shift Start Time</label>
+                        <input name="shiftStartTime" type="time" class="form-control-custom" value="09:00" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="custom-label"><i class="bi bi-clock-history"></i> Shift End Time</label>
+                        <input name="shiftEndTime" type="time" class="form-control-custom" value="17:00" required />
+                    </div>
+                }
+
                 <div class="form-group full-width">
                     <label class="custom-label">Profile Picture (Adjust to Fit Face)</label>
                     <div class="upload-box" onclick="document.getElementById('imageInput').click();">
@@ -294,28 +305,25 @@
         const uploadStatusText = document.getElementById('uploadStatusText');
         const form = document.getElementById('createStaffForm');
 
-        // 1. عند اختيار صورة: تشغيل محرك القص وتغيير حالة صندوق الرفع
         imageInput.addEventListener('change', function (e) {
         const files = e.target.files;
         if (files && files.length > 0) {
         const file = files[0];
 
-        // تحديث نص الـ Upload Box
         uploadStatusText.innerText = "Selected: " + file.name + " (Adjust below)";
         uploadStatusText.style.color = "var(--primary)";
 
         const reader = new FileReader();
         reader.onload = function (event) {
         if (cropper) {
-        cropper.destroy(); // تدمير الـ Cropper القديم لو اختار صورة تانية
+        cropper.destroy();
         }
 
         imageToCrop.src = event.target.result;
-        cropWrapper.style.display = 'block'; // إظهار مساحة القص
+        cropWrapper.style.display = 'block';
 
-        // بناء كائن الـ Cropper بإعدادات دائرية متساوية الأبعاد لوش موحد
         cropper = new Cropper(imageToCrop, {
-        aspectRatio: 1, // نسبة ثابتة 1:1
+        aspectRatio: 1,
         viewMode: 1,
         background: false,
         autoCropArea: 0.8
@@ -325,32 +333,22 @@
         }
         });
 
-        // 2. اعتراض عملية الـ Submit وضغط وقص الصورة وإرسالها بالـ Fetch لضمان استقرار الإرسال $100\%$
         form.addEventListener('submit', function (e) {
-        if (!cropper) return; // لو مرفعش صورة، سيب الـ Form يسيف من غيرها ويعتمد الـ UI-Avatar الافتراضي
+        if (!cropper) return;
 
-        e.preventDefault(); // إيقاف الحفظ العادي
+        e.preventDefault();
 
-        // تحويل الجزء المقصوص لملف مضغوط وواضح بدقة ممتازة
         cropper.getCroppedCanvas({ width: 400, height: 400 }).toBlob(function (blob) {
-
-        // تجميع كل بيانات الحقول من الـ Form يدوياً
         const formData = new FormData(form);
-
-        // تنظيف الملف الأصلي الضخم غير المقصوص
         formData.delete("ImageFile");
-
-        // إرفاق الصورة المقصوصة المحددة للوجه والجاهزة تماماً
         formData.append("ImageFile", blob, "new_staff_avatar.jpg");
 
-        // الإرسال للسيرفر عبر الـ Fetch API الآمن والمستقر
         fetch(form.action, {
         method: 'POST',
         body: formData
         })
         .then(response => {
         if (response.ok || response.redirected) {
-        // عند نجاح العملية وتخزين الموظف بالصورة المقصوصة يتم تحويله للقائمة الرئيسية فوراً
         window.location.href = '@Url.Action("Index")';
         } else {
         alert("There was an issue saving the cropped image. Please check your controller setup.");
@@ -358,7 +356,7 @@
         })
         .catch(err => console.error("Error submitting cropped image:", err));
 
-        }, 'image/jpeg', 0.9); // صيغة JPEG وجودة 90%
+        }, 'image/jpeg', 0.9);
         });
     </script>
 }

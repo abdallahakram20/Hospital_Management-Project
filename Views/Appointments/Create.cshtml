@@ -19,6 +19,7 @@
         --input-bg: #f8fafc;
         --input-border: #cbd5e1;
         --danger: #ef4444;
+        --success: #10b981;
     }
 
     body {
@@ -115,6 +116,13 @@
             box-shadow: 0 0 0 4px rgba(26, 118, 209, 0.1);
         }
 
+        .custom-input:disabled {
+            background-color: #e2e8f0;
+            color: #94a3b8;
+            cursor: not-allowed;
+            border-color: #cbd5e1;
+        }
+
     select.custom-input {
         appearance: none;
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2364748b' class='bi bi-chevron-down' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C./svg%3E");
@@ -123,6 +131,62 @@
         background-size: 16px;
         padding-right: 40px;
     }
+
+    /* === New Styles for Availability & Slots === */
+    .availability-message {
+        font-size: 14px;
+        font-weight: 600;
+        margin-top: 4px;
+    }
+
+    .text-success-custom {
+        color: var(--success);
+    }
+
+    .text-danger-custom {
+        color: var(--danger);
+    }
+
+    .slots-container {
+        margin-top: 8px;
+        padding: 12px;
+        background: #f8fafc;
+        border: 1px dashed var(--input-border);
+        border-radius: 12px;
+        display: none;
+    }
+
+    .slots-header {
+        font-size: 13px;
+        color: var(--text-muted);
+        margin-bottom: 12px;
+        font-weight: 600;
+    }
+
+    .slots-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .slot-badge {
+        background: var(--primary-light);
+        color: var(--primary-dark);
+        border: 1px solid rgba(26, 118, 209, 0.2);
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+        .slot-badge:hover {
+            background: var(--primary);
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+    /* ========================================= */
 
     .btn-submit {
         background: var(--primary-gradient);
@@ -244,6 +308,9 @@
                         <label asp-for="Visit_Date" class="custom-label">Preferred Visit Date & Time</label>
                         <input asp-for="Visit_Date" class="custom-input" type="datetime-local" required />
                         <span asp-validation-for="Visit_Date" class="text-danger"></span>
+
+                        <div id="availability-message" class="availability-message"></div>
+                        <div id="available-slots" class="slots-container"></div>
                     </div>
 
                     <div class="form-group full-width">
@@ -270,19 +337,22 @@
                         <span asp-validation-for="StaffId" class="text-danger"></span>
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group full-width">
                         <label asp-for="Visit_Date" class="custom-label">Visit Date</label>
                         <input asp-for="Visit_Date" class="custom-input" type="datetime-local" />
                         <span asp-validation-for="Visit_Date" class="text-danger"></span>
+
+                        <div id="availability-message" class="availability-message"></div>
+                        <div id="available-slots" class="slots-container"></div>
                     </div>
 
                     <div class="form-group">
                         <label asp-for="Status" class="custom-label">Status</label>
-                        <select asp-for="Status" class="custom-input" asp-items="Html.GetEnumSelectList<Hospital_Management_Project.Models.AppointmentStatus>()"></select>
+                        <select asp-for="Status" class="custom-input" asp-items="Html.GetEnumSelectList<Hospital_Management_Project.Models.AppointmentStatus>()" disabled></select>
                         <span asp-validation-for="Status" class="text-danger"></span>
                     </div>
 
-                    <div class="form-group full-width">
+                    <div class="form-group">
                         <label asp-for="Reason" class="custom-label">Reason</label>
                         <input asp-for="Reason" class="custom-input" placeholder="Initial symptoms description..." />
                         <span asp-validation-for="Reason" class="text-danger"></span>
@@ -303,9 +373,76 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const staffSelect = document.getElementById('StaffId');
+            const visitDateInput = document.getElementById('Visit_Date');
+            const msgDiv = document.getElementById('availability-message');
+            const slotsDiv = document.getElementById('available-slots');
+
+            // ✅ التحقق من التوافر وجلب المواعيد الفاضية
+            function checkAvailabilityAndSlots() {
+                if (!staffSelect || !visitDateInput) return;
+
+                const staffId = staffSelect.value;
+                const visitDateVal = visitDateInput.value;
+
+                if (!staffId || !visitDateVal) {
+                    msgDiv.innerHTML = '';
+                    slotsDiv.style.display = 'none';
+                    return;
+                }
+
+                // 1. التحقق من الوقت المختار إذا كان محجوزاً
+                fetch(`/Appointments/CheckAvailability?staffId=${staffId}&visitDate=${encodeURIComponent(visitDateVal)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.isAvailable) {
+                            msgDiv.innerHTML = '<span class="text-success-custom"><i class="bi bi-check-circle-fill"></i> This slot is available.</span>';
+                        } else {
+                            msgDiv.innerHTML = '<span class="text-danger-custom"><i class="bi bi-x-circle-fill"></i> This slot is already booked! Please choose another time.</span>';
+                        }
+                    })
+                    .catch(err => console.error(err));
+
+                // 2. جلب المواعيد الفاضية في نفس اليوم المختار
+                const datePart = visitDateVal.split('T')[0];
+                fetch(`/Appointments/GetAvailableSlots?staffId=${staffId}&date=${datePart}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        slotsDiv.style.display = 'block';
+                        if (data.length > 0) {
+                            let html = `<div class="slots-header">Available slots on ${datePart}:</div><div class="slots-grid">`;
+                            data.forEach(time => {
+                                html += `<div class="slot-badge" onclick="selectTime('${datePart}', '${time}')">${time}</div>`;
+                            });
+                            html += `</div>`;
+                            slotsDiv.innerHTML = html;
+                        } else {
+                            slotsDiv.innerHTML = '<div class="slots-header text-danger-custom">No available slots remaining on this day.</div>';
+                        }
+                    })
+                    .catch(err => console.error(err));
+            }
+
+            // إعطاء الوظيفة selectTime صلاحية عامة حتى تعمل عند الضغط
+            window.selectTime = function (date, time) {
+                if (visitDateInput) {
+                    visitDateInput.value = `${date}T${time}`;
+                    checkAvailabilityAndSlots();
+                }
+            };
+
+            // تشغيل دوال التحقق عند تغيير الدكتور أو التاريخ
+            if (staffSelect) staffSelect.addEventListener('change', checkAvailabilityAndSlots);
+            if (visitDateInput) visitDateInput.addEventListener('change', checkAvailabilityAndSlots);
+        });
+    </script>
+
     @if (!isPatient)
     {
         <script>
+            // ✅ كود البحث عن مريض (للدكتور/الإدمن)
             document.getElementById('patientSearch').addEventListener('input', function (e) {
                 const term = e.target.value;
                 const list = document.getElementById('patientSuggestions');

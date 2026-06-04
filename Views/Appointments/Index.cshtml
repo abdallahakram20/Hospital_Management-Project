@@ -1,7 +1,16 @@
 ﻿@model IEnumerable<Hospital_Management_Project.Models.Appointment>
 @{
     ViewData["Title"] = "Appointments Directory";
+
+    // تحديد الأدوار (Roles)
+    bool isAdmin = User.IsInRole("Admin");
     bool isPatient = User.IsInRole("Patient");
+    bool isStaff = !isAdmin && !isPatient; // إذا لم يكن أدمن ولا مريض، فهو بالتأكيد من الطاقم الطبي
+
+    // 1. ترتيب المواعيد بناءً على اسم الدكتور/الممرض ثم بناءً على وقت الزيارة ليكونوا تحت بعضهم
+    var sortedAppointments = Model != null
+        ? Model.OrderBy(a => a.Staff != null ? a.Staff.StaffName : "Unassigned").ThenBy(a => a.Visit_Date)
+        : Enumerable.Empty<Hospital_Management_Project.Models.Appointment>();
 }
 
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -36,7 +45,6 @@
         margin: 0 auto;
     }
 
-    /* Header Section */
     .mp-page-header {
         background: var(--card-bg);
         border-radius: 24px;
@@ -98,7 +106,6 @@
         border: 1px solid rgba(26, 118, 209, 0.08);
     }
 
-    /* Badges Modernization */
     .badge-modern {
         padding: 6px 14px;
         border-radius: 50px;
@@ -133,7 +140,6 @@
         border: 1px solid #e2e8f0;
     }
 
-    /* Table Design for Admin */
     .mp-table-wrap {
         overflow-x: auto;
         border-radius: 16px;
@@ -162,7 +168,6 @@
             font-size: 14px;
         }
 
-    /* Actions Buttons */
     .mp-actions {
         display: flex;
         gap: 6px;
@@ -213,7 +218,6 @@
             color: white;
         }
 
-    /* Patient Cards Grid Mode */
     .appointments-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
@@ -259,7 +263,6 @@
             color: var(--text-main);
         }
 
-    /* تايم لاين كارت اليوم */
     .timeline-dot {
         position: relative;
         padding-left: 20px;
@@ -291,7 +294,7 @@
         }
     </div>
 
-    @if (Model == null || !Model.Any())
+    @if (!sortedAppointments.Any())
     {
         <div class="mp-card">
             <div class="text-center py-5">
@@ -304,12 +307,11 @@
     else
     {
         <div class="row g-4">
-
             <div class="col-xl-8 col-lg-7">
                 @if (isPatient)
                 {
                     <div class="appointments-grid">
-                        @foreach (var item in Model)
+                        @foreach (var item in sortedAppointments)
                         {
                             <div class="appointment-card">
                                 <div class="card-date-box">
@@ -333,20 +335,13 @@
                                     {
                                         <span class="badge-modern bg-light-danger"><i class="bi bi-x-circle-fill"></i> Cancelled</span>
                                     }
-                                    else
-                                    {
-                                        <span class="badge-modern bg-light-secondary">@item.Status</span>
-                                    }
                                 </div>
 
                                 <div class="card-detail-line">
                                     <i class="bi bi-chat-left-text-fill me-1"></i> Reason: <strong>@(string.IsNullOrEmpty(item.Reason) ? "N/A" : item.Reason)</strong>
                                 </div>
                                 <div class="card-detail-line">
-                                    <i class="bi bi-heart-pulse-fill me-1"></i> Diagnosis: <strong style="color: var(--primary);">@(string.IsNullOrEmpty(item.Diagnosis) ? "Pending doctor review" : item.Diagnosis)</strong>
-                                </div>
-                                <div class="card-detail-line">
-                                    <i class="bi bi-capsules me-1"></i> Medication: <strong>@(string.IsNullOrEmpty(item.Medication) ? "None" : item.Medication)</strong>
+                                    <i class="bi bi-heart-pulse-fill me-1"></i> Diagnosis: <strong style="color: var(--primary);">@(string.IsNullOrEmpty(item.Diagnosis) ? "Pending review" : item.Diagnosis)</strong>
                                 </div>
 
                                 <hr style="border-top: 1px dashed var(--input-border); margin: 15px 0;" />
@@ -355,17 +350,6 @@
                                     <a asp-action="Details" asp-route-id="@item.AppointmentId" class="mp-btn mp-btn-info" style="flex: 1; justify-content: center;">
                                         <i class="bi bi-eye-fill"></i> View Details
                                     </a>
-
-                                    @if (item.Status == Hospital_Management_Project.Models.AppointmentStatus.Booked)
-                                    {
-                                        <form asp-action="CancelAppointment" method="post" style="flex: 1; display:flex;">
-                                            <input type="hidden" name="id" value="@item.AppointmentId" />
-                                            <button type="submit" class="mp-btn mp-btn-danger" style="width: 100%; justify-content: center;"
-                                                    onclick="return confirm('Are you sure you want to cancel this appointment?\n\nNote: Cancellation is not allowed if less than 24 hours remain.');">
-                                                <i class="bi bi-x-square-fill"></i> Cancel
-                                            </button>
-                                        </form>
-                                    }
                                 </div>
                             </div>
                         }
@@ -379,20 +363,56 @@
                                 <thead>
                                     <tr>
                                         <th><i class="bi bi-clock-fill"></i> Visit Date & Time</th>
+
+                                        @if (isAdmin)
+                                        {
+                                            <th><i class="bi bi-person-badge-fill"></i> Medical Staff</th>
+                                            <th><i class="bi bi-person-fill"></i> Patient Name</th>
+                                        }
+                                        else if (isStaff)
+                                        {
+                                            <th><i class="bi bi-person-fill"></i> Patient Name</th>
+                                        }
+
                                         <th><i class="bi bi-info-circle-fill"></i> Status</th>
                                         <th><i class="bi bi-question-diamond-fill"></i> Reason</th>
                                         <th><i class="bi bi-heart-pulse-fill"></i> Diagnosis</th>
                                         <th><i class="bi bi-capsules-fill"></i> Medication</th>
-                                        <th><i class="bi bi-journal-medical"></i> Treatment Plan</th>
-                                        <th><i class="bi bi-vials"></i> Common Tests</th>
                                         <th style="text-align:center;"><i class="bi bi-sliders"></i> Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var item in Model)
+                                    @foreach (var item in sortedAppointments)
                                     {
                                         <tr>
                                             <td style="font-weight:600; color: var(--text-main);">@item.Visit_Date.ToString("yyyy-MM-dd hh:mm tt")</td>
+
+                                            @if (isAdmin)
+                                            {
+                                                <td>
+                                                    <div class="d-flex flex-column">
+                                                        <span class="fw-bold" style="color: var(--primary);">
+                                                            @(item.Staff != null ? item.Staff.StaffName : "Unassigned")
+                                                        </span>
+                                                        @if (item.Staff != null && !string.IsNullOrEmpty(item.Staff.Position))
+                                                        {
+                                                            <small class="text-muted" style="font-size: 11px;">
+                                                                <i class="bi bi-tag-fill me-1"></i>@item.Staff.Position
+                                                            </small>
+                                                        }
+                                                    </div>
+                                                </td>
+                                                <td class="fw-bold">
+                                                    @(item.Patient != null ? $"{item.Patient.FName} {item.Patient.LName}" : "N/A")
+                                                </td>
+                                            }
+                                            else if (isStaff)
+                                            {
+                                                <td class="fw-bold" style="color: var(--primary);">
+                                                    @(item.Patient != null ? $"{item.Patient.FName} {item.Patient.LName}" : "N/A")
+                                                </td>
+                                            }
+
                                             <td>
                                                 @if (item.Status == Hospital_Management_Project.Models.AppointmentStatus.Available)
                                                 {
@@ -406,27 +426,15 @@
                                                 {
                                                     <span class="badge-modern bg-light-danger"><i class="bi bi-x-circle-fill"></i> Cancelled</span>
                                                 }
-                                                else
-                                                {
-                                                    <span class="badge-modern bg-light-secondary">@item.Status</span>
-                                                }
                                             </td>
                                             <td>@(string.IsNullOrEmpty(item.Reason) ? "N/A" : item.Reason)</td>
                                             <td><span style="font-weight: 500;">@(string.IsNullOrEmpty(item.Diagnosis) ? "Pending" : item.Diagnosis)</span></td>
                                             <td>@(string.IsNullOrEmpty(item.Medication) ? "None" : item.Medication)</td>
-                                            <td>@(string.IsNullOrEmpty(item.Treatment_Plan) ? "None" : item.Treatment_Plan)</td>
-                                            <td>@(string.IsNullOrEmpty(item.Common_tests) ? "None" : item.Common_tests)</td>
                                             <td>
                                                 <div class="mp-actions" style="justify-content: center;">
-                                                    <a asp-action="Details" asp-route-id="@item.AppointmentId" class="mp-btn mp-btn-info" title="Details">
-                                                        <i class="bi bi-eye-fill"></i>
-                                                    </a>
-                                                    <a asp-action="Edit" asp-route-id="@item.AppointmentId" class="mp-btn mp-btn-warning" title="Edit">
-                                                        <i class="bi bi-pencil-square"></i>
-                                                    </a>
-                                                    <a asp-action="Delete" asp-route-id="@item.AppointmentId" class="mp-btn mp-btn-danger" title="Delete">
-                                                        <i class="bi bi-trash-fill"></i>
-                                                    </a>
+                                                    <a asp-action="Details" asp-route-id="@item.AppointmentId" class="mp-btn mp-btn-info" title="Details"><i class="bi bi-eye-fill"></i></a>
+                                                    <a asp-action="Edit" asp-route-id="@item.AppointmentId" class="mp-btn mp-btn-warning" title="Edit"><i class="bi bi-pencil-square"></i></a>
+                                                    <a asp-action="Delete" asp-route-id="@item.AppointmentId" class="mp-btn mp-btn-danger" title="Delete"><i class="bi bi-trash-fill"></i></a>
                                                 </div>
                                             </td>
                                         </tr>
@@ -445,13 +453,13 @@
                             <i class="bi bi-lightning-auto text-warning me-1"></i> Today's Overview
                         </h5>
                         <span class="badge rounded-pill bg-primary" style="font-size: 12px; padding: 6px 12px;">
-                            @Model.Count(a => a.Visit_Date.Date == DateTime.Today) Today
+                            @sortedAppointments.Count(a => a.Visit_Date.Date == DateTime.Today) Today
                         </span>
                     </div>
 
                     <div class="d-flex flex-column gap-3">
                         @{
-                            var todaysAppointments = Model.Where(a => a.Visit_Date.Date == DateTime.Today).OrderBy(a => a.Visit_Date).Take(5);
+                            var todaysAppointments = sortedAppointments.Where(a => a.Visit_Date.Date == DateTime.Today).Take(5);
                         }
 
                         @if (todaysAppointments.Any())
@@ -468,24 +476,24 @@
                                             <div class="fw-bold text-dark" style="font-size: 0.9rem;">
                                                 @(string.IsNullOrEmpty(app.Reason) ? "Clinical Session" : app.Reason)
                                             </div>
-                                            <small class="text-muted d-block" style="font-size: 0.8rem;">
-                                                @(string.IsNullOrEmpty(app.Diagnosis) ? "General Check" : app.Diagnosis)
-                                            </small>
+
+                                            @if (isAdmin)
+                                            {
+                                                <small class="text-primary d-block mt-1" style="font-size: 0.75rem; font-weight: 600;">
+                                                    <i class="bi bi-person-badge"></i> Staff: @(app.Staff != null ? app.Staff.StaffName : "Unassigned")
+                                                </small>
+                                                <small class="text-muted d-block" style="font-size: 0.75rem;">
+                                                    <i class="bi bi-person"></i> Patient: @(app.Patient != null ? $"{app.Patient.FName} {app.Patient.LName}" : "N/A")
+                                                </small>
+                                            }
+                                            else if (isStaff)
+                                            {
+                                                <small class="text-primary d-block mt-1" style="font-size: 0.75rem; font-weight: 600;">
+                                                    <i class="bi bi-person"></i> Patient: @(app.Patient != null ? $"{app.Patient.FName} {app.Patient.LName}" : "N/A")
+                                                </small>
+                                            }
                                         </div>
                                     </div>
-
-                                    @if (app.Status == Hospital_Management_Project.Models.AppointmentStatus.Booked)
-                                    {
-                                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1" style="font-size: 11px;">Booked</span>
-                                    }
-                                    else if (app.Status == Hospital_Management_Project.Models.AppointmentStatus.Available)
-                                    {
-                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-1" style="font-size: 11px;">Available</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-1" style="font-size: 11px;">Cancelled</span>
-                                    }
                                 </div>
                             }
                         }
@@ -499,28 +507,6 @@
                     </div>
                 </div>
             </div>
-
         </div>
     }
 </div>
-
-@section Scripts {
-    <script>
-        (function () {
-            if (window.history.pushState) {
-                window.history.pushState(null, null, window.location.href);
-
-                window.addEventListener('popstate', function () {
-                    window.location.href = '@Url.Action("Index", "Home")';
-                });
-            }
-
-            // إضافة الـ pageshow المفقود لإجبار المتصفح على التحديث عند الرجوع
-            window.addEventListener('pageshow', function (event) {
-                if (event.persisted || (typeof window.performance != "undefined" && window.performance.getEntriesByType("navigation")[0]?.type === "back_forward")) {
-                    window.location.reload(true);
-                }
-            });
-        })();
-    </script>
-}

@@ -291,6 +291,19 @@
                     <span asp-validation-for="DepartmentId" class="text-danger"></span>
                 </div>
 
+                <!-- 💡 تمت إضافة خانات تعديل الوقت للأدمن هنا وتُظهر الوقت المحفوظ 💡 -->
+                @if (User.IsInRole("Admin"))
+                {
+                    <div class="form-group">
+                        <label class="custom-label"><i class="bi bi-clock"></i> Edit Shift Start</label>
+                        <input name="shiftStartTime" type="time" class="custom-input" value="@(ViewBag.ShiftStartTime != null ? ViewBag.ShiftStartTime.ToString(@"hh\:mm") : "09:00")" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="custom-label"><i class="bi bi-clock-history"></i> Edit Shift End</label>
+                        <input name="shiftEndTime" type="time" class="custom-input" value="@(ViewBag.ShiftEndTime != null ? ViewBag.ShiftEndTime.ToString(@"hh\:mm") : "17:00")" required />
+                    </div>
+                }
+
                 <div class="form-group full-width">
                     <label class="custom-label">Profile Image (Adjust to Fit Face)</label>
                     <div class="image-edit-section">
@@ -364,32 +377,25 @@
         }
         });
 
-        // التعديل المضمون: إرسال الـ Form مبرمجاً بالـ Cropped Image عبر FormData لضمان السيف بالسيرفر
         form.addEventListener('submit', function (e) {
-        if (!cropper) return; // لو مفيش صورة جديدة، سيب الفورم يشتغل طبيعي
+        if (!cropper) return;
 
-        e.preventDefault(); // وقف السيف العادي البايظ
+        e.preventDefault();
 
-        // قص الصورة بأبعاد ممتازة
         cropper.getCroppedCanvas({ width: 400, height: 400 }).toBlob(function (blob) {
 
-        // إنشاء كائن FormData لجمع كل مدخلات الصفحة يدوياً وبدقة
         const formData = new FormData(form);
 
-        // حذف أي ملف غير مقصوص متبقي في الـ input
         formData.delete("ImageFile");
 
-        // حقن الصورة المقصوصة الحقيقية والنهائية
         formData.append("ImageFile", blob, "cropped_avatar.jpg");
 
-        // إرسال البيانات للسيرفر عبر الـ Fetch API لضمان استقرار العملية
         fetch(form.action, {
         method: 'POST',
         body: formData
         })
         .then(response => {
         if (response.ok || response.redirected) {
-        // عند النجاح، التوجيه التلقائي لصفحة الـ Index لتشاهد التحديث فوراً
         window.location.href = '@Url.Action("Index")';
         } else {
         alert("حدث خطأ أثناء حفظ الصورة، تأكد من إعدادات الـ Controller.");

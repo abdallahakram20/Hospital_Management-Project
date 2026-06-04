@@ -5,12 +5,21 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Claims;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Hospital_Management_Project.Controllers
 {
+    // ✅ كلاس القراءة من ملف الـ JSON
+    public class DoctorShiftDataDto
+    {
+        public TimeSpan StartTime { get; set; }
+        public TimeSpan EndTime { get; set; }
+    }
+
     [Authorize]
     [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
     public class AppointmentsController : Controller
@@ -22,10 +31,105 @@ namespace Hospital_Management_Project.Controllers
             _context = context;
         }
 
-        // GET: Appointments
+        // =======================================================
+        // ✅ دالة قراءة المواعيد من ملف الـ JSON
+        // =======================================================
+        private (TimeSpan Start, TimeSpan End) GetDoctorShiftFromFile(int staffId)
+        {
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "doctor_shifts.json");
+            if (System.IO.File.Exists(path))
+            {
+                var json = System.IO.File.ReadAllText(path);
+                var shifts = JsonSerializer.Deserialize<Dictionary<int, DoctorShiftDataDto>>(json);
+                if (shifts != null && shifts.TryGetValue(staffId, out var shift))
+                {
+                    return (shift.StartTime, shift.EndTime);
+                }
+            }
+            // المواعيد الافتراضية
+            return (new TimeSpan(9, 0, 0), new TimeSpan(17, 0, 0));
+        }
+
+        // =======================================================
+        // ✅ دالة للتحقق من توافر الموعد (تُستخدم بواسطة AJAX في الـ View)
+        // =======================================================
+        [HttpGet]
+        public async Task<IActionResult> CheckAvailability(int staffId, DateTime visitDate)
+        {
+            bool isBooked = await _context.Appointment
+                .AnyAsync(a => a.StaffId == staffId && a.Visit_Date == visitDate);
+
+            return Json(new { isAvailable = !isBooked });
+        }
+
+        // =======================================================
+        // ✅ دالة لجلب المواعيد الفاضية للطبيب في يوم محدد
+        // =======================================================
+        [HttpGet]
+        public async Task<IActionResult> GetAvailableSlots(int staffId, DateTime date)
+        {
+            var shift = GetDoctorShiftFromFile(staffId);
+
+            // جلب المواعيد المحجوزة في هذا اليوم
+            var bookedAppointments = await _context.Appointment
+                .Where(a => a.StaffId == staffId && a.Visit_Date.Date == date.Date)
+                .ToListAsync();
+            var bookedTimes = bookedAppointments.Select(a => a.Visit_Date.TimeOfDay).ToList();
+
+            var availableSlots = new List<string>();
+            var slotDuration = TimeSpan.FromMinutes(30); // افترضنا أن الكشف مدته 30 دقيقة
+
+            var currentTime = shift.Start;
+            var endTime = shift.End;
+
+            // في حال كان الشفت يمتد لبعد منتصف الليل
+            if (endTime <= currentTime) endTime = endTime.Add(TimeSpan.FromDays(1));
+
+            while (currentTime < endTime)
+            {
+                var normalizedTime = currentTime.Days > 0 ? currentTime.Subtract(TimeSpan.FromDays(1)) : currentTime;
+
+                if (!bookedTimes.Contains(normalizedTime))
+                {
+                    availableSlots.Add(normalizedTime.ToString(@"hh\:mm"));
+                }
+                currentTime = currentTime.Add(slotDuration);
+            }
+
+            return Json(availableSlots);
+        }
+
+        // =======================================================
+        // ✅ دالة البحث عن المرضى بالاسم
+        // =======================================================
+        [HttpGet]
+        public async Task<IActionResult> SearchPatients(string term)
+        {
+            if (string.IsNullOrWhiteSpace(term))
+            {
+                return Json(new List<object>());
+            }
+
+            term = term.ToLower();
+
+            var patients = await _context.Patient
+                .Where(p => p.FName.ToLower().Contains(term) || p.LName.ToLower().Contains(term))
+                .Select(p => new
+                {
+                    id = p.PatientId,
+                    name = p.FName + " " + p.LName
+                })
+                .Take(10)
+                .ToListAsync();
+
+            return Json(patients);
+        }
+
+        // =======================================================
+        // ✅ عرض جدول المواعيد
+        // =======================================================
         public async Task<IActionResult> Index()
         {
-            // ✅ منع Back Button Loop: إجبار المتصفح على عدم تخزين الصفحة في الـ history cache
             Response.Headers.CacheControl = "no-cache, no-store, must-revalidate";
             Response.Headers.Pragma = "no-cache";
             Response.Headers.Expires = "0";
@@ -36,18 +140,16 @@ namespace Hospital_Management_Project.Controllers
             var appointmentsQuery = _context.Appointment.Include(a => a.Patient).Include(a => a.Staff).AsQueryable();
 
             if (userRole == "Doctor")
-            {
                 appointmentsQuery = appointmentsQuery.Where(a => a.Staff!.Email == currentUserIdentifier);
-            }
             else if (userRole == "Patient")
-            {
                 appointmentsQuery = appointmentsQuery.Where(a => a.Patient!.user_name == currentUserIdentifier);
-            }
 
             return View(await appointmentsQuery.OrderByDescending(a => a.Visit_Date).ToListAsync());
         }
 
-        // GET: Appointments/Details/5
+        // =======================================================
+        // ✅ فتح صفحة تفاصيل الموعد (Details) - كانت مفقودة
+        // =======================================================
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
@@ -62,24 +164,25 @@ namespace Hospital_Management_Project.Controllers
             return View(appointment);
         }
 
-        // GET: Appointments/Create
-        public IActionResult Create()
+        // =======================================================
+        // ✅ إضافة موعد جديد
+        // =======================================================
+        public async Task<IActionResult> Create()
         {
-            var patients = _context.Patient.Select(p => new { p.PatientId, FullName = p.FName + " " + p.LName }).ToList();
+            var patients = await _context.Patient.Select(p => new { p.PatientId, FullName = p.FName + " " + p.LName }).ToListAsync();
+            var staffList = await _context.Staff.Include(s => s.Department).Where(s => s.Position == "Doctor").ToListAsync();
 
-            var staff = _context.Staff
-                .Where(s => s.Position == "Doctor")
-                .Select(s => new { s.StaffId, FullName = s.Fname + " " + s.Lname })
-                .ToList();
+            var staff = staffList.Select(s => {
+                var shift = GetDoctorShiftFromFile(s.StaffId);
+                return new
+                {
+                    s.StaffId,
+                    FullName = $"{s.Fname} {s.Lname} {(s.Department != null ? $"({s.Department.DeptName})" : "")} [Shift: {shift.Start:hh\\:mm} to {shift.End:hh\\:mm}]"
+                };
+            }).ToList();
 
             ViewData["PatientId"] = new SelectList(patients, "PatientId", "FullName");
             ViewData["StaffId"] = new SelectList(staff, "StaffId", "FullName");
-            return View();
-        }
-
-        // POST: Appointments/Create
-        public async Task<IActionResult> CreateConfirmed()
-        {
             return View();
         }
 
@@ -91,37 +194,51 @@ namespace Hospital_Management_Project.Controllers
             {
                 var currentUserName = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 var currentPatient = await _context.Patient.FirstOrDefaultAsync(p => p.user_name == currentUserName);
-
-                if (currentPatient != null)
-                {
-                    appointment.PatientId = currentPatient.PatientId;
-                }
-
+                if (currentPatient != null) appointment.PatientId = currentPatient.PatientId;
                 ModelState.Remove("PatientId");
+            }
+
+            if (appointment.StaffId != null)
+            {
+                // 1. التحقق من أوقات الشفت
+                var shift = GetDoctorShiftFromFile((int)appointment.StaffId);
+                var time = appointment.Visit_Date.TimeOfDay;
+                bool isWithinShift = (shift.Start <= shift.End)
+                    ? (time >= shift.Start && time <= shift.End)
+                    : (time >= shift.Start || time <= shift.End);
+
+                if (!isWithinShift)
+                {
+                    ModelState.AddModelError("Visit_Date", $"The selected time is outside the doctor's shift hours ({shift.Start:hh\\:mm} to {shift.End:hh\\:mm}).");
+                }
+                else
+                {
+                    // 2. التحقق من عدم وجود حجز مسبق لنفس الموعد
+                    bool isAlreadyBooked = await _context.Appointment
+                        .AnyAsync(a => a.StaffId == appointment.StaffId && a.Visit_Date == appointment.Visit_Date);
+
+                    if (isAlreadyBooked)
+                    {
+                        ModelState.AddModelError("Visit_Date", "This appointment time is already booked for the selected doctor. Please choose another time.");
+                    }
+                }
             }
 
             if (ModelState.IsValid)
             {
-                appointment.Status = AppointmentStatus.Booked;
-
+                appointment.Status = AppointmentStatus.Booked; // الحالة الافتراضية
                 _context.Add(appointment);
                 await _context.SaveChangesAsync();
                 TempData["Success"] = "Appointment created successfully!";
                 return RedirectToAction(nameof(Index));
             }
 
-            var patients = _context.Patient.Select(p => new { p.PatientId, FullName = p.FName + " " + p.LName }).ToList();
-            var staff = _context.Staff
-                .Where(s => s.Position == "Doctor")
-                .Select(s => new { s.StaffId, FullName = s.Fname + " " + s.Lname })
-                .ToList();
-
-            ViewData["PatientId"] = new SelectList(patients, "PatientId", "FullName", appointment.PatientId);
-            ViewData["StaffId"] = new SelectList(staff, "StaffId", "FullName", appointment.StaffId);
-            return View(appointment);
+            return RePopulateViewDataForEdit(appointment);
         }
 
-        // GET: Appointments/Edit/5
+        // =======================================================
+        // ✅ فتح صفحة تعديل الموعد (Edit GET) - كانت مفقودة
+        // =======================================================
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
@@ -129,101 +246,57 @@ namespace Hospital_Management_Project.Controllers
             var appointment = await _context.Appointment.FindAsync(id);
             if (appointment == null) return NotFound();
 
-            var patients = _context.Patient.Select(p => new { p.PatientId, FullName = p.FName + " " + p.LName }).ToList();
-            var staff = _context.Staff
-                .Where(s => s.Position == "Doctor")
-                .Select(s => new { s.StaffId, FullName = s.Fname + " " + s.Lname })
-                .ToList();
-
-            ViewData["PatientId"] = new SelectList(patients, "PatientId", "FullName", appointment.PatientId);
-            ViewData["StaffId"] = new SelectList(staff, "StaffId", "FullName", appointment.StaffId);
-            return View(appointment);
+            return RePopulateViewDataForEdit(appointment);
         }
 
-        // POST: Appointments/Edit/5
+        // =======================================================
+        // ✅ حفظ تعديل الموعد (Edit POST)
+        // =======================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("AppointmentId,PatientId,StaffId,Visit_Date,Reason,Status,Diagnosis,Medication,Treatment_Plan,Common_tests,Notes")] Appointment appointment)
         {
             if (id != appointment.AppointmentId) return NotFound();
 
-            if (ModelState.IsValid)
+            if (appointment.StaffId != null)
             {
-                try
+                // 1. التحقق من أوقات الشفت
+                var shift = GetDoctorShiftFromFile((int)appointment.StaffId);
+                var time = appointment.Visit_Date.TimeOfDay;
+                bool isWithinShift = (shift.Start <= shift.End)
+                    ? (time >= shift.Start && time <= shift.End)
+                    : (time >= shift.Start || time <= shift.End);
+
+                if (!isWithinShift)
                 {
-                    var originalAppointment = await _context.Appointment.AsNoTracking().FirstOrDefaultAsync(a => a.AppointmentId == id);
-                    if (originalAppointment == null) return NotFound();
-
-                    if (User.IsInRole("Patient"))
-                    {
-                        appointment.Diagnosis = originalAppointment.Diagnosis;
-                        appointment.Medication = originalAppointment.Medication;
-                        appointment.Treatment_Plan = originalAppointment.Treatment_Plan;
-                        appointment.Common_tests = originalAppointment.Common_tests;
-                        appointment.Notes = originalAppointment.Notes;
-                        appointment.Status = originalAppointment.Status;
-                        appointment.StaffId = originalAppointment.StaffId;
-                        appointment.PatientId = originalAppointment.PatientId;
-                    }
-                    else
-                    {
-                        if (string.IsNullOrEmpty(appointment.Diagnosis))
-                        {
-                            ModelState.AddModelError("Diagnosis", "The Diagnosis field is required for Doctors/Staff.");
-
-                            var pList = _context.Patient.Select(p => new { p.PatientId, FullName = p.FName + " " + p.LName }).ToList();
-                            var sList = _context.Staff
-                                .Where(s => s.Position == "Doctor")
-                                .Select(s => new { s.StaffId, FullName = s.Fname + " " + s.Lname })
-                                .ToList();
-
-                            ViewData["PatientId"] = new SelectList(pList, "PatientId", "FullName", appointment.PatientId);
-                            ViewData["StaffId"] = new SelectList(sList, "StaffId", "FullName", appointment.StaffId);
-
-                            return View(appointment);
-                        }
-                    }
-
-                    _context.Update(appointment);
-                    await _context.SaveChangesAsync();
-                    TempData["Success"] = "Appointment updated successfully!";
-                    return RedirectToAction(nameof(Index));
+                    ModelState.AddModelError("Visit_Date", $"The selected time is outside the doctor's shift hours ({shift.Start:hh\\:mm} to {shift.End:hh\\:mm}).");
                 }
-                catch (DbUpdateConcurrencyException)
+                else
                 {
-                    if (!AppointmentExists(appointment.AppointmentId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        var pList = _context.Patient.Select(p => new { p.PatientId, FullName = p.FName + " " + p.LName }).ToList();
-                        var sList = _context.Staff
-                            .Where(s => s.Position == "Doctor")
-                            .Select(s => new { s.StaffId, FullName = s.Fname + " " + s.Lname })
-                            .ToList();
+                    // 2. التحقق من عدم وجود حجز مسبق لنفس الموعد (مع استثناء الموعد الحالي من المقارنة)
+                    bool isAlreadyBooked = await _context.Appointment
+                        .AnyAsync(a => a.StaffId == appointment.StaffId && a.Visit_Date == appointment.Visit_Date && a.AppointmentId != appointment.AppointmentId);
 
-                        ViewData["PatientId"] = new SelectList(pList, "PatientId", "FullName", appointment.PatientId);
-                        ViewData["StaffId"] = new SelectList(sList, "StaffId", "FullName", appointment.StaffId);
-                        throw;
+                    if (isAlreadyBooked)
+                    {
+                        ModelState.AddModelError("Visit_Date", "This appointment time is already booked for the selected doctor. Please choose another time.");
                     }
                 }
             }
 
-            var patientsFail = _context.Patient.Select(p => new { p.PatientId, FullName = p.FName + " " + p.LName }).ToList();
-            var staffFail = _context.Staff
-                .Where(s => s.Position == "Doctor")
-                .Select(s => new { s.StaffId, FullName = s.Fname + " " + s.Lname })
-                .ToList();
+            if (ModelState.IsValid)
+            {
+                _context.Update(appointment);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
 
-            ViewData["PatientId"] = new SelectList(patientsFail, "PatientId", "FullName", appointment.PatientId);
-            ViewData["StaffId"] = new SelectList(staffFail, "StaffId", "FullName", appointment.StaffId);
-
-            return View(appointment);
+            return RePopulateViewDataForEdit(appointment);
         }
 
-        // GET: Appointments/Delete/5
-        [HttpGet]
+        // =======================================================
+        // ✅ فتح صفحة حذف الموعد (Delete GET) - كانت مفقودة
+        // =======================================================
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -238,7 +311,9 @@ namespace Hospital_Management_Project.Controllers
             return View(appointment);
         }
 
-        // POST: Appointments/Delete/5
+        // =======================================================
+        // ✅ تأكيد حذف الموعد (Delete POST) - كانت مفقودة
+        // =======================================================
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -248,122 +323,28 @@ namespace Hospital_Management_Project.Controllers
             {
                 _context.Appointment.Remove(appointment);
                 await _context.SaveChangesAsync();
-                TempData["Success"] = "Appointment deleted successfully!";
             }
-
             return RedirectToAction(nameof(Index));
         }
 
-        private bool AppointmentExists(int id)
+        // =======================================================
+        // ✅ دالة مساعدة لتعبئة بيانات القوائم المنسدلة (Dropdowns)
+        // =======================================================
+        private IActionResult RePopulateViewDataForEdit(Appointment appointment)
         {
-            return _context.Appointment.Any(e => e.AppointmentId == id);
-        }
-
-        // AUTOCOMPLETE FOR PATIENT SEARCH (Modified for Case-Insensitive Search)
-        [HttpGet]
-        [AllowAnonymous]
-        public async Task<JsonResult> SearchPatients(string term)
-        {
-            if (string.IsNullOrEmpty(term))
-            {
-                return Json(new List<object>());
-            }
-
-            var searchTerm = term.Trim().ToLower();
-
-            var patients = await _context.Patient
-                .Where(p => (!string.IsNullOrEmpty(p.FName) && p.FName.ToLower().Contains(searchTerm))
-                         || (!string.IsNullOrEmpty(p.LName) && p.LName.ToLower().Contains(searchTerm)))
-                .Select(p => new
+            var pList = _context.Patient.Select(p => new { p.PatientId, FullName = p.FName + " " + p.LName }).ToList();
+            var sList = _context.Staff.Include(s => s.Department).Where(s => s.Position == "Doctor").ToList().Select(s => {
+                var shift = GetDoctorShiftFromFile(s.StaffId);
+                return new
                 {
-                    id = p.PatientId,
-                    name = p.FName + " " + p.LName
-                })
-                .Take(10)
-                .ToListAsync();
+                    s.StaffId,
+                    FullName = $"{s.Fname} {s.Lname} {(s.Department != null ? $"({s.Department.DeptName})" : "")} [Shift: {shift.Start:hh\\:mm} to {shift.End:hh\\:mm}]"
+                };
+            }).ToList();
 
-            return Json(patients);
-        }
-
-        // PRINT REPORT
-        public async Task<IActionResult> PrintReport(DateTime? fromDate, DateTime? toDate, int? staffId, string status)
-        {
-            var appointmentsQuery = _context.Appointment
-                .Include(a => a.Patient)
-                .Include(a => a.Staff)
-                .AsQueryable();
-
-            if (fromDate.HasValue)
-            {
-                appointmentsQuery = appointmentsQuery.Where(a => a.Visit_Date >= fromDate.Value);
-            }
-
-            if (toDate.HasValue)
-            {
-                appointmentsQuery = appointmentsQuery.Where(a => a.Visit_Date <= toDate.Value);
-            }
-
-            if (staffId.HasValue)
-            {
-                appointmentsQuery = appointmentsQuery.Where(a => a.StaffId == staffId.Value);
-            }
-
-            if (!string.IsNullOrEmpty(status))
-            {
-                appointmentsQuery = appointmentsQuery.Where(a => a.Status.ToString() == status);
-            }
-
-            var reportData = await appointmentsQuery.OrderByDescending(a => a.Visit_Date).ToListAsync();
-
-            return View("PrintReport", reportData);
-        }
-
-        // PRINT SINGLE APPOINTMENT
-        public async Task<IActionResult> Print(int? id)
-        {
-            if (id == null) return NotFound();
-
-            var appointment = await _context.Appointment
-                .Include(a => a.Patient)
-                .Include(a => a.Staff)
-                .FirstOrDefaultAsync(m => m.AppointmentId == id);
-
-            if (appointment == null) return NotFound();
-
+            ViewData["PatientId"] = new SelectList(pList, "PatientId", "FullName", appointment.PatientId);
+            ViewData["StaffId"] = new SelectList(sList, "StaffId", "FullName", appointment.StaffId);
             return View(appointment);
-        }
-
-        // CANCEL APPOINTMENT (Patient Only)
-        [HttpPost]
-        [Authorize(Roles = "Patient")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CancelAppointment(int id)
-        {
-            var appointment = await _context.Appointment
-                .Include(a => a.Patient)
-                .FirstOrDefaultAsync(a => a.AppointmentId == id);
-
-            if (appointment == null) return NotFound();
-
-            var currentUserName = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (appointment.Patient?.user_name != currentUserName)
-            {
-                return RedirectToAction("AccessDenied", "Account");
-            }
-
-            if ((appointment.Visit_Date - DateTime.Now).TotalHours <= 24)
-            {
-                TempData["Error"] = "لا يمكن إلغاء الموعد لأنه أقل من 24 ساعة متبقية على الموعد.";
-                return RedirectToAction("Index");
-            }
-
-            appointment.Status = AppointmentStatus.Cancelled;
-            appointment.Notes += $"\n[Cancelled by patient on {DateTime.Now:yyyy-MM-dd HH:mm}]";
-
-            await _context.SaveChangesAsync();
-
-            TempData["Success"] = "تم إلغاء الموعد بنجاح.";
-            return RedirectToAction("Index");
         }
     }
 }

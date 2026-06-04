@@ -65,7 +65,8 @@
 
     .form-grid {
         display: grid;
-        grid-template-columns: repeat(2, 11fr);
+        /* 💡 تم تصحيح الخطأ المطبعي هنا من 11fr إلى 1fr 💡 */
+        grid-template-columns: repeat(2, 1fr);
         gap: 24px;
     }
 
@@ -159,6 +160,17 @@
         font-size: 13px;
         color: var(--danger);
         font-weight: 500;
+    }
+
+    /* أضفت لك ميديا كويري لضمان تجاوب الحقول مع شاشات الموبايل */
+    @@media (max-width: 768px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .full-width {
+            grid-column: span 1;
+        }
     }
 </style>
 
