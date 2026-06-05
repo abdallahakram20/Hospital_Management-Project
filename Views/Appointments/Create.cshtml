@@ -290,7 +290,7 @@
             </p>
         </div>
 
-        <form asp-action="Create">
+        <form asp-action="Create" id="appointmentCreateForm">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
             <div class="form-grid">
@@ -373,12 +373,14 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 
+    <script src="~/js/form-persistence.js" asp-append-version="true"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const staffSelect = document.getElementById('StaffId');
             const visitDateInput = document.getElementById('Visit_Date');
             const msgDiv = document.getElementById('availability-message');
             const slotsDiv = document.getElementById('available-slots');
+            const isPatient = @isPatient.ToString().ToLower();
 
             // ✅ التحقق من التوافر وجلب المواعيد الفاضية
             function checkAvailabilityAndSlots() {
@@ -436,6 +438,20 @@
             // تشغيل دوال التحقق عند تغيير الدكتور أو التاريخ
             if (staffSelect) staffSelect.addEventListener('change', checkAvailabilityAndSlots);
             if (visitDateInput) visitDateInput.addEventListener('change', checkAvailabilityAndSlots);
+
+            // حفظ بيانات النموذج في localStorage عند التحديث أو إعادة تحميل الصفحة
+            const persistenceFields = isPatient
+                ? ['StaffId', 'Visit_Date', 'Reason']
+                : ['patientSearch', 'PatientId', 'StaffId', 'Visit_Date', 'Reason'];
+
+            FormPersistence.init({
+                storageKey: isPatient ? 'careplus-appointment-create-patient' : 'careplus-appointment-create-staff',
+                formSelector: '#appointmentCreateForm',
+                fields: persistenceFields,
+                onRestore: function () {
+                    checkAvailabilityAndSlots();
+                }
+            });
         });
     </script>
 
