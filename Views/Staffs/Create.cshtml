@@ -122,7 +122,6 @@
             box-shadow: 0 0 0 4px var(--primary-light);
         }
 
-        /* New validation style for email input */
         .form-control-custom.is-invalid-custom {
             border-color: #dc3545 !important;
             background-color: #fff8f8;
@@ -255,16 +254,21 @@
 
                 <div class="form-group">
                     <label asp-for="Position" class="custom-label">Position / Role</label>
-                    <input asp-for="Position" class="form-control-custom" placeholder="e.g. Doctor, Nurse" />
+                    <input asp-for="Position" id="PositionInput" class="form-control-custom" placeholder="e.g. Doctor, Nurse" />
                     <span asp-validation-for="Position" class="text-danger small"></span>
                 </div>
 
                 <div class="form-group">
                     <label asp-for="DepartmentId" class="custom-label">Department</label>
-                    <select asp-for="DepartmentId" class="form-control-custom" asp-items="ViewBag.DepartmentId">
+                    <select asp-for="DepartmentId" id="departmentSelect" class="form-control-custom" asp-items="ViewBag.DepartmentId">
                         <option value="">-- Select Department --</option>
                     </select>
                     <span asp-validation-for="DepartmentId" class="text-danger small"></span>
+                </div>
+
+                <div class="form-group full-width" id="specialtyContainer" style="display: none;">
+                    <label class="custom-label">Sub-Specialty (For Emergency Doctor)</label>
+                    <input id="subSpecialtyInput" class="form-control-custom" placeholder="e.g. Cardiology, Pediatrics, Orthopedics" />
                 </div>
 
                 @if (User.IsInRole("Admin"))
@@ -361,20 +365,56 @@
         }
         });
 
-        form.addEventListener('submit', function (e) {
-        // Prevent submission if email domain is incorrect
-        if (emailInput && emailInput.value) {
-        const emailValue = emailInput.value.toLowerCase();
-        if (!emailValue.endsWith('@@careplus.com')) {
-        e.preventDefault(); // Stop submission
-        emailDomainHint.style.display = 'block';
-        emailInput.classList.add('is-invalid-custom');
-        emailInput.focus();
-        return; // Exit the function
+        // كود مراقبة الـ Dropdown والظهور والإخفاء بمجرد تغيير القسم
+        const departmentSelect = document.getElementById("departmentSelect");
+        const specialtyContainer = document.getElementById('specialtyContainer');
+        const subSpecialtyInput = document.getElementById('subSpecialtyInput');
+        const positionInput = document.getElementById("PositionInput");
+
+        if (departmentSelect && specialtyContainer) {
+        function toggleSubSpecialty() {
+        const selectedText = departmentSelect.options[departmentSelect.selectedIndex]?.text.trim();
+
+        if (selectedText === "Emergency" || selectedText === "الطوارئ") {
+        specialtyContainer.style.display = 'block';
+        if (positionInput && (positionInput.value === "" || positionInput.value === "Doctor")) {
+        positionInput.value = "Doctor";
+        }
+        } else {
+        specialtyContainer.style.display = 'none';
+        if (subSpecialtyInput) subSpecialtyInput.value = '';
         }
         }
 
-        // Check if there is a cropped image, if not submit the form normally
+        departmentSelect.addEventListener('change', toggleSubSpecialty);
+        toggleSubSpecialty(); // تشغيل أوتوماتيكي أول ما الصفحة تفتح
+        }
+
+        // حدث الـ Submit وحفظ الصورة وحركة دمج التخصص الصايعة
+        form.addEventListener('submit', function (e) {
+        // التحقق من الإيميل أولاً
+        if (emailInput && emailInput.value) {
+        const emailValue = emailInput.value.toLowerCase();
+        if (!emailValue.endsWith('@@careplus.com')) {
+        e.preventDefault();
+        emailDomainHint.style.display = 'block';
+        emailInput.classList.add('is-invalid-custom');
+        emailInput.focus();
+        return;
+        }
+        }
+
+        // حركة دمج التخصص في الـ Position قبل الإرسال مباشرة
+        if (departmentSelect) {
+        const selectedText = departmentSelect.options[departmentSelect.selectedIndex]?.text.trim();
+        if ((selectedText === "Emergency" || selectedText === "الطوارئ") && subSpecialtyInput && subSpecialtyInput.value.trim() !== "") {
+        if (positionInput) {
+        positionInput.value = `Doctor (${subSpecialtyInput.value.trim()})`;
+        }
+        }
+        }
+
+        // رفع الصورة المقصوصة إن وجدت
         if (!cropper) return;
 
         e.preventDefault();
@@ -383,6 +423,11 @@
         const formData = new FormData(form);
         formData.delete("ImageFile");
         formData.append("ImageFile", blob, "new_staff_avatar.jpg");
+
+        // تحديث قيمة الـ position جوه الـ FormData المبعوتة برضه للـ Controller
+        if (positionInput) {
+        formData.set("Position", positionInput.value);
+        }
 
         fetch(form.action, {
         method: 'POST',
