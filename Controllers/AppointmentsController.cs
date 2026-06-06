@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Hospital_Management_Project.Controllers
 {
-    // ✅ كلاس القراءة من ملف الـ JSON
+    // ✅ Class for reading shift data from JSON file
     public class DoctorShiftDataDto
     {
         public TimeSpan StartTime { get; set; }
@@ -32,7 +32,7 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // =======================================================
-        // ✅ دالة قراءة المواعيد من ملف الـ JSON
+        // ✅ Method to read doctor shifts from JSON file
         // =======================================================
         private (TimeSpan Start, TimeSpan End) GetDoctorShiftFromFile(int staffId)
         {
@@ -46,12 +46,12 @@ namespace Hospital_Management_Project.Controllers
                     return (shift.StartTime, shift.EndTime);
                 }
             }
-            // المواعيد الافتراضية
-            return (new TimeSpan(9, 0, 0), new TimeSpan(17, 0, 0));
+            // Default shift hours if not found (Morning shift default)
+            return (new TimeSpan(8, 0, 0), new TimeSpan(16, 0, 0));
         }
 
         // =======================================================
-        // ✅ دالة للتحقق من توافر الموعد (تُستخدم بواسطة AJAX في الـ View)
+        // ✅ Method to check availability (Used by AJAX in View)
         // =======================================================
         [HttpGet]
         public async Task<IActionResult> CheckAvailability(int staffId, DateTime visitDate)
@@ -63,26 +63,26 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // =======================================================
-        // ✅ دالة لجلب المواعيد الفاضية للطبيب في يوم محدد
+        // ✅ Method to fetch available slots for a doctor on a specific day
         // =======================================================
         [HttpGet]
         public async Task<IActionResult> GetAvailableSlots(int staffId, DateTime date)
         {
             var shift = GetDoctorShiftFromFile(staffId);
 
-            // جلب المواعيد المحجوزة في هذا اليوم
+            // Fetch booked appointments for this specific day
             var bookedAppointments = await _context.Appointment
                 .Where(a => a.StaffId == staffId && a.Visit_Date.Date == date.Date)
                 .ToListAsync();
             var bookedTimes = bookedAppointments.Select(a => a.Visit_Date.TimeOfDay).ToList();
 
             var availableSlots = new List<string>();
-            var slotDuration = TimeSpan.FromMinutes(30); // افترضنا أن الكشف مدته 30 دقيقة
+            var slotDuration = TimeSpan.FromMinutes(30); // Assuming consultation duration is 30 minutes
 
             var currentTime = shift.Start;
             var endTime = shift.End;
 
-            // في حال كان الشفت يمتد لبعد منتصف الليل
+            // Handle shifts extending past midnight
             if (endTime <= currentTime) endTime = endTime.Add(TimeSpan.FromDays(1));
 
             while (currentTime < endTime)
@@ -100,7 +100,7 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // =======================================================
-        // ✅ دالة البحث عن المرضى بالاسم
+        // ✅ Method to search patients by name
         // =======================================================
         [HttpGet]
         public async Task<IActionResult> SearchPatients(string term)
@@ -126,7 +126,7 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // =======================================================
-        // ✅ عرض جدول المواعيد
+        // ✅ Display appointments list (Index)
         // =======================================================
         public async Task<IActionResult> Index()
         {
@@ -148,7 +148,7 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // =======================================================
-        // ✅ فتح صفحة تفاصيل الموعد (Details) - كانت مفقودة
+        // ✅ Open appointment details page (Details)
         // =======================================================
         public async Task<IActionResult> Details(int? id)
         {
@@ -165,7 +165,7 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // =======================================================
-        // ✅ إضافة موعد جديد
+        // ✅ Add a new appointment (Create GET)
         // =======================================================
         public async Task<IActionResult> Create()
         {
@@ -174,10 +174,16 @@ namespace Hospital_Management_Project.Controllers
 
             var staff = staffList.Select(s => {
                 var shift = GetDoctorShiftFromFile(s.StaffId);
+
+                // ✅ تحديد نوع الشيفت بناءً على وقت البداية
+                string shiftType = "Emergency";
+                if (shift.Start >= new TimeSpan(8, 0, 0) && shift.Start < new TimeSpan(16, 0, 0)) shiftType = "Morning";
+                else if (shift.Start >= new TimeSpan(16, 0, 0)) shiftType = "Evening";
+
                 return new
                 {
                     s.StaffId,
-                    FullName = $"{s.Fname} {s.Lname} {(s.Department != null ? $"({s.Department.DeptName})" : "")} [Shift: {shift.Start:hh\\:mm} to {shift.End:hh\\:mm}]"
+                    FullName = $"{s.Fname} {s.Lname} {(s.Department != null ? $"({s.Department.DeptName})" : "")} [{shiftType} Shift: {shift.Start:hh\\:mm} to {shift.End:hh\\:mm}]"
                 };
             }).ToList();
 
@@ -200,33 +206,45 @@ namespace Hospital_Management_Project.Controllers
 
             if (appointment.StaffId != null)
             {
-                // 1. التحقق من أوقات الشفت
-                var shift = GetDoctorShiftFromFile((int)appointment.StaffId);
                 var time = appointment.Visit_Date.TimeOfDay;
-                bool isWithinShift = (shift.Start <= shift.End)
-                    ? (time >= shift.Start && time <= shift.End)
-                    : (time >= shift.Start || time <= shift.End);
 
-                if (!isWithinShift)
+                // ✅ التحقق إذا كان الوقت يقع في فترة الطوارئ (من 12:00 منتصف الليل إلى 07:59 صباحاً)
+                bool isEmergency = time >= TimeSpan.Zero && time < new TimeSpan(8, 0, 0);
+
+                if (isEmergency)
                 {
-                    ModelState.AddModelError("Visit_Date", $"The selected time is outside the doctor's shift hours ({shift.Start:hh\\:mm} to {shift.End:hh\\:mm}).");
+                    // تسجيل كحالة طوارئ وتخطي التحقق من مواعيد العيادات
+                    appointment.Reason = string.IsNullOrEmpty(appointment.Reason)
+                        ? "[حالة طوارئ - Emergency]"
+                        : $"[حالة طوارئ - Emergency] {appointment.Reason}";
                 }
                 else
                 {
-                    // 2. التحقق من عدم وجود حجز مسبق لنفس الموعد
-                    bool isAlreadyBooked = await _context.Appointment
-                        .AnyAsync(a => a.StaffId == appointment.StaffId && a.Visit_Date == appointment.Visit_Date);
+                    // 1. Validate shift hours for normal clinics
+                    var shift = GetDoctorShiftFromFile((int)appointment.StaffId);
+                    bool isWithinShift = (shift.Start <= shift.End)
+                        ? (time >= shift.Start && time <= shift.End)
+                        : (time >= shift.Start || time <= shift.End);
 
-                    if (isAlreadyBooked)
+                    if (!isWithinShift)
                     {
-                        ModelState.AddModelError("Visit_Date", "This appointment time is already booked for the selected doctor. Please choose another time.");
+                        ModelState.AddModelError("Visit_Date", $"The selected time is outside the doctor's shift hours ({shift.Start:hh\\:mm} to {shift.End:hh\\:mm}).");
                     }
+                }
+
+                // 2. Ensure no prior booking exists for the same slot (يطبق على الطوارئ والعيادات لمنع التعارض)
+                bool isAlreadyBooked = await _context.Appointment
+                    .AnyAsync(a => a.StaffId == appointment.StaffId && a.Visit_Date == appointment.Visit_Date);
+
+                if (isAlreadyBooked)
+                {
+                    ModelState.AddModelError("Visit_Date", "This appointment time is already booked for the selected doctor. Please choose another time.");
                 }
             }
 
             if (ModelState.IsValid)
             {
-                appointment.Status = AppointmentStatus.Booked; // الحالة الافتراضية
+                appointment.Status = AppointmentStatus.Booked; // Default status
                 _context.Add(appointment);
                 await _context.SaveChangesAsync();
                 TempData["Success"] = "Appointment created successfully!";
@@ -237,7 +255,7 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // =======================================================
-        // ✅ فتح صفحة تعديل الموعد (Edit GET) - كانت مفقودة
+        // ✅ Open edit appointment page (Edit GET)
         // =======================================================
         public async Task<IActionResult> Edit(int? id)
         {
@@ -250,7 +268,7 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // =======================================================
-        // ✅ حفظ تعديل الموعد (Edit POST)
+        // ✅ Save edited appointment (Edit POST)
         // =======================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -260,27 +278,42 @@ namespace Hospital_Management_Project.Controllers
 
             if (appointment.StaffId != null)
             {
-                // 1. التحقق من أوقات الشفت
-                var shift = GetDoctorShiftFromFile((int)appointment.StaffId);
                 var time = appointment.Visit_Date.TimeOfDay;
-                bool isWithinShift = (shift.Start <= shift.End)
-                    ? (time >= shift.Start && time <= shift.End)
-                    : (time >= shift.Start || time <= shift.End);
 
-                if (!isWithinShift)
+                // ✅ التحقق إذا كان الوقت يقع في فترة الطوارئ
+                bool isEmergency = time >= TimeSpan.Zero && time < new TimeSpan(8, 0, 0);
+
+                if (isEmergency)
                 {
-                    ModelState.AddModelError("Visit_Date", $"The selected time is outside the doctor's shift hours ({shift.Start:hh\\:mm} to {shift.End:hh\\:mm}).");
+                    // التأكد إن كلمة طوارئ مكتوبة لو تم التعديل
+                    if (string.IsNullOrEmpty(appointment.Reason) || (!appointment.Reason.Contains("[حالة طوارئ") && !appointment.Reason.Contains("[Emergency")))
+                    {
+                        appointment.Reason = string.IsNullOrEmpty(appointment.Reason)
+                            ? "[حالة طوارئ - Emergency]"
+                            : $"[حالة طوارئ - Emergency] {appointment.Reason}";
+                    }
                 }
                 else
                 {
-                    // 2. التحقق من عدم وجود حجز مسبق لنفس الموعد (مع استثناء الموعد الحالي من المقارنة)
-                    bool isAlreadyBooked = await _context.Appointment
-                        .AnyAsync(a => a.StaffId == appointment.StaffId && a.Visit_Date == appointment.Visit_Date && a.AppointmentId != appointment.AppointmentId);
+                    // 1. Validate shift hours for normal clinics
+                    var shift = GetDoctorShiftFromFile((int)appointment.StaffId);
+                    bool isWithinShift = (shift.Start <= shift.End)
+                        ? (time >= shift.Start && time <= shift.End)
+                        : (time >= shift.Start || time <= shift.End);
 
-                    if (isAlreadyBooked)
+                    if (!isWithinShift)
                     {
-                        ModelState.AddModelError("Visit_Date", "This appointment time is already booked for the selected doctor. Please choose another time.");
+                        ModelState.AddModelError("Visit_Date", $"The selected time is outside the doctor's shift hours ({shift.Start:hh\\:mm} to {shift.End:hh\\:mm}).");
                     }
+                }
+
+                // 2. Ensure no prior booking exists for the same slot (excluding current appointment)
+                bool isAlreadyBooked = await _context.Appointment
+                    .AnyAsync(a => a.StaffId == appointment.StaffId && a.Visit_Date == appointment.Visit_Date && a.AppointmentId != appointment.AppointmentId);
+
+                if (isAlreadyBooked)
+                {
+                    ModelState.AddModelError("Visit_Date", "This appointment time is already booked for the selected doctor. Please choose another time.");
                 }
             }
 
@@ -295,7 +328,7 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // =======================================================
-        // ✅ فتح صفحة حذف الموعد (Delete GET) - كانت مفقودة
+        // ✅ Open delete appointment page (Delete GET)
         // =======================================================
         public async Task<IActionResult> Delete(int? id)
         {
@@ -312,7 +345,7 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // =======================================================
-        // ✅ تأكيد حذف الموعد (Delete POST) - كانت مفقودة
+        // ✅ Confirm appointment deletion (Delete POST)
         // =======================================================
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
@@ -328,17 +361,23 @@ namespace Hospital_Management_Project.Controllers
         }
 
         // =======================================================
-        // ✅ دالة مساعدة لتعبئة بيانات القوائم المنسدلة (Dropdowns)
+        // ✅ Helper method to populate dropdown lists
         // =======================================================
         private IActionResult RePopulateViewDataForEdit(Appointment appointment)
         {
             var pList = _context.Patient.Select(p => new { p.PatientId, FullName = p.FName + " " + p.LName }).ToList();
             var sList = _context.Staff.Include(s => s.Department).Where(s => s.Position == "Doctor").ToList().Select(s => {
                 var shift = GetDoctorShiftFromFile(s.StaffId);
+
+                // ✅ تحديد نوع الشيفت بناءً على وقت البداية هنا أيضاً
+                string shiftType = "Emergency";
+                if (shift.Start >= new TimeSpan(8, 0, 0) && shift.Start < new TimeSpan(16, 0, 0)) shiftType = "Morning";
+                else if (shift.Start >= new TimeSpan(16, 0, 0)) shiftType = "Evening";
+
                 return new
                 {
                     s.StaffId,
-                    FullName = $"{s.Fname} {s.Lname} {(s.Department != null ? $"({s.Department.DeptName})" : "")} [Shift: {shift.Start:hh\\:mm} to {shift.End:hh\\:mm}]"
+                    FullName = $"{s.Fname} {s.Lname} {(s.Department != null ? $"({s.Department.DeptName})" : "")} [{shiftType} Shift: {shift.Start:hh\\:mm} to {shift.End:hh\\:mm}]"
                 };
             }).ToList();
 

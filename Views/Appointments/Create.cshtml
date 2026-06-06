@@ -4,7 +4,10 @@
     bool isPatient = User.IsInRole("Patient");
 }
 
+<!-- Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<!-- ✅ Select2 CSS (For the advanced Dropdown) -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
 <style>
     :root {
@@ -107,6 +110,8 @@
         color: var(--text-main);
         font-family: inherit;
         transition: all 0.2s ease;
+        width: 100%;
+        box-sizing: border-box;
     }
 
         .custom-input:focus {
@@ -123,6 +128,7 @@
             border-color: #cbd5e1;
         }
 
+    /* === Standard Select Styling Fallback === */
     select.custom-input {
         appearance: none;
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2364748b' class='bi bi-chevron-down' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C./svg%3E");
@@ -132,7 +138,104 @@
         padding-right: 40px;
     }
 
-    /* === New Styles for Availability & Slots === */
+    /* ========================================= */
+    /* ✅ Custom Select2 Overrides for our Theme */
+    /* ========================================= */
+    .select2-container--default .select2-selection--single {
+        background-color: var(--input-bg);
+        border: 1px solid var(--input-border);
+        border-radius: 12px;
+        height: 52px;
+        display: flex;
+        align-items: center;
+        transition: all 0.2s ease;
+    }
+
+    .select2-container--default.select2-container--open .select2-selection--single {
+        border-color: var(--primary);
+        background-color: #ffffff;
+        box-shadow: 0 0 0 4px rgba(26, 118, 209, 0.1);
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: var(--text-main);
+        font-size: 15px;
+        font-family: inherit;
+        padding-left: 16px;
+        padding-right: 40px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 50px;
+        right: 12px;
+    }
+
+    .select2-dropdown {
+        border: 1px solid var(--input-border);
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        overflow: hidden;
+        margin-top: 4px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .select2-search--dropdown .select2-search__field {
+        border: 1px solid var(--input-border);
+        border-radius: 8px;
+        padding: 10px 14px;
+    }
+
+        .select2-search--dropdown .select2-search__field:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+    .select2-results__option {
+        padding: 14px 16px;
+        border-bottom: 1px solid #f8fafc;
+        transition: all 0.1s ease;
+    }
+
+    .select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
+        background-color: var(--primary-light);
+        color: var(--primary-dark);
+    }
+
+    /* Template Formatting for Doctor Items */
+    .doctor-option-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .doc-opt-name {
+        font-weight: 700;
+        color: var(--text-main);
+        font-size: 15px;
+    }
+
+    .doc-opt-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+
+    .doc-badge-dept {
+        background: #f1f5f9;
+        padding: 2px 8px;
+        border-radius: 6px;
+        font-weight: 600;
+    }
+
+    .doc-badge-shift {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    /* ========================================= */
+
     .availability-message {
         font-size: 14px;
         font-weight: 600;
@@ -186,7 +289,6 @@
             color: #ffffff;
             transform: translateY(-1px);
         }
-    /* ========================================= */
 
     .btn-submit {
         background: var(--primary-gradient);
@@ -290,7 +392,7 @@
             </p>
         </div>
 
-        <form asp-action="Create">
+        <form asp-action="Create" id="appointmentCreateForm">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
             <div class="form-grid">
@@ -298,7 +400,8 @@
                 {
                     <div class="form-group">
                         <label asp-for="StaffId" class="custom-label">Select Doctor (Optional)</label>
-                        <select asp-for="StaffId" class="custom-input" asp-items="ViewBag.StaffId">
+                        <!-- Added class select2-doctor for JS targeting -->
+                        <select asp-for="StaffId" class="custom-input select2-doctor" asp-items="ViewBag.StaffId" style="width: 100%">
                             <option value="">-- No Preferred Doctor / Any --</option>
                         </select>
                         <span asp-validation-for="StaffId" class="text-danger"></span>
@@ -331,7 +434,8 @@
 
                     <div class="form-group">
                         <label asp-for="StaffId" class="custom-label">Assign Doctor</label>
-                        <select asp-for="StaffId" class="custom-input" asp-items="ViewBag.StaffId">
+                        <!-- Added class select2-doctor for JS targeting -->
+                        <select asp-for="StaffId" class="custom-input select2-doctor" asp-items="ViewBag.StaffId" style="width: 100%">
                             <option value="">-- Select Doctor --</option>
                         </select>
                         <span asp-validation-for="StaffId" class="text-danger"></span>
@@ -373,119 +477,183 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 
+    <script src="~/js/form-persistence.js" asp-append-version="true"></script>
+    <!-- ✅ Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const staffSelect = document.getElementById('StaffId');
             const visitDateInput = document.getElementById('Visit_Date');
             const msgDiv = document.getElementById('availability-message');
             const slotsDiv = document.getElementById('available-slots');
+            const isPatient = @isPatient.ToString().ToLower();
 
-            // ✅ التحقق من التوافر وجلب المواعيد الفاضية
-            function checkAvailabilityAndSlots() {
-                if (!staffSelect || !visitDateInput) return;
+        // ✅ 1. Initialize Select2 and format the options
+        function formatDoctorOption (doctor) {
+        if (!doctor.id) { return doctor.text; } // Return default for placeholder
 
-                const staffId = staffSelect.value;
-                const visitDateVal = visitDateInput.value;
+        // The string structure from controller is:
+        // "Doctor Name (Department Name) [Shift: XX:XX to YY:YY]"
+        // We use Regex to separate these parts to style them nicely!
+        var text = doctor.text;
+        var match = text.match(/^(.*?)\s*\((.*?)\)\s*\[(.*?)\]$/);
 
-                if (!staffId || !visitDateVal) {
-                    msgDiv.innerHTML = '';
-                    slotsDiv.style.display = 'none';
-                    return;
-                }
+        if (match) {
+        var docName = match[1];
+        var docDept = match[2];
+        var docShift = match[3];
 
-                // 1. التحقق من الوقت المختار إذا كان محجوزاً
-                fetch(`/Appointments/CheckAvailability?staffId=${staffId}&visitDate=${encodeURIComponent(visitDateVal)}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.isAvailable) {
-                            msgDiv.innerHTML = '<span class="text-success-custom"><i class="bi bi-check-circle-fill"></i> This slot is available.</span>';
-                        } else {
-                            msgDiv.innerHTML = '<span class="text-danger-custom"><i class="bi bi-x-circle-fill"></i> This slot is already booked! Please choose another time.</span>';
-                        }
-                    })
-                    .catch(err => console.error(err));
+        var $result = $(
+        '<div class="doctor-option-layout">' +
+        '<span class="doc-opt-name">' + docName + '</span>' +
+        '<div class="doc-opt-meta">' +
+        '<span class="doc-badge-dept"><i class="bi bi-hospital"></i> ' + docDept + '</span>' +
+        '<span class="doc-badge-shift"><i class="bi bi-clock"></i> ' + docShift + '</span>' +
+        '</div>' +
+        '</div>'
+        );
+        return $result;
+        }
 
-                // 2. جلب المواعيد الفاضية في نفس اليوم المختار
-                const datePart = visitDateVal.split('T')[0];
-                fetch(`/Appointments/GetAvailableSlots?staffId=${staffId}&date=${datePart}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        slotsDiv.style.display = 'block';
-                        if (data.length > 0) {
-                            let html = `<div class="slots-header">Available slots on ${datePart}:</div><div class="slots-grid">`;
-                            data.forEach(time => {
-                                html += `<div class="slot-badge" onclick="selectTime('${datePart}', '${time}')">${time}</div>`;
-                            });
-                            html += `</div>`;
-                            slotsDiv.innerHTML = html;
-                        } else {
-                            slotsDiv.innerHTML = '<div class="slots-header text-danger-custom">No available slots remaining on this day.</div>';
-                        }
-                    })
-                    .catch(err => console.error(err));
-            }
+        return doctor.text; // Fallback if regex fails
+        }
 
-            // إعطاء الوظيفة selectTime صلاحية عامة حتى تعمل عند الضغط
-            window.selectTime = function (date, time) {
-                if (visitDateInput) {
-                    visitDateInput.value = `${date}T${time}`;
-                    checkAvailabilityAndSlots();
-                }
-            };
+        $('.select2-doctor').select2({
+        templateResult: formatDoctorOption,
+        templateSelection: formatDoctorOption,
+        placeholder: "Search and select a doctor...",
+        allowClear: true
+        });
+        // ==========================================
+
+        const staffSelect = document.getElementById('StaffId');
+        const visitDateInput = document.getElementById('Visit_Date');
+        const msgDiv = document.getElementById('availability-message');
+        const slotsDiv = document.getElementById('available-slots');
+
+        // ✅ 2. Availability Check Logic
+        function checkAvailabilityAndSlots() {
+        // For Select2, we get the value via jQuery
+        const staffId = $('#StaffId').val();
+        const visitDateVal = visitDateInput ? visitDateInput.value : null;
+
+        if (!staffId || !visitDateVal) {
+        msgDiv.innerHTML = '';
+        slotsDiv.style.display = 'none';
+        return;
+        }
+
+        // 1. Check if specific selected time is booked
+        fetch(`/Appointments/CheckAvailability?staffId=${staffId}&visitDate=${encodeURIComponent(visitDateVal)}`)
+        .then(res => res.json())
+        .then(data => {
+        if (data.isAvailable) {
+        msgDiv.innerHTML = '<span class="text-success-custom"><i class="bi bi-check-circle-fill"></i> This slot is available.</span>';
+        } else {
+        msgDiv.innerHTML = '<span class="text-danger-custom"><i class="bi bi-x-circle-fill"></i> This slot is already booked! Please choose another time.</span>';
+        }
+        })
+        .catch(err => console.error(err));
+
+        // 2. Fetch available slots for the selected day
+        const datePart = visitDateVal.split('T')[0];
+        fetch(`/Appointments/GetAvailableSlots?staffId=${staffId}&date=${datePart}`)
+        .then(res => res.json())
+        .then(data => {
+        slotsDiv.style.display = 'block';
+        if (data.length > 0) {
+        let html = `<div class="slots-header">Available slots on ${datePart}:</div><div class="slots-grid">`;
+        data.forEach(time => {
+        html += `<div class="slot-badge" onclick="selectTime('${datePart}', '${time}')">${time}</div>`;
+        });
+        html += `</div>`;
+        slotsDiv.innerHTML = html;
+        } else {
+        slotsDiv.innerHTML = '<div class="slots-header text-danger-custom">No available slots remaining on this day.</div>';
+        }
+        })
+        .catch(err => console.error(err));
+        }
+
+        // Global function to trigger on slot click
+        window.selectTime = function (date, time) {
+        if (visitDateInput) {
+        visitDateInput.value = `${date}T${time}`;
+        checkAvailabilityAndSlots();
+        }
+        };
 
             // تشغيل دوال التحقق عند تغيير الدكتور أو التاريخ
             if (staffSelect) staffSelect.addEventListener('change', checkAvailabilityAndSlots);
             if (visitDateInput) visitDateInput.addEventListener('change', checkAvailabilityAndSlots);
+
+            // حفظ بيانات النموذج في localStorage عند التحديث أو إعادة تحميل الصفحة
+            const persistenceFields = isPatient
+                ? ['StaffId', 'Visit_Date', 'Reason']
+                : ['patientSearch', 'PatientId', 'StaffId', 'Visit_Date', 'Reason'];
+
+            FormPersistence.init({
+                storageKey: isPatient ? 'careplus-appointment-create-patient' : 'careplus-appointment-create-staff',
+                formSelector: '#appointmentCreateForm',
+                fields: persistenceFields,
+                onRestore: function () {
+                    checkAvailabilityAndSlots();
+                }
+            });
+        // Trigger checks when Select2 changes or Date changes
+        $('.select2-doctor').on('change', checkAvailabilityAndSlots);
+        if (visitDateInput) visitDateInput.addEventListener('change', checkAvailabilityAndSlots);
         });
     </script>
 
     @if (!isPatient)
     {
         <script>
-            // ✅ كود البحث عن مريض (للدكتور/الإدمن)
+            // ✅ Patient Search (Doctor/Admin view)
             document.getElementById('patientSearch').addEventListener('input', function (e) {
-                const term = e.target.value;
-                const list = document.getElementById('patientSuggestions');
+            const term = e.target.value;
+            const list = document.getElementById('patientSuggestions');
 
-                if (term.length < 2) {
-                    list.innerHTML = '';
-                    list.classList.remove('active');
-                    return;
-                }
+            if (term.length < 2) {
+            list.innerHTML = '';
+            list.classList.remove('active');
+            return;
+            }
 
-                fetch(`/Appointments/SearchPatients?term=${encodeURIComponent(term)}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        list.innerHTML = '';
+            fetch(`/Appointments/SearchPatients?term=${encodeURIComponent(term)}`)
+            .then(res => res.json())
+            .then(data => {
+            list.innerHTML = '';
 
-                        if(data.length > 0) {
-                            list.classList.add('active');
-                            data.forEach(p => {
-                                const li = document.createElement('li');
-                                li.className = 'suggestion-item';
-                                li.textContent = p.name;
-                                li.addEventListener('click', function () {
-                                    document.getElementById('patientSearch').value = p.name;
-                                    document.getElementById('PatientId').value = p.id;
-                                    list.innerHTML = '';
-                                    list.classList.remove('active');
-                                });
-                                list.appendChild(li);
-                            });
-                        } else {
-                            list.classList.remove('active');
-                        }
-                    });
+            if(data.length > 0) {
+            list.classList.add('active');
+            data.forEach(p => {
+            const li = document.createElement('li');
+            li.className = 'suggestion-item';
+            li.textContent = p.name;
+            li.addEventListener('click', function () {
+            document.getElementById('patientSearch').value = p.name;
+            document.getElementById('PatientId').value = p.id;
+            list.innerHTML = '';
+            list.classList.remove('active');
+            });
+            list.appendChild(li);
+            });
+            } else {
+            list.classList.remove('active');
+            }
+            });
             });
 
             document.addEventListener('click', function (e) {
-                if (!e.target.closest('.autocomplete-wrapper')) {
-                    const list = document.getElementById('patientSuggestions');
-                    if(list) {
-                        list.innerHTML = '';
-                        list.classList.remove('active');
-                    }
-                }
+            if (!e.target.closest('.autocomplete-wrapper')) {
+            const list = document.getElementById('patientSuggestions');
+            if(list) {
+            list.innerHTML = '';
+            list.classList.remove('active');
+            }
+            }
             });
         </script>
     }
