@@ -91,6 +91,13 @@ namespace Hospital_Management_Project.Controllers
 
                 if (!bookedTimes.Contains(normalizedTime))
                 {
+                    // ✅ Filter out past times if the requested date is today
+                    if (date.Date == DateTime.Now.Date && normalizedTime <= DateTime.Now.TimeOfDay)
+                    {
+                        currentTime = currentTime.Add(slotDuration);
+                        continue;
+                    }
+
                     availableSlots.Add(normalizedTime.ToString(@"hh\:mm"));
                 }
                 currentTime = currentTime.Add(slotDuration);
@@ -196,6 +203,12 @@ namespace Hospital_Management_Project.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("AppointmentId,PatientId,StaffId,Visit_Date,Reason,Diagnosis,Medication,Common_tests,Treatment_Plan,Notes")] Appointment appointment)
         {
+            // ✅ 1. منع الحجز في تاريخ أو وقت مضى (Past Date/Time Validation)
+            if (appointment.Visit_Date < DateTime.Now)
+            {
+                ModelState.AddModelError("Visit_Date", "You cannot book an appointment in the past. Please select a valid future date and time.");
+            }
+
             if (User.IsInRole("Patient"))
             {
                 var currentUserName = User.FindFirstValue(ClaimTypes.NameIdentifier);

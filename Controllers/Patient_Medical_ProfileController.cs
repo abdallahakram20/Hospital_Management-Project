@@ -96,11 +96,29 @@ namespace Hospital_Management_Project.Controllers
         [Authorize(Roles = "Admin,Doctor,Staff")]
         public IActionResult Create()
         {
+            var currentUserIdentifier = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userRole = User.FindFirstValue(ClaimTypes.Role);
+
             var patientsWithProfiles = _context.PatientMedicalProfile.Select(p => p.PatientId).ToList();
 
+            // ✅ التعديل الأول: فلترة المرضى عشان ميظهرش في القائمة غير اللي ميعاد كشفهم جه أو فات
+            var currentTime = DateTime.Now;
+
+            var availablePatientsQuery = _context.Patient
+                .Where(p => !patientsWithProfiles.Contains(p.PatientId));
+
+            // 🌟 التعديل الجديد للدكتور: إظهار المرضى الخاصين بالدكتور الحالي فقط
+            if (string.Equals(userRole, "Doctor", StringComparison.OrdinalIgnoreCase))
+            {
+                availablePatientsQuery = availablePatientsQuery.Where(p => _context.Appointment.Any(a => a.PatientId == p.PatientId && a.Visit_Date <= currentTime && a.Staff.Email == currentUserIdentifier));
+            }
+            else
+            {
+                availablePatientsQuery = availablePatientsQuery.Where(p => _context.Appointment.Any(a => a.PatientId == p.PatientId && a.Visit_Date <= currentTime));
+            }
+
             // Refactored dropdown to concatenate full name cleanly
-            var availablePatients = _context.Patient
-                .Where(p => !patientsWithProfiles.Contains(p.PatientId))
+            var availablePatients = availablePatientsQuery
                 .Select(p => new { p.PatientId, FullName = p.FName + " " + p.LName })
                 .ToList();
 
@@ -114,12 +132,36 @@ namespace Hospital_Management_Project.Controllers
         [Authorize(Roles = "Admin,Doctor,Staff")]
         public async Task<IActionResult> Create([Bind("ProfileId,Blood_Type,Blood_Pressure,Chronic_Disease,Allergies,Weight,Diabets,PatientId")] Patient_Medical_Profile patient_Medical_Profile)
         {
+            var currentUserIdentifier = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userRole = User.FindFirstValue(ClaimTypes.Role);
+
             bool profileExists = await _context.PatientMedicalProfile
                 .AnyAsync(p => p.PatientId == patient_Medical_Profile.PatientId);
 
             if (profileExists)
             {
                 ModelState.AddModelError("PatientId", "This patient already has a medical profile.");
+            }
+
+            // ✅ التعديل الثاني: التحقق في الباك-إند عشان نمنع أي محاولة إضافة يدوية قبل الميعاد
+            var currentTime = DateTime.Now;
+            bool hasValidAppointment = false;
+
+            // 🌟 التعديل الجديد للدكتور في الباك إند للحماية والأمان للتحقق من الموعد الطبيب نفسه
+            if (string.Equals(userRole, "Doctor", StringComparison.OrdinalIgnoreCase))
+            {
+                hasValidAppointment = await _context.Appointment
+                    .AnyAsync(a => a.PatientId == patient_Medical_Profile.PatientId && a.Visit_Date <= currentTime && a.Staff.Email == currentUserIdentifier);
+            }
+            else
+            {
+                hasValidAppointment = await _context.Appointment
+                    .AnyAsync(a => a.PatientId == patient_Medical_Profile.PatientId && a.Visit_Date <= currentTime);
+            }
+
+            if (!hasValidAppointment)
+            {
+                ModelState.AddModelError("PatientId", "لا يمكن إضافة سجل طبي لهذا المريض قبل ميعاد الكشف الخاص به أو أن المريض غير مسجل في مواعيدك.");
             }
 
             if (ModelState.IsValid)
@@ -130,8 +172,21 @@ namespace Hospital_Management_Project.Controllers
             }
 
             var patientsWithProfiles = _context.PatientMedicalProfile.Select(p => p.PatientId).ToList();
-            var availablePatients = _context.Patient
-                .Where(p => !patientsWithProfiles.Contains(p.PatientId) || p.PatientId == patient_Medical_Profile.PatientId)
+
+            // ✅ تحديث قائمة المرضى في حالة وجود خطأ (Validation Error)
+            var availablePatientsQuery = _context.Patient
+                .Where(p => !patientsWithProfiles.Contains(p.PatientId) || p.PatientId == patient_Medical_Profile.PatientId);
+
+            if (string.Equals(userRole, "Doctor", StringComparison.OrdinalIgnoreCase))
+            {
+                availablePatientsQuery = availablePatientsQuery.Where(p => _context.Appointment.Any(a => a.PatientId == p.PatientId && a.Visit_Date <= currentTime && a.Staff.Email == currentUserIdentifier));
+            }
+            else
+            {
+                availablePatientsQuery = availablePatientsQuery.Where(p => _context.Appointment.Any(a => a.PatientId == p.PatientId && a.Visit_Date <= currentTime));
+            }
+
+            var availablePatients = availablePatientsQuery
                 .Select(p => new { p.PatientId, FullName = p.FName + " " + p.LName })
                 .ToList();
 

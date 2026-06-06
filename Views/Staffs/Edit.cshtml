@@ -20,6 +20,9 @@
         --input-bg: #f8fafc;
         --input-border: #cbd5e1;
         --danger: #ef4444;
+        --warning: #f59e0b;
+        --warning-light: #fef3c7;
+        --warning-dark: #b45309;
     }
 
     body {
@@ -41,6 +44,12 @@
         justify-content: space-between;
         align-items: center;
         margin-bottom: 32px;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
     }
 
     .header-text h2 {
@@ -81,6 +90,31 @@
             background: var(--primary-light);
             border-color: var(--primary);
             color: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+    /* New style for Change Password action button */
+    .btn-password {
+        background: var(--card-bg);
+        color: var(--warning-dark);
+        border: 1px solid #fde68a;
+        border-radius: 12px;
+        padding: 10px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all .2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+        .btn-password:hover {
+            background: var(--warning-light);
+            border-color: var(--warning);
+            color: var(--warning-dark);
             transform: translateY(-1px);
         }
 
@@ -227,6 +261,17 @@
     }
 
     @@media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .header-actions {
+            width: 100%;
+            justify-content: flex-start;
+        }
+
         .form-grid {
             grid-template-columns: 1fr;
         }
@@ -247,9 +292,17 @@
         <div class="header-text">
             <h2><i class="bi bi-person-gear"></i> Edit Staff Profile</h2>
         </div>
-        <a asp-action="Index" class="btn-back">
-            <i class="bi bi-arrow-left"></i> Back to List
-        </a>
+        <div class="header-actions">
+            @if (User.IsInRole("Doctor"))
+            {
+                <a asp-action="ChangePassword" asp-route-id="@Model.StaffId" class="btn-password">
+                    <i class="bi bi-key-fill"></i> Change Password
+                </a>
+            }
+            <a asp-action="Index" class="btn-back">
+                <i class="bi bi-arrow-left"></i> Back to List
+            </a>
+        </div>
     </div>
 
     <div class="form-card">
@@ -291,7 +344,6 @@
                     <span asp-validation-for="DepartmentId" class="text-danger"></span>
                 </div>
 
-                <!-- 💡 تمت إضافة خانات تعديل الوقت للأدمن هنا وتُظهر الوقت المحفوظ 💡 -->
                 @if (User.IsInRole("Admin"))
                 {
                     <div class="form-group">
@@ -383,11 +435,9 @@
         e.preventDefault();
 
         cropper.getCroppedCanvas({ width: 400, height: 400 }).toBlob(function (blob) {
-
         const formData = new FormData(form);
 
         formData.delete("ImageFile");
-
         formData.append("ImageFile", blob, "cropped_avatar.jpg");
 
         fetch(form.action, {
@@ -398,7 +448,8 @@
         if (response.ok || response.redirected) {
         window.location.href = '@Url.Action("Index")';
         } else {
-        alert("حدث خطأ أثناء حفظ الصورة، تأكد من إعدادات الـ Controller.");
+        // English fallback for systemic stability messaging
+        alert("An error occurred while saving the image. Please verify your Controller configurations.");
         }
         })
         .catch(err => console.error("Error submitting cropped image:", err));

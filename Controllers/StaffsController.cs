@@ -215,7 +215,7 @@ namespace Hospital_Management_Project.Controllers
             // Clear unchanged model properties from validation requirements
             ModelState.Remove("Password");
             ModelState.Remove("ImagePath");
-            ModelState.Remove("ImageFile"); // Crucial fix: prevents required validation block if no new image is provided
+            ModelState.Remove("ImageFile");
 
             if (ModelState.IsValid)
             {
@@ -249,11 +249,9 @@ namespace Hospital_Management_Project.Controllers
                     SaveShiftForDoctor(existingStaff.StaffId, shiftStartTime, shiftEndTime);
                 }
 
-                // Redirects back to the Index page instead of showing a blank page
                 return RedirectToAction(nameof(Index));
             }
 
-            // If validation fails in traditional post, re-populate the dropdown and return to view
             ViewData["DepartmentId"] = new SelectList(_context.Department, "DepartmentId", "DeptName", staff.DepartmentId);
             return View(staff);
         }
@@ -274,6 +272,86 @@ namespace Hospital_Management_Project.Controllers
                 // Remove doctor's shift from the JSON file
                 DeleteShiftForDoctor(id);
             }
+            return RedirectToAction(nameof(Index));
+        }
+
+        // =======================================================
+        // GET: Staffs/ChangePassword/5
+        // Updates to pass data via ViewBag instead of strongly-typed Model
+        // =======================================================
+        public async Task<IActionResult> ChangePassword(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var staff = await _context.Staff.FindAsync(id);
+            if (staff == null) return NotFound();
+
+            var currentUserEmail = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userRole = User.FindFirstValue(ClaimTypes.Role);
+
+            // Guard Clause: Only allow access if the authenticated user is a "Doctor" and owns this record
+            if (!string.Equals(userRole, "Doctor", StringComparison.OrdinalIgnoreCase) || staff.Email != currentUserEmail)
+            {
+                return Forbid();
+            }
+
+            // Seed ViewBag parameters to support clean html form bindings
+            ViewBag.StaffId = staff.StaffId;
+            ViewBag.ErrorMessage = null;
+
+            return View();
+        }
+
+        // =======================================================
+        // POST: Staffs/ChangePassword/5
+        // Processes individual string form elements without requiring a strict Model mapping
+        // =======================================================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(int staffId, string currentPassword, string newPassword, string confirmPassword)
+        {
+            var staff = await _context.Staff.FindAsync(staffId);
+            if (staff == null) return NotFound();
+
+            var currentUserEmail = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userRole = User.FindFirstValue(ClaimTypes.Role);
+
+            // Secondary Guard Check: Prevent cross-account submissions via raw form exploits
+            if (!string.Equals(userRole, "Doctor", StringComparison.OrdinalIgnoreCase) || staff.Email != currentUserEmail)
+            {
+                return Forbid();
+            }
+
+            // Server-side validation check for empty inputs
+            if (string.IsNullOrWhiteSpace(currentPassword) || string.IsNullOrWhiteSpace(newPassword) || string.IsNullOrWhiteSpace(confirmPassword))
+            {
+                ViewBag.StaffId = staffId;
+                ViewBag.ErrorMessage = "All password fields are required.";
+                return View();
+            }
+
+            // Security Check: Verify if current password fits database hash record
+            if (!BCrypt.Net.BCrypt.Verify(currentPassword, staff.Password))
+            {
+                ViewBag.StaffId = staffId;
+                ViewBag.ErrorMessage = "The current password you entered is incorrect.";
+                return View();
+            }
+
+            // Match confirmation password check
+            if (newPassword != confirmPassword)
+            {
+                ViewBag.StaffId = staffId;
+                ViewBag.ErrorMessage = "The new password and confirmation password do not match.";
+                return View();
+            }
+
+            // Securely hash the password using BCrypt algorithm to maintain schema harmony
+            staff.Password = BCrypt.Net.BCrypt.HashPassword(newPassword);
+
+            _context.Update(staff);
+            await _context.SaveChangesAsync();
+
             return RedirectToAction(nameof(Index));
         }
     }

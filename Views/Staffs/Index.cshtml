@@ -10,7 +10,6 @@
 
 <style>
     :root {
-        /* الألوان الرسمية المتطابقة مع الديزاين الأول */
         --primary-main: #0052cc;
         --primary-button: #1a73e8;
         --primary-light: #eef5ff;
@@ -21,11 +20,7 @@
 
     body {
         background-color: #f3f8ff;
-        background-image: 
-            radial-gradient(circle at 5% 15%, #d1e3ff 0%, transparent 35%),
-            radial-gradient(circle at 95% 25%, #dae7ff 0%, transparent 30%),
-            radial-gradient(circle at 85% 80%, #cbdfff 0%, transparent 40%),
-            radial-gradient(circle at 10% 85%, #e2eeff 0%, transparent 35%);
+        background-image: radial-gradient(circle at 5% 15%, #d1e3ff 0%, transparent 35%), radial-gradient(circle at 95% 25%, #dae7ff 0%, transparent 30%), radial-gradient(circle at 85% 80%, #cbdfff 0%, transparent 40%), radial-gradient(circle at 10% 85%, #e2eeff 0%, transparent 35%);
         background-attachment: fixed;
         min-height: 100vh;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -33,7 +28,6 @@
         overflow-x: hidden;
     }
 
-    /* تأثيرات التوهج بالخلفية */
     .bg-glow-1 {
         position: absolute;
         width: 500px;
@@ -65,7 +59,6 @@
         position: relative;
     }
 
-    /* الكارت الزجاجي الموحد (Glassmorphism) */
     .custom-glass-card {
         background: rgba(255, 255, 255, 0.85);
         backdrop-filter: blur(20px);
@@ -77,7 +70,6 @@
         z-index: 1;
     }
 
-    /* الهيدر المتناسق */
     .page-header {
         background: rgba(255, 255, 255, 0.75);
         backdrop-filter: blur(20px);
@@ -112,7 +104,6 @@
         margin: 6px 0 0 0;
     }
 
-    /* زرار الإضافة بنفس الستايل المعتمد */
     .btn-create {
         background-color: var(--primary-button) !important;
         color: #fff !important;
@@ -130,13 +121,12 @@
         box-shadow: 0 4px 12px rgba(26, 115, 232, 0.2);
     }
 
-    .btn-create:hover {
-        opacity: 0.9;
-        transform: translateY(-1px);
-        box-shadow: 0 6px 16px rgba(26, 115, 232, 0.3);
-    }
+        .btn-create:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(26, 115, 232, 0.3);
+        }
 
-    /* الجريد والكروت للـ Staff */
     .staff-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -154,13 +144,12 @@
         text-align: center;
     }
 
-    .staff-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 20px 40px rgba(0, 82, 204, 0.06);
-        border-color: rgba(0, 82, 204, 0.2);
-    }
+        .staff-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px rgba(0, 82, 204, 0.06);
+            border-color: rgba(0, 82, 204, 0.2);
+        }
 
-    /* الصورة الرمزية والدائرة */
     .staff-avatar-img {
         width: 100px;
         height: 100px;
@@ -186,7 +175,6 @@
         margin: 0 0 8px 0;
     }
 
-    /* البادج المعتمد للـ Position (متناسق مع الـ floor-badge) */
     .staff-role {
         display: inline-block;
         background-color: var(--primary-light);
@@ -199,7 +187,6 @@
         margin-bottom: 20px;
     }
 
-    /* منطقة البيانات تفصيلية */
     .staff-info {
         width: 100%;
         text-align: left;
@@ -217,29 +204,30 @@
         margin-bottom: 12px;
     }
 
-    .info-line i {
-        color: var(--primary-main);
-        font-size: 1rem;
-        background: rgba(0, 82, 204, 0.05);
-        padding: 6px;
-        border-radius: 8px;
-        width: 28px;
-        height: 28px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-    }
+        .info-line i {
+            color: var(--primary-main);
+            font-size: 1rem;
+            background: rgba(0, 82, 204, 0.05);
+            padding: 6px;
+            border-radius: 8px;
+            width: 28px;
+            height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-    /* زراير التحكم داخل الكارت */
     .action-btns {
         display: flex;
         gap: 8px;
         width: 100%;
         margin-top: auto;
+        flex-wrap: wrap;
     }
 
     .btn-action {
         flex: 1;
+        min-width: 80px;
         border-radius: 12px;
         padding: 9px 0;
         font-size: 0.85rem;
@@ -252,70 +240,80 @@
         gap: 6px;
     }
 
-    /* تفاصيل (متطابق مع تفاصيل الـ Departments) */
     .btn-details {
         border: 1px solid #b4d3ff;
         background-color: #fff;
         color: var(--primary-main);
     }
 
-    .btn-details:hover {
-        background-color: var(--primary-main);
-        color: #fff;
-        border-color: var(--primary-main);
-    }
+        .btn-details:hover {
+            background-color: var(--primary-main);
+            color: #fff;
+            border-color: var(--primary-main);
+        }
 
-    /* تعديل */
     .btn-edit {
         background-color: #fff;
         color: #eab308;
         border: 1px solid #fef08a;
     }
 
-    .btn-edit:hover {
-        background-color: #eab308;
-        color: #fff;
-        border-color: #eab308;
+        .btn-edit:hover {
+            background-color: #eab308;
+            color: #fff;
+            border-color: #eab308;
+        }
+
+    /* Styled to match the Amber/Warning scheme from Edit profile view */
+    .btn-password {
+        background-color: #fff;
+        color: #d97706;
+        border: 1px solid #fde68a;
     }
 
-    /* حذف */
+        .btn-password:hover {
+            background-color: #d97706;
+            color: #fff;
+            border-color: #d97706;
+        }
+
     .btn-delete {
         background-color: #fff;
         color: #ef4444;
         border: 1px solid #fee2e2;
     }
 
-    .btn-delete:hover {
-        background-color: #ef4444;
-        color: #fff;
-        border-color: #ef4444;
-    }
+        .btn-delete:hover {
+            background-color: #ef4444;
+            color: #fff;
+            border-color: #ef4444;
+        }
 
-    /* الشاشات الفاضية */
     .empty-state {
         text-align: center;
         padding: 80px 20px;
         grid-column: 1 / -1;
     }
 
-    .empty-state i {
-        font-size: 64px;
-        color: var(--primary-main);
-        opacity: 0.3;
-        margin-bottom: 16px;
-        display: block;
-    }
+        .empty-state i {
+            font-size: 64px;
+            color: var(--primary-main);
+            opacity: 0.3;
+            margin-bottom: 16px;
+            display: block;
+        }
 
-    .empty-state h4 {
-        color: var(--text-dark);
-        font-weight: 700;
-        margin-bottom: 8px;
-    }
+        .empty-state h4 {
+            color: var(--text-dark);
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
 
     @@media (max-width: 768px) {
         .staff-grid {
             grid-template-columns: 1fr;
         }
+
         .page-header {
             flex-direction: column;
             align-items: flex-start;
@@ -364,7 +362,7 @@
                 }
 
                 displayedCount++;
-                
+
                 <div class="card border-0 custom-glass-card staff-card">
                     @if (!string.IsNullOrEmpty(item.ImagePath))
                     {
@@ -417,9 +415,17 @@
                             </a>
                         }
 
-                        <a asp-action="Details" asp-route-id="@item.StaffId" class="btn-action btn-details" style="@(!User.IsInRole("Admin") ? "width: 100%;" : "")" title="View Details">
+                        <a asp-action="Details" asp-route-id="@item.StaffId" class="btn-action btn-details" style="@(!User.IsInRole("Admin") && !User.IsInRole("Doctor") ? "width: 100%;" : "")" title="View Details">
                             <i class="bi bi-eye"></i> Details
                         </a>
+
+                        <!-- 💡 Change Password Action Button for Doctors Added Safely Here 💡 -->
+                        @if (User.IsInRole("Doctor"))
+                        {
+                            <a asp-action="ChangePassword" asp-route-id="@item.StaffId" class="btn-action btn-password" title="Change Password">
+                                <i class="bi bi-key-fill"></i> Password
+                            </a>
+                        }
 
                         @if (User.IsInRole("Admin"))
                         {
@@ -441,6 +447,4 @@
             }
         }
     </div>
-
-  
 </div>

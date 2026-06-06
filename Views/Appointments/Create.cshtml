@@ -4,9 +4,7 @@
     bool isPatient = User.IsInRole("Patient");
 }
 
-<!-- Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<!-- ✅ Select2 CSS (For the advanced Dropdown) -->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
 <style>
@@ -312,6 +310,13 @@
             background: var(--primary-dark);
         }
 
+        .btn-submit:disabled {
+            background: #94a3b8;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+
     .autocomplete-wrapper {
         position: relative;
     }
@@ -400,7 +405,6 @@
                 {
                     <div class="form-group">
                         <label asp-for="StaffId" class="custom-label">Select Doctor (Optional)</label>
-                        <!-- Added class select2-doctor for JS targeting -->
                         <select asp-for="StaffId" class="custom-input select2-doctor" asp-items="ViewBag.StaffId" style="width: 100%">
                             <option value="">-- No Preferred Doctor / Any --</option>
                         </select>
@@ -434,7 +438,6 @@
 
                     <div class="form-group">
                         <label asp-for="StaffId" class="custom-label">Assign Doctor</label>
-                        <!-- Added class select2-doctor for JS targeting -->
                         <select asp-for="StaffId" class="custom-input select2-doctor" asp-items="ViewBag.StaffId" style="width: 100%">
                             <option value="">-- Select Doctor --</option>
                         </select>
@@ -464,7 +467,7 @@
                 }
             </div>
 
-            <button type="submit" class="btn-submit">
+            <button type="submit" class="btn-submit" id="btnSubmit">
                 <i class="bi bi-plus-circle-fill"></i>
                 @(isPatient ? "Submit Appointment Request" : "Confirm Appointment")
             </button>
@@ -477,14 +480,13 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 
-    <!-- ✅ Select2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
 
         // ✅ 1. Initialize Select2 and format the options
-        function formatDoctorOption (doctor) {
+        function formatDoctorOption(doctor) {
         if (!doctor.id) { return doctor.text; } // Return default for placeholder
 
         // The string structure from controller is:
@@ -525,6 +527,7 @@
         const visitDateInput = document.getElementById('Visit_Date');
         const msgDiv = document.getElementById('availability-message');
         const slotsDiv = document.getElementById('available-slots');
+        const submitBtn = document.getElementById('btnSubmit');
 
         // ✅ 2. Availability Check Logic
         function checkAvailabilityAndSlots() {
@@ -537,6 +540,27 @@
         slotsDiv.style.display = 'none';
         return;
         }
+
+        // ==========================================
+        // ✅ التحقق من اختيار تاريخ قديم (Past Date Validation)
+        // ==========================================
+        const selectedDateTime = new Date(visitDateVal);
+        const now = new Date();
+
+        if (selectedDateTime < now) {
+        // إظهار رسالة الخطأ وإخفاء المواعيد
+        msgDiv.innerHTML = '<span class="text-danger-custom"><i class="bi bi-exclamation-triangle-fill"></i> You cannot select a past date or time. Please choose a future date.</span>';
+        slotsDiv.style.display = 'none';
+
+        // تعطيل زر الحفظ
+        if (submitBtn) submitBtn.disabled = true;
+
+        return; // إيقاف إكمال الدالة لمنع إرسال طلبات الـ AJAX
+        }
+
+        // إذا كان التاريخ سليم، نُعيد تفعيل الزر ونكمل العمل
+        if (submitBtn) submitBtn.disabled = false;
+        // ==========================================
 
         // 1. Check if specific selected time is booked
         fetch(`/Appointments/CheckAvailability?staffId=${staffId}&visitDate=${encodeURIComponent(visitDateVal)}`)

@@ -40,6 +40,25 @@ namespace Hospital_Management_Project.Controllers
 
             var patientsQuery = from p in _context.Patient select p;
 
+            // =======================================================
+            // ✅ التعديل الجديد: فلترة المرضى بناءً على الصلاحيات
+            // =======================================================
+            var currentUserIdentifier = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userRole = User.FindFirstValue(ClaimTypes.Role);
+
+            if (userRole == "Doctor")
+            {
+                // الطبيب يرى فقط المرضى الذين لديهم حجوزات معه
+                var doctorPatientIds = _context.Appointment
+                    .Where(a => a.Staff.Email == currentUserIdentifier)
+                    .Select(a => a.PatientId)
+                    .Distinct();
+
+                patientsQuery = patientsQuery.Where(p => doctorPatientIds.Contains(p.PatientId));
+            }
+            // الأدمن وباقي الموظفين (Nurse, Receptionist, Staff) سيرون كل المرضى لأن الاستعلام لم يتغير لهم
+            // =======================================================
+
             if (!string.IsNullOrEmpty(searchString))
             {
                 patientsQuery = patientsQuery.Where(s => s.FName.Contains(searchString)

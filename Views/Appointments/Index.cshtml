@@ -5,9 +5,9 @@
     // تحديد الأدوار (Roles)
     bool isAdmin = User.IsInRole("Admin");
     bool isPatient = User.IsInRole("Patient");
-    bool isStaff = !isAdmin && !isPatient; // إذا لم يكن أدمن ولا مريض، فهو بالتأكيد من الطاقم الطبي
+    bool isStaff = !isAdmin && !isPatient;
 
-    // 1. ترتيب المواعيد بناءً على اسم الدكتور/الممرض ثم بناءً على وقت الزيارة ليكونوا تحت بعضهم
+    // 1. ترتيب المواعيد بناءً على اسم الدكتور/الممرض ثم بناءً على وقت الزيارة
     var sortedAppointments = Model != null
         ? Model.OrderBy(a => a.Staff != null ? a.Staff.StaffName : "Unassigned").ThenBy(a => a.Visit_Date)
         : Enumerable.Empty<Hospital_Management_Project.Models.Appointment>();
@@ -45,6 +45,7 @@
         margin: 0 auto;
     }
 
+    /* ... (نفس التنسيقات السابقة بدون تغيير) ... */
     .mp-page-header {
         background: var(--card-bg);
         border-radius: 24px;
@@ -278,6 +279,53 @@
             background-color: var(--primary);
             border-radius: 50%;
         }
+
+    /* ======== التنسيقات الجديدة الخاصة بالـ Pagination ======== */
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        margin-top: 30px;
+    }
+
+    .page-btn {
+        border: 1px solid var(--input-border);
+        background: var(--card-bg);
+        color: var(--text-main);
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+
+        .page-btn:hover:not(:disabled) {
+            background: var(--primary-light);
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .page-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 4px 10px rgba(26, 118, 209, 0.3);
+        }
+
+        .page-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            background: #f8fafc;
+        }
+
+    .paginated-item {
+        display: none; /* يتم إخفاؤه افتراضياً، وسيقوم الـ JS بإظهاره */
+    }
 </style>
 
 <div class="mp-page">
@@ -310,10 +358,10 @@
             <div class="col-xl-8 col-lg-7">
                 @if (isPatient)
                 {
-                    <div class="appointments-grid">
+                    <div class="appointments-grid" id="dataContainer">
                         @foreach (var item in sortedAppointments)
                         {
-                            <div class="appointment-card">
+                            <div class="appointment-card paginated-item">
                                 <div class="card-date-box">
                                     <i class="bi bi-clock-history"></i>
                                     <div>
@@ -363,7 +411,6 @@
                                 <thead>
                                     <tr>
                                         <th><i class="bi bi-clock-fill"></i> Visit Date & Time</th>
-
                                         @if (isAdmin)
                                         {
                                             <th><i class="bi bi-person-badge-fill"></i> Medical Staff</th>
@@ -373,7 +420,6 @@
                                         {
                                             <th><i class="bi bi-person-fill"></i> Patient Name</th>
                                         }
-
                                         <th><i class="bi bi-info-circle-fill"></i> Status</th>
                                         <th><i class="bi bi-question-diamond-fill"></i> Reason</th>
                                         <th><i class="bi bi-heart-pulse-fill"></i> Diagnosis</th>
@@ -381,10 +427,10 @@
                                         <th style="text-align:center;"><i class="bi bi-sliders"></i> Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="dataContainer">
                                     @foreach (var item in sortedAppointments)
                                     {
-                                        <tr>
+                                        <tr class="paginated-item">
                                             <td style="font-weight:600; color: var(--text-main);">@item.Visit_Date.ToString("yyyy-MM-dd hh:mm tt")</td>
 
                                             @if (isAdmin)
@@ -444,6 +490,8 @@
                         </div>
                     </div>
                 }
+
+                <div id="paginationControls" class="pagination-container"></div>
             </div>
 
             <div class="col-xl-4 col-lg-5">
@@ -510,3 +558,71 @@
         </div>
     }
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const itemsPerPage = 10; // عدد العناصر في كل صفحة
+        const items = document.querySelectorAll('.paginated-item');
+        const paginationControls = document.getElementById('paginationControls');
+        let currentPage = 1;
+
+        if (items.length === 0) return; // لا يوجد عناصر لتقسيمها
+
+        const totalPages = Math.ceil(items.length / itemsPerPage);
+
+        // دالة لعرض العناصر الخاصة بالصفحة المطلوبة فقط
+        function displayPage(page) {
+            currentPage = page;
+            const start = (page - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+
+            items.forEach((item, index) => {
+                if (index >= start && index < end) {
+                    // إذا كان العنصر صف في جدول نعطيه table-row، أما إذا كان كارت نعطيه block
+                    item.style.display = item.tagName.toLowerCase() === 'tr' ? 'table-row' : 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            updatePaginationButtons();
+        }
+
+        // دالة لرسم أزرار الصفحات
+        function updatePaginationButtons() {
+            if (!paginationControls) return;
+            paginationControls.innerHTML = '';
+
+            // إذا كانت صفحة واحدة فقط، لا داعي لإظهار الأزرار
+            if (totalPages <= 1) return;
+
+            // زر السابق
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'page-btn';
+            prevBtn.innerHTML = '<i class="bi bi-chevron-left"></i>';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.onclick = () => displayPage(currentPage - 1);
+            paginationControls.appendChild(prevBtn);
+
+            // أرقام الصفحات
+            for (let i = 1; i <= totalPages; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+                pageBtn.innerText = i;
+                pageBtn.onclick = () => displayPage(i);
+                paginationControls.appendChild(pageBtn);
+            }
+
+            // زر التالي
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'page-btn';
+            nextBtn.innerHTML = '<i class="bi bi-chevron-right"></i>';
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.onclick = () => displayPage(currentPage + 1);
+            paginationControls.appendChild(nextBtn);
+        }
+
+        // تشغيل العرض للصفحة الأولى عند التحميل
+        displayPage(1);
+    });
+</script>

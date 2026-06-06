@@ -122,6 +122,13 @@
             box-shadow: 0 0 0 4px var(--primary-light);
         }
 
+        /* New validation style for email input */
+        .form-control-custom.is-invalid-custom {
+            border-color: #dc3545 !important;
+            background-color: #fff8f8;
+            box-shadow: 0 0 0 4px rgba(220, 53, 69, 0.15) !important;
+        }
+
     .form-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -232,8 +239,12 @@
 
                 <div class="form-group full-width">
                     <label asp-for="Email" class="custom-label">Email Address</label>
-                    <input asp-for="Email" class="form-control-custom" placeholder="staffmember@careplus.com" />
+                    <input asp-for="Email" id="StaffEmail" type="email" class="form-control-custom" placeholder="staffmember@@careplus.com" required pattern="^[^@@]+@@careplus\.com$" title="Only @@careplus.com email addresses are accepted" />
                     <span asp-validation-for="Email" class="text-danger small"></span>
+
+                    <div id="emailDomainHint" style="display:none; color: #dc3545; font-size: 13px; margin-top: 5px;">
+                        <i class="bi bi-exclamation-circle-fill"></i> Email must end with <strong>@@careplus.com</strong>
+                    </div>
                 </div>
 
                 <div class="form-group full-width">
@@ -256,7 +267,6 @@
                     <span asp-validation-for="DepartmentId" class="text-danger small"></span>
                 </div>
 
-                <!-- 💡 تمت إضافة خانات الوقت للأدمن هنا 💡 -->
                 @if (User.IsInRole("Admin"))
                 {
                     <div class="form-group">
@@ -305,6 +315,24 @@
         const uploadStatusText = document.getElementById('uploadStatusText');
         const form = document.getElementById('createStaffForm');
 
+        // Email validation elements
+        const emailInput = document.getElementById('StaffEmail');
+        const emailDomainHint = document.getElementById('emailDomainHint');
+
+        // Real-time Email Domain Validation
+        if (emailInput) {
+        emailInput.addEventListener('input', function () {
+        const val = this.value.trim().toLowerCase();
+        if (val.length > 0 && !val.endsWith('@@careplus.com')) {
+        emailDomainHint.style.display = 'block';
+        this.classList.add('is-invalid-custom');
+        } else {
+        emailDomainHint.style.display = 'none';
+        this.classList.remove('is-invalid-custom');
+        }
+        });
+        }
+
         imageInput.addEventListener('change', function (e) {
         const files = e.target.files;
         if (files && files.length > 0) {
@@ -334,6 +362,19 @@
         });
 
         form.addEventListener('submit', function (e) {
+        // Prevent submission if email domain is incorrect
+        if (emailInput && emailInput.value) {
+        const emailValue = emailInput.value.toLowerCase();
+        if (!emailValue.endsWith('@@careplus.com')) {
+        e.preventDefault(); // Stop submission
+        emailDomainHint.style.display = 'block';
+        emailInput.classList.add('is-invalid-custom');
+        emailInput.focus();
+        return; // Exit the function
+        }
+        }
+
+        // Check if there is a cropped image, if not submit the form normally
         if (!cropper) return;
 
         e.preventDefault();
