@@ -3,6 +3,10 @@
 @{
     ViewData["Title"] = "Staff Directory";
     bool isPatient = User.IsInRole("Patient");
+
+    // Separate doctors and nurses while maintaining full compatibility
+    var doctors = Model.Where(item => item.Position != null && item.Position.StartsWith("Doctor", StringComparison.OrdinalIgnoreCase)).ToList();
+    var nurses = Model.Where(item => item.Position == null || !item.Position.StartsWith("Doctor", StringComparison.OrdinalIgnoreCase)).ToList();
 }
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
@@ -322,10 +326,69 @@
             padding: 30px;
         }
     }
+
+    /* Centered English section titles styling with animations */
+    .section-divider-head {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        margin: 40px 0 24px 0;
+        padding: 18px 28px;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.7);
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 82, 204, 0.03);
+        display: flex;
+        align-items: center;
+        justify-content: center; /* Perfectly centered alignment */
+        gap: 16px;
+        animation: slideInFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+        .section-divider-head h3 {
+            font-size: 1.6rem;
+            font-weight: 850;
+            margin: 0;
+        }
+
+        .section-divider-head.doctors-section-head {
+            border-bottom: 4px solid var(--primary-main);
+        }
+
+            .section-divider-head.doctors-section-head h3 {
+                background: linear-gradient(45deg, var(--text-dark), var(--primary-main));
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+
+        .section-divider-head.nurses-section-head {
+            border-bottom: 4px solid #10b981;
+        }
+
+            .section-divider-head.nurses-section-head h3 {
+                background: linear-gradient(45deg, var(--text-dark), #10b981);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+
+    @@keyframes slideInFadeIn {
+        0% {
+            opacity: 0;
+            transform: translateY(25px);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 </style>
 
 <div class="container py-5 position-relative">
     <div class="bg-glow-1"></div>
+    <div class="bg-glow-2"></div>
 
     <div class="page-header shadow-sm">
         <div class="header-text">
@@ -341,130 +404,236 @@
         }
     </div>
 
-    <div class="staff-grid">
-        <div class="bg-glow-2"></div>
-
-        @if (!Model.Any())
-        {
+    @if (!Model.Any())
+    {
+        <div class="staff-grid">
             <div class="card border-0 custom-glass-card empty-state">
                 <i class="bi bi-person-x-fill"></i>
                 <h4>No Medical Staff Found</h4>
                 <p class="text-muted m-0">There are no active records available at the moment.</p>
             </div>
-        }
-        else
+        </div>
+    }
+    else
+    {
+        @* ------------------ Doctors Section ------------------ *@
+        @if (doctors.Any())
         {
-            int displayedCount = 0;
+            <div class="section-divider-head doctors-section-head">
+                <i class="bi bi-heart-pulse-fill fs-3" style="color: var(--primary-main);"></i>
+                <h3>Doctors Section</h3>
+            </div>
 
-            @foreach (var item in Model)
-            {
-                if (isPatient && !(item.Position != null && item.Position.StartsWith("Doctor", StringComparison.OrdinalIgnoreCase)))
+            <div class="staff-grid mb-5">
+                @foreach (var item in doctors)
                 {
-                    continue;
-                }
-
-                displayedCount++;
-
-                <div class="card border-0 custom-glass-card staff-card">
-                    @if (!string.IsNullOrEmpty(item.ImagePath))
-                    {
-                        <img src="~/images/staff/@item.ImagePath"
-                             asp-append-version="true"
-                             class="staff-avatar-img"
-                             alt="@item.Fname @item.Lname"
-                             onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=@item.Fname+@item.Lname&background=eef5ff&color=0052cc&bold=true&size=150';" />
-                    }
-                    else
-                    {
-                        <img src="https://ui-avatars.com/api/?name=@item.Fname+@item.Lname&background=eef5ff&color=0052cc&bold=true&size=150"
-                             class="staff-avatar-img"
-                             alt="@item.Fname @item.Lname" />
-                    }
-
-                    <h3 class="staff-name">@item.Fname @item.Lname</h3>
-
-                    <div class="staff-role">
-                        <i class="bi bi-award-fill me-1"></i>
-                        @(item.Position != null && item.Position.Contains("(") ? item.Position.Split('(')[0].Trim() : item.Position)
-                    </div>
-
-                    <div class="staff-info">
-                        <div class="info-line" title="Department">
-                            <i class="bi bi-building-fill"></i>
-                            <span>
-                                @{
-                                    var deptName = item.Department?.DeptName ?? "";
-                                    @deptName
-
-                                    if (deptName.Equals("Emergency", StringComparison.OrdinalIgnoreCase)
-                                        && item.Position != null
-                                        && item.Position.Contains("(")
-                                        && item.Position.Contains(")"))
-                                    {
-                                        var start = item.Position.IndexOf("(") + 1;
-                                        var length = item.Position.IndexOf(")") - start;
-                                        var subSpecialty = item.Position.Substring(start, length);
-                                        <strong class="text-primary ms-1">(@subSpecialty)</strong>
-                                    }
-                                }
-                            </span>
-                        </div>
-
-                        @if (!isPatient)
+                    <div class="card border-0 custom-glass-card staff-card">
+                        @if (!string.IsNullOrEmpty(item.ImagePath))
                         {
-                            <div class="info-line" title="Email Address">
-                                <i class="bi bi-envelope-fill"></i>
-                                <span style="word-break: break-all;">@item.Email</span>
-                            </div>
+                            <img src="~/images/staff/@item.ImagePath"
+                                 asp-append-version="true"
+                                 class="staff-avatar-img"
+                                 alt="@item.Fname @item.Lname"
+                                 onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=@item.Fname+@item.Lname&background=eef5ff&color=0052cc&bold=true&size=150';" />
                         }
                         else
                         {
-                            <div class="info-line" title="Status">
-                                <i class="bi bi-check-circle-fill" style="color: #10b981;"></i>
-                                <span class="text-success fw-medium">Active & Available</span>
+                            <img src="https://ui-avatars.com/api/?name=@item.Fname+@item.Lname&background=eef5ff&color=0052cc&bold=true&size=150"
+                                 class="staff-avatar-img"
+                                 alt="@item.Fname @item.Lname" />
+                        }
+
+                        <h3 class="staff-name">@item.Fname @item.Lname</h3>
+
+                        <div class="staff-role">
+                            <i class="bi bi-award-fill me-1"></i>
+                            @(item.Position != null && item.Position.Contains("(") ? item.Position.Split('(')[0].Trim() : item.Position)
+                        </div>
+
+                        <div class="staff-info">
+                            <div class="info-line" title="Department">
+                                <i class="bi bi-building-fill"></i>
+                                <span>
+                                    @{
+                                        var deptName = item.Department?.DeptName ?? "";
+                                        @deptName
+
+                                        if (deptName.Equals("Emergency", StringComparison.OrdinalIgnoreCase)
+                                            && item.Position != null
+                                            && item.Position.Contains("(")
+                                            && item.Position.Contains(")"))
+                                        {
+                                            var start = item.Position.IndexOf("(") + 1;
+                                            var length = item.Position.IndexOf(")") - start;
+                                            var subSpecialty = item.Position.Substring(start, length);
+                                            <strong class="text-primary ms-1">(@subSpecialty)</strong>
+                                        }
+                                    }
+                                </span>
                             </div>
-                        }
-                    </div>
 
-                    <div class="action-btns">
-                        @if (User.IsInRole("Admin"))
-                        {
-                            <a asp-action="Edit" asp-route-id="@item.StaffId" class="btn-action btn-edit" title="Edit Profile">
-                                <i class="bi bi-pencil"></i> Edit
+                            @if (!isPatient)
+                            {
+                                <div class="info-line" title="Email Address">
+                                    <i class="bi bi-envelope-fill"></i>
+                                    <span style="word-break: break-all;">@item.Email</span>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="info-line" title="Status">
+                                    <i class="bi bi-check-circle-fill" style="color: #10b981;"></i>
+                                    <span class="text-success fw-medium">Active & Available</span>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="action-btns">
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <a asp-action="Edit" asp-route-id="@item.StaffId" class="btn-action btn-edit" title="Edit Profile">
+                                    <i class="bi bi-pencil"></i> Edit
+                                </a>
+                            }
+
+                            <a asp-action="Details" asp-route-id="@item.StaffId" class="btn-action btn-details" style="@(!User.IsInRole("Admin") && !User.IsInRole("Doctor") ? "width: 100%;" : "")" title="View Details">
+                                <i class="bi bi-eye"></i> Details
                             </a>
-                        }
 
-                        <a asp-action="Details" asp-route-id="@item.StaffId" class="btn-action btn-details" style="@(!User.IsInRole("Admin") && !User.IsInRole("Doctor") ? "width: 100%;" : "")" title="View Details">
-                            <i class="bi bi-eye"></i> Details
-                        </a>
+                            @if (User.IsInRole("Doctor"))
+                            {
+                                <a asp-action="ChangePassword" asp-route-id="@item.StaffId" class="btn-action btn-password" title="Change Password">
+                                    <i class="bi bi-key-fill"></i> Password
+                                </a>
+                            }
 
-                        @if (User.IsInRole("Doctor"))
-                        {
-                            <a asp-action="ChangePassword" asp-route-id="@item.StaffId" class="btn-action btn-password" title="Change Password">
-                                <i class="bi bi-key-fill"></i> Password
-                            </a>
-                        }
-
-                        @if (User.IsInRole("Admin"))
-                        {
-                            <form asp-action="Delete" asp-route-id="@item.StaffId" method="post" class="d-inline flex-grow-1" onsubmit="return confirm('Are you sure you want to delete this staff member?');">
-                                <button type="submit" class="btn-action btn-delete" title="Delete Account">
-                                    <i class="bi bi-trash"></i> Delete
-                                </button>
-                            </form>
-                        }
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <form asp-action="Delete" asp-route-id="@item.StaffId" method="post" class="d-inline flex-grow-1" onsubmit="return confirm('Are you sure you want to delete this staff member?');">
+                                    <button type="submit" class="btn-action btn-delete" title="Delete Account">
+                                        <i class="bi bi-trash"></i> Delete
+                                    </button>
+                                </form>
+                            }
+                        </div>
                     </div>
-                </div>
-            }
-
-            if (displayedCount == 0)
-            {
+                }
+            </div>
+        }
+        else if (isPatient)
+        {
+            <div class="staff-grid">
                 <div class="card border-0 custom-glass-card empty-state">
                     <i class="bi bi-person-x-fill"></i>
                     <h4>No Active Doctors Available</h4>
                     <p class="text-muted m-0">There are no healthcare specialists listed at this time.</p>
                 </div>
-            }
+            </div>
         }
-    </div>
+
+        @* ------------------ Nurses Section ------------------ *@
+        @if (!isPatient && nurses.Any())
+        {
+            <div class="section-divider-head nurses-section-head">
+                <i class="bi bi-activity fs-3" style="color: #10b981;"></i>
+                <h3>Nurses Section</h3>
+            </div>
+
+            <div class="staff-grid">
+                @foreach (var item in nurses)
+                {
+                    <div class="card border-0 custom-glass-card staff-card">
+                        @if (!string.IsNullOrEmpty(item.ImagePath))
+                        {
+                            <img src="~/images/staff/@item.ImagePath"
+                                 asp-append-version="true"
+                                 class="staff-avatar-img"
+                                 alt="@item.Fname @item.Lname"
+                                 onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=@item.Fname+@item.Lname&background=eef5ff&color=0052cc&bold=true&size=150';" />
+                        }
+                        else
+                        {
+                            <img src="https://ui-avatars.com/api/?name=@item.Fname+@item.Lname&background=eef5ff&color=0052cc&bold=true&size=150"
+                                 class="staff-avatar-img"
+                                 alt="@item.Fname @item.Lname" />
+                        }
+
+                        <h3 class="staff-name">@item.Fname @item.Lname</h3>
+
+                        <div class="staff-role">
+                            <i class="bi bi-award-fill me-1"></i>
+                            @(item.Position != null && item.Position.Contains("(") ? item.Position.Split('(')[0].Trim() : item.Position)
+                        </div>
+
+                        <div class="staff-info">
+                            <div class="info-line" title="Department">
+                                <i class="bi bi-building-fill"></i>
+                                <span>
+                                    @{
+                                        var deptName = item.Department?.DeptName ?? "";
+                                        @deptName
+
+                                        if (deptName.Equals("Emergency", StringComparison.OrdinalIgnoreCase)
+                                            && item.Position != null
+                                            && item.Position.Contains("(")
+                                            && item.Position.Contains(")"))
+                                        {
+                                            var start = item.Position.IndexOf("(") + 1;
+                                            var length = item.Position.IndexOf(")") - start;
+                                            var subSpecialty = item.Position.Substring(start, length);
+                                            <strong class="text-primary ms-1">(@subSpecialty)</strong>
+                                        }
+                                    }
+                                </span>
+                            </div>
+
+                            @if (!isPatient)
+                            {
+                                <div class="info-line" title="Email Address">
+                                    <i class="bi bi-envelope-fill"></i>
+                                    <span style="word-break: break-all;">@item.Email</span>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="info-line" title="Status">
+                                    <i class="bi bi-check-circle-fill" style="color: #10b981;"></i>
+                                    <span class="text-success fw-medium">Active & Available</span>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="action-btns">
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <a asp-action="Edit" asp-route-id="@item.StaffId" class="btn-action btn-edit" title="Edit Profile">
+                                    <i class="bi bi-pencil"></i> Edit
+                                </a>
+                            }
+
+                            <a asp-action="Details" asp-route-id="@item.StaffId" class="btn-action btn-details" style="@(!User.IsInRole("Admin") && !User.IsInRole("Doctor") ? "width: 100%;" : "")" title="View Details">
+                                <i class="bi bi-eye"></i> Details
+                            </a>
+
+                            @if (User.IsInRole("Doctor"))
+                            {
+                                <a asp-action="ChangePassword" asp-route-id="@item.StaffId" class="btn-action btn-password" title="Change Password">
+                                    <i class="bi bi-key-fill"></i> Password
+                                </a>
+                            }
+
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <form asp-action="Delete" asp-route-id="@item.StaffId" method="post" class="d-inline flex-grow-1" onsubmit="return confirm('Are you sure you want to delete this staff member?');">
+                                    <button type="submit" class="btn-action btn-delete" title="Delete Account">
+                                        <i class="bi bi-trash"></i> Delete
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    }
 </div>
