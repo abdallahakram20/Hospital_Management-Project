@@ -13,22 +13,25 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
     <style>
-            /* 🌟 كلاس الخلفية المتدرجة المخصصة لباقي الصفحات */
+            /* 🌟 الخلفية الجديدة المعتمدة على صورتك الخاصة مع تعتيم خفيف جداً لتبرز بوضوح 🌟 */
             .gradient-page-bg {
-                background-color: #f3f8ff;
-                background-image: radial-gradient(circle at 5% 15%, #d1e3ff 0%, transparent 35%), radial-gradient(circle at 95% 25%, #dae7ff 0%, transparent 30%), radial-gradient(circle at 85% 80%, #cbdfff 0%, transparent 40%), radial-gradient(circle at 10% 85%, #e2eeff 0%, transparent 35%);
+                background: linear-gradient(rgba(243, 248, 255, 0.3), rgba(243, 248, 255, 0.3)), /* تم تقليل التعتيم من 0.85 إلى 0.3 لظهور أوضح */
+                url('/images/Background/Gemini_Generated_Image_lkht2flkht2flkht.png');
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
                 background-attachment: fixed;
                 min-height: 100vh;
                 color: #1e293b;
                 overflow-x: hidden;
             }
 
-            /* دوائر الوهج الجانبية */
+            /* دوائر الوهج الجانبية تعطي عمقاً إضافياً مع الصورة (تم تخفيف شفافيتها لتتناسب مع الخلفية الأوضح) */
             .bg-glow-1 {
                 position: absolute;
                 width: 500px;
                 height: 500px;
-                background: radial-gradient(circle, rgba(195, 219, 255, 0.7) 0%, rgba(255,255,255,0) 70%);
+                background: radial-gradient(circle, rgba(195, 219, 255, 0.35) 0%, rgba(255,255,255,0) 70%); /* خففت الوهج قليلاً */
                 top: -100px;
                 right: -150px;
                 z-index: 0;
@@ -40,7 +43,7 @@
                 position: absolute;
                 width: 400px;
                 height: 400px;
-                background: radial-gradient(circle, rgba(204, 224, 255, 0.6) 0%, rgba(255,255,255,0) 70%);
+                background: radial-gradient(circle, rgba(204, 224, 255, 0.3) 0%, rgba(255,255,255,0) 70%); /* خففت الوهج قليلاً */
                 bottom: -50px;
                 left: -150px;
                 z-index: 0;
@@ -48,12 +51,25 @@
                 filter: blur(20px);
             }
 
+            /* 🌟 إضافة تأثير زجاجي شفاف جداً للجداول والمحتوى لضمان القراءة بوضوح فوق الصورة الأوضح 🌟 */
+            main role="main" {
+                position: relative;
+                z-index: 1;
+                background: rgba(255, 255, 255, 0.6); /* طبقة بيضاء شفافة جداً */
+                backdrop-filter: blur(8px); /* تأثير ضبابي خفيف للخلفية */
+                padding: 20px;
+                border-radius: 16px;
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                margin-top: 20px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            }
+
             /* الـ Badge الترحيبي الخاص بك */
             .welcome-badge {
                 display: inline-flex;
                 align-items: center;
                 gap: 8px;
-                background-color: #f8fafc;
+                background-color: rgba(248, 250, 252, 0.95);
                 padding: 8px 16px;
                 border-radius: 50px;
                 border: 1px solid #e2e8f0;
@@ -61,7 +77,8 @@
                 font-size: 14px;
                 color: #475569;
                 margin: 15px 20px 0 20px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+                box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+                backdrop-filter: blur(4px);
             }
 
                 .welcome-badge strong {
@@ -236,7 +253,7 @@
             <div class="bg-glow-1"></div>
         }
 
-        <main role="main" class="pb-3" style="position: relative; z-index: 1;">
+        <main role="main" class="pb-3">
             @RenderBody()
         </main>
 
@@ -292,7 +309,7 @@
                                 </div>
                                 <strong style="text-align: right; font-weight: 600; line-height: 1.4;">08:00 AM – 12:00<br />AM</strong>
                             </div>
-                            
+
                             <div class="hours-row-item d-flex justify-content-between align-items-center" style="border-bottom: none; margin-bottom: 0; padding-bottom: 0;">
                                 <span style="font-weight: 500;">Emergency</span>
                                 <strong style="font-weight: 700; font-size: 15px;">24 / 7</strong>
@@ -318,27 +335,27 @@
     @await RenderSectionAsync("Scripts", required: false)
 
     <script>
-            (function () {
-            var isIndex = @isIndexPage.ToString().ToLower();
+        (function () {
+        var isIndex = @isIndexPage.ToString().ToLower();
 
-            if (isIndex && window.history.replaceState) {
-            window.history.replaceState({ isIndex: true }, '', window.location.href);
-            }
+        if (isIndex && window.history.replaceState) {
+        window.history.replaceState({ isIndex: true }, '', window.location.href);
+        }
 
-            window.addEventListener('pageshow', function (event) {
-            var currentUrl = window.location.href.toLowerCase();
-            var isActionPage = currentUrl.includes('/delete') || currentUrl.includes('/create') || currentUrl.includes('/edit');
+        window.addEventListener('pageshow', function (event) {
+        var currentUrl = window.location.href.toLowerCase();
+        var isActionPage = currentUrl.includes('/delete') || currentUrl.includes('/create') || currentUrl.includes('/edit');
 
-            if ((event.persisted || (typeof window.performance != "undefined" && window.performance.getEntriesByType("navigation")[0]?.type === "back_forward")) && isActionPage) {
-            window.location.replace('@Url.Action("Index", "Home")');
-            return;
-            }
+        if ((event.persisted || (typeof window.performance != "undefined" && window.performance.getEntriesByType("navigation")[0]?.type === "back_forward")) && isActionPage) {
+        window.location.replace('@Url.Action("Index", "Home")');
+        return;
+        }
 
-            if ((event.persisted || (typeof window.performance != "undefined" && window.performance.getEntriesByType("navigation")[0]?.type === "back_forward")) && isIndex) {
-            window.location.href = window.location.href.split('?')[0] + '?_=' + new Date().getTime();
-            }
-            });
-            })();
+        if ((event.persisted || (typeof window.performance != "undefined" && window.performance.getEntriesByType("navigation")[0]?.type === "back_forward")) && isIndex) {
+        window.location.href = window.location.href.split('?')[0] + '?_=' + new Date().getTime();
+        }
+        });
+        })();
     </script>
 </body>
 </html>

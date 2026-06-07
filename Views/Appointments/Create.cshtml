@@ -2,6 +2,17 @@
 @{
     ViewData["Title"] = "Create Appointment Slot";
     bool isPatient = User.IsInRole("Patient");
+
+    // تصفية قائمة الأطباء لمنع ظهور أطباء الطوارئ للمريض
+    var originalStaffList = ViewBag.StaffId as IEnumerable<SelectListItem>;
+    IEnumerable<SelectListItem> filteredStaffList = originalStaffList;
+
+    if (isPatient && originalStaffList != null)
+    {
+        filteredStaffList = originalStaffList
+            .Where(item => item.Text != null && !item.Text.Contains("(Emergency)", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
 }
 
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -136,16 +147,18 @@
         padding-right: 40px;
     }
 
-    /* ========================================= */
-    /* ✅ Custom Select2 Overrides for our Theme */
-    /* ========================================= */
+    /* ========================================================== */
+    /* ✅ تعديل وإصلاح الخانة لتتلاءم مع الكلام المكتوب بداخلها */
+    /* ========================================================== */
     .select2-container--default .select2-selection--single {
         background-color: var(--input-bg);
         border: 1px solid var(--input-border);
         border-radius: 12px;
-        height: 52px;
+        min-height: 68px; /* تم التعديل ليكون مرن ومناسب للبيانات المتعددة */
+        height: auto; /* يسمح بالتمدد التلقائي */
         display: flex;
         align-items: center;
+        padding: 8px 0; /* مساحة داخلية للتنفس */
         transition: all 0.2s ease;
     }
 
@@ -160,12 +173,33 @@
         font-size: 15px;
         font-family: inherit;
         padding-left: 16px;
-        padding-right: 40px;
+        padding-right: 55px; /* ترك مساحة كافية للأزرار الجانبية */
+        line-height: 1.4; /* إصلاح تداخل السطور الافتراضي */
+        width: 100%;
+        white-space: normal; /* السماح للكلام بالنزول لسطر جديد لو المساحة ضيقة */
     }
 
+    /* ضبط مكان سهم الاختيار بشكل عمودي متناسق */
     .select2-container--default .select2-selection--single .select2-selection__arrow {
-        height: 50px;
+        height: 100%;
+        top: 0;
         right: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* إصلاح مكان ومظهر زر الإلغاء (X) حتى لا يتداخل مع النصوص */
+    .select2-container--default .select2-selection--single .select2-selection__clear {
+        position: absolute;
+        right: 32px;
+        top: 50%;
+        transform: translateY(-50%);
+        margin-right: 0;
+        font-size: 18px;
+        font-weight: bold;
+        color: var(--text-muted);
+        padding: 0;
     }
 
     .select2-dropdown {
@@ -199,16 +233,17 @@
         color: var(--primary-dark);
     }
 
-    /* Template Formatting for Doctor Items */
+    /* الـ Layout الخاص ببيانات الطبيب لتبدو منظمة */
     .doctor-option-layout {
         display: flex;
         flex-direction: column;
-        gap: 4px;
+        gap: 6px;
+        width: 100%;
     }
 
     .doc-opt-name {
         font-weight: 700;
-        color: var(--text-main);
+        color: var(--text-dark);
         font-size: 15px;
     }
 
@@ -218,6 +253,7 @@
         gap: 8px;
         font-size: 12px;
         color: var(--text-muted);
+        flex-wrap: wrap; /* لجعل البيانات تنزل لأسفل بمرونة على الشاشات الصغيرة */
     }
 
     .doc-badge-dept {
@@ -225,10 +261,13 @@
         padding: 2px 8px;
         border-radius: 6px;
         font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
     }
 
     .doc-badge-shift {
-        display: flex;
+        display: inline-flex;
         align-items: center;
         gap: 4px;
     }
@@ -405,7 +444,7 @@
                 {
                     <div class="form-group">
                         <label asp-for="StaffId" class="custom-label">Select Doctor (Optional)</label>
-                        <select asp-for="StaffId" class="custom-input select2-doctor" asp-items="ViewBag.StaffId" style="width: 100%">
+                        <select asp-for="StaffId" class="custom-input select2-doctor" asp-items="@(filteredStaffList ?? ViewBag.StaffId)" style="width: 100%">
                             <option value="">-- No Preferred Doctor / Any --</option>
                         </select>
                         <span asp-validation-for="StaffId" class="text-danger"></span>
@@ -438,7 +477,7 @@
 
                     <div class="form-group">
                         <label asp-for="StaffId" class="custom-label">Assign Doctor</label>
-                        <select asp-for="StaffId" class="custom-input select2-doctor" asp-items="ViewBag.StaffId" style="width: 100%">
+                        <select asp-for="StaffId" class="custom-input select2-doctor" asp-items="@(filteredStaffList ?? ViewBag.StaffId)" style="width: 100%">
                             <option value="">-- Select Doctor --</option>
                         </select>
                         <span asp-validation-for="StaffId" class="text-danger"></span>

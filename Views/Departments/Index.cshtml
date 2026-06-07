@@ -1,8 +1,7 @@
 ﻿@model IEnumerable<Hospital_Management_Project.Models.Department>
 
 @{
-    
-    Layout = "~/Views/Shared/_Layout.cshtml"; 
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <style>
@@ -57,19 +56,18 @@
         background: #0052cc !important;
     }
 
-    .table-thead th {
-        color: white !important;
-        padding: 16px !important;
-        font-size: 0.85rem !important;
-        letter-spacing: 0.5px !important;
-        border: none !important;
-        font-weight: 600 !important;
-    }
+        .table-thead th {
+            color: white !important;
+            padding: 16px !important;
+            font-size: 0.85rem !important;
+            letter-spacing: 0.5px !important;
+            border: none !important;
+            font-weight: 600 !important;
+        }
 
-    .btn-action-view {
-        border: 1px solid #b4d3ff;
+    /* 🌟 توحيد ستايل الأزرار لتصبح بنفس نمط زر التفاصيل الرائع 🌟 */
+    .btn-action-view, .btn-action-edit, .btn-action-delete {
         background-color: #fff;
-        color: #0052cc;
         border-radius: 20px;
         font-size: 0.85rem;
         padding: 5px 16px;
@@ -78,37 +76,49 @@
         text-decoration: none;
         display: inline-flex;
         align-items: center;
-    }
-
-    .btn-action-view:hover {
-        background-color: #0052cc;
-        color: #fff;
-        border-color: #0052cc;
-    }
-
-    .btn-action-icon {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        display: inline-flex;
-        align-items: center;
         justify-content: center;
-        border: 1px solid #f2f4f7;
-        background-color: #fff;
-        transition: all 0.2s ease;
-        text-decoration: none;
     }
 
-    .btn-edit-icon { color: #eab308; border-color: #fef08a; }
-    .btn-edit-icon:hover { background-color: #eab308; color: #fff; border-color: #eab308; }
+    /* زر التفاصيل (الأزرق) */
+    .btn-action-view {
+        border: 1px solid #b4d3ff;
+        color: #0052cc;
+    }
 
-    .btn-delete-icon { color: #ef4444; border-color: #fee2e2; }
-    .btn-delete-icon:hover { background-color: #ef4444; color: #fff; border-color: #ef4444; }
+        .btn-action-view:hover {
+            background-color: #0052cc;
+            color: #fff;
+            border-color: #0052cc;
+        }
+
+    /* زر التعديل الجديد (الأصفر) */
+    .btn-action-edit {
+        border: 1px solid #fef08a;
+        color: #eab308;
+    }
+
+        .btn-action-edit:hover {
+            background-color: #eab308;
+            color: #fff;
+            border-color: #eab308;
+        }
+
+    /* زر الحذف الجديد (الأحمر) */
+    .btn-action-delete {
+        border: 1px solid #fee2e2;
+        color: #ef4444;
+    }
+
+        .btn-action-delete:hover {
+            background-color: #ef4444;
+            color: #fff;
+            border-color: #ef4444;
+        }
 
     .floor-badge {
-        background-color: #eef5ff; 
-        color: #0052cc; 
-        border-radius: 20px; 
+        background-color: #eef5ff;
+        color: #0052cc;
+        border-radius: 20px;
         font-size: 0.85rem;
         padding: 6px 16px;
         font-weight: 600;
@@ -125,7 +135,7 @@
             <span class="text-primary fw-semibold" style="letter-spacing: 1.5px;">— Welcome to CarePlus Hospital —</span>
             <h1 class="display-4 fw-bold my-2" style="color: #0a1931; font-weight: 850;">Clinic Departments</h1>
             <p class="text-muted fs-5">Manage hospital departments and their locations efficiently.</p>
-            
+
             <a href="@Url.Action("Create", "Departments")" class="btn btn-primary px-4 py-2 mt-2 shadow-sm fw-medium" style="border-radius: 12px; background-color: #1a73e8; border: none;">
                 <i class="bi bi-plus-lg me-1"></i> Add Department
             </a>
@@ -190,14 +200,14 @@
                         <i class="bi bi-plus"></i> Add Department
                     </a>
                 </div>
-                
+
                 <div class="table-responsive" style="border-radius: 12px; overflow: hidden;">
                     <table class="table align-middle">
                         <thead>
                             <tr class="table-thead">
-                                <th style="width: 40%;">DEPARTMENT NAME</th>
-                                <th style="width: 30%;">LOCATION FLOOR</th>
-                                <th class="text-center" style="width: 30%;">ACTIONS</th>
+                                <th style="width: 35%;">DEPARTMENT NAME</th>
+                                <th style="width: 25%;">LOCATION FLOOR</th>
+                                <th class="text-center" style="width: 40%;">ACTIONS</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -217,11 +227,11 @@
                                             <a href="@Url.Action("Details", "Departments", new { id = item.DepartmentId })" class="btn-action-view">
                                                 <i class="bi bi-eye me-1"></i> Details
                                             </a>
-                                            <a href="@Url.Action("Edit", "Departments", new { id = item.DepartmentId })" class="btn-action-icon btn-edit-icon" title="Edit">
-                                                <i class="bi bi-pencil"></i>
+                                            <a href="@Url.Action("Edit", "Departments", new { id = item.DepartmentId })" class="btn-action-edit" title="Edit">
+                                                <i class="bi bi-pencil me-1"></i> Edit
                                             </a>
-                                            <a href="@Url.Action("Delete", "Departments", new { id = item.DepartmentId })" class="btn-action-icon btn-delete-icon" title="Delete">
-                                                <i class="bi bi-trash"></i>
+                                            <a href="@Url.Action("Delete", "Departments", new { id = item.DepartmentId })" class="btn-action-delete" title="Delete">
+                                                <i class="bi bi-trash me-1"></i> Delete
                                             </a>
                                         </div>
                                     </td>
@@ -249,7 +259,6 @@
 </div>
 
 @section Scripts {
-    @* الإسكربت الخاص بمنع الرجوع للخلف مكانه الصح هنا عشان يشتغل مع الصفحة دي بس دون التأثير على باقي الموقع *@
     <script>
         (function () {
             if (window.history.pushState) {

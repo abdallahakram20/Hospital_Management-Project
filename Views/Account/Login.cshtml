@@ -20,7 +20,10 @@
             body {
                 margin: 0;
                 font-family: 'DM Sans', sans-serif;
-                background-color: #E8F0FE;
+                background: url('@Url.Content("~/images/Background/Gemini_Generated_Image_4x8ac34x8ac34x8a.png")') no-repeat center center fixed;
+                background-size: cover;
+                height: 100vh;
+                overflow: hidden;
             }
 
             .login-page-wrapper {
@@ -29,7 +32,8 @@
                 left: 0;
                 width: 100%;
                 height: 100vh;
-                background-color: #E8F0FE;
+                background-color: rgba(10, 25, 49, 0.4);
+                backdrop-filter: blur(8px);
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -38,67 +42,89 @@
                 overflow-y: auto;
             }
 
+            /* 🌟 تم تحديد الارتفاع بدقة هنا لمنع تمدد الكارت نهائياً 🌟 */
             .login-container {
-                background: #ffffff;
+                background: rgba(255, 255, 255, 0.96);
                 border-radius: 24px;
-                box-shadow: 0 10px 40px rgba(0, 86, 210, 0.12);
+                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
                 display: flex;
                 flex-direction: row;
-                max-width: 1000px;
+                max-width: 850px;
                 width: 100%;
-                min-height: 600px;
+                height: 520px; /* الارتفاع أصبح ثابتاً وموحداً */
                 overflow: hidden;
             }
 
             .login-left {
-                padding: 60px 50px;
+                padding: 30px 35px 20px 35px;
                 width: 50%;
                 display: flex;
                 flex-direction: column;
-                justify-content: center;
+                justify-content: space-between;
                 background-color: #ffffff;
+                height: 100%;
             }
 
             .login-right {
                 width: 50%;
-                background: radial-gradient(circle at center, #0056D2 0%, #003CA3 100%);
+                background: radial-gradient(circle at center, rgba(0, 86, 210, 0.9) 0%, rgba(0, 60, 163, 0.95) 100%);
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 position: relative;
+                height: 100%;
             }
+
+            /* 🌟 تظبيط مساحة التاب وحمايتها من التمدد المفاجئ 🌟 */
+            .tab-content {
+                flex-grow: 1;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                overflow-y: auto; /* إضافة سكول داخلي خفي وسلس جداً عند الحاجة فقط */
+                padding-right: 2px;
+            }
+
+                .tab-content::-webkit-scrollbar {
+                    width: 4px;
+                }
+
+                .tab-content::-webkit-scrollbar-thumb {
+                    background: #E2E8F0;
+                    border-radius: 10px;
+                }
 
             .brand-title {
                 color: #0A1931;
                 font-family: 'Playfair Display', serif;
                 font-weight: 700;
-                font-size: 32px;
-                margin-bottom: 5px;
+                font-size: 26px;
+                margin-bottom: 2px;
                 text-align: center;
             }
 
             .brand-subtitle {
                 color: #0056D2;
-                font-size: 15px;
+                font-size: 13px;
                 text-align: center;
-                margin-bottom: 30px;
+                margin-bottom: 15px;
                 font-weight: 600;
             }
 
             .nav-pills {
                 background: #F0F4FA;
                 border-radius: 50px;
-                padding: 5px;
-                margin-bottom: 30px;
+                padding: 4px;
+                margin-bottom: 15px;
                 border-bottom: none;
             }
 
                 .nav-pills .nav-link {
                     color: #657795;
                     border-radius: 50px;
-                    padding: 10px 15px;
+                    padding: 8px 12px;
                     font-weight: 600;
-                    font-size: 14px;
+                    font-size: 13px;
                     transition: all 0.3s ease;
                 }
 
@@ -111,19 +137,19 @@
                     }
 
             .form-label-custom {
-                font-size: 13px;
+                font-size: 12px;
                 font-weight: 600;
                 color: #4A5568;
-                margin-bottom: 8px;
+                margin-bottom: 4px;
             }
 
             .custom-input {
                 border: 1px solid #E2E8F0;
                 border-radius: 12px;
-                padding: 12px 15px;
+                padding: 9px 14px;
                 background-color: #F8FAFC;
                 color: #0A1931;
-                font-size: 14px;
+                font-size: 13px;
                 box-shadow: none !important;
                 transition: all 0.3s ease;
             }
@@ -141,7 +167,7 @@
 
             .toggle-password {
                 right: 15px !important;
-                top: 36px !important;
+                top: 31px !important;
                 color: #94A3B8 !important;
                 transition: color 0.2s;
             }
@@ -155,11 +181,11 @@
                 color: #ffffff;
                 border-radius: 50px;
                 font-weight: 600;
-                font-size: 15px;
-                padding: 14px;
+                font-size: 14px;
+                padding: 10px;
                 border: none;
                 transition: all 0.2s ease;
-                margin-bottom: 15px;
+                margin-bottom: 2px;
                 box-shadow: 0 4px 14px rgba(0, 86, 210, 0.3);
             }
 
@@ -172,15 +198,15 @@
 
             .register-container {
                 text-align: center;
-                margin-top: 20px;
-                padding-top: 20px;
+                margin-top: 8px;
+                padding-top: 8px;
                 border-top: 1px dashed #E2E8F0;
             }
 
             .register-text {
-                font-size: 13px;
+                font-size: 11.5px;
                 color: #657795;
-                margin-bottom: 12px;
+                margin-bottom: 4px;
             }
 
             .btn-register-outline {
@@ -189,8 +215,8 @@
                 border: 2px solid #0056D2;
                 border-radius: 50px;
                 font-weight: 600;
-                font-size: 14px;
-                padding: 12px 24px;
+                font-size: 12.5px;
+                padding: 6px 16px;
                 transition: all 0.2s ease;
                 text-decoration: none;
                 display: inline-flex;
@@ -208,10 +234,10 @@
                 }
 
             .options-row {
-                font-size: 13px;
+                font-size: 12px;
                 color: #657795;
-                margin-top: 15px;
-                margin-bottom: 25px;
+                margin-top: 8px;
+                margin-bottom: 12px;
                 align-items: center;
             }
 
@@ -227,42 +253,34 @@
 
                 .options-row input[type="checkbox"] {
                     accent-color: #0056D2;
-                    width: 16px;
-                    height: 16px;
+                    width: 14px;
+                    height: 14px;
                     cursor: pointer;
                     vertical-align: middle;
-                    margin-right: 5px;
-                }
-
-                .options-row label {
-                    vertical-align: middle;
-                    cursor: pointer;
+                    margin-right: 4px;
                 }
 
             .alert-custom {
                 background-color: #EDF4FF;
                 border-radius: 12px;
-                padding: 15px;
+                padding: 10px;
                 color: #1E3A8A;
-                font-size: 13px;
+                font-size: 11.5px;
                 display: flex;
                 align-items: flex-start;
                 gap: 10px;
                 border-left: 4px solid #0056D2;
+                margin-top: 10px;
             }
 
                 .alert-custom i {
                     color: #0056D2;
                 }
 
-                .alert-custom strong {
-                    color: #0A1931;
-                }
-
             .circle-graphic-wrapper {
                 position: relative;
-                width: 300px;
-                height: 300px;
+                width: 260px;
+                height: 260px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -270,8 +288,8 @@
 
             .circle-track {
                 position: absolute;
-                width: 260px;
-                height: 260px;
+                width: 220px;
+                height: 220px;
                 border: 2px dashed rgba(255, 255, 255, 0.3);
                 border-radius: 50%;
                 animation: spin 40s linear infinite;
@@ -285,10 +303,10 @@
 
             .center-circle {
                 position: relative;
-                width: 150px;
-                height: 150px;
+                width: 130px;
+                height: 130px;
                 background: #ffffff;
-                border: 6px solid #EDF4FF;
+                border: 5px solid #EDF4FF;
                 border-radius: 50%;
                 display: flex;
                 flex-direction: column;
@@ -303,27 +321,27 @@
                     margin: 0;
                     font-family: 'Playfair Display', serif;
                     font-weight: 700;
-                    font-size: 20px;
+                    font-size: 18px;
                 }
 
                 .center-circle p {
                     color: #0056D2;
                     margin: 0;
-                    font-size: 11px;
+                    font-size: 10px;
                     font-weight: 600;
                 }
 
             .node {
                 position: absolute;
-                width: 40px;
-                height: 40px;
+                width: 36px;
+                height: 36px;
                 background: #ffffff;
                 color: #0056D2;
                 border-radius: 50%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 18px;
+                font-size: 16px;
                 z-index: 5;
                 box-shadow: 0 4px 15px rgba(0,0,0,0.15);
             }
@@ -391,14 +409,18 @@
             @@media (max-width: 768px) {
                 .login-container {
                     flex-direction: column;
+                    height: auto;
+                    max-height: 90vh;
+                    overflow-y: auto;
                 }
 
                 .login-left, .login-right {
                     width: 100%;
+                    height: auto;
                 }
 
                 .login-left {
-                    padding: 40px 30px;
+                    padding: 30px 20px;
                 }
 
                 .login-right {
@@ -413,102 +435,104 @@
         <div class="login-container">
 
             <div class="login-left">
-                <h2 class="brand-title">CarePlus</h2>
-                <p class="brand-subtitle">Medical Service</p>
+                <div>
+                    <h2 class="brand-title">CarePlus</h2>
+                    <p class="brand-subtitle">Medical Service</p>
 
-                <div asp-validation-summary="ModelOnly" class="alert alert-danger small mb-3"></div>
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger small mb-3"></div>
 
-                <ul class="nav nav-pills nav-justified" id="loginTabs" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link @(Model?.UserType != "Patient" ? "active" : "")"
-                                id="staff-tab" data-bs-toggle="pill" data-bs-target="#staffLogin" type="button" role="tab" aria-controls="staffLogin" aria-selected="@(Model?.UserType != "Patient" ? "true" : "false")">
-                            Staff Member
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link @(Model?.UserType == "Patient" ? "active" : "")"
-                                id="patient-tab" data-bs-toggle="pill" data-bs-target="#patientLogin" type="button" role="tab" aria-controls="patientLogin" aria-selected="@(Model?.UserType == "Patient" ? "true" : "false")">
-                            Patient
-                        </button>
-                    </li>
-                </ul>
+                    <ul class="nav nav-pills nav-justified" id="loginTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link @(Model?.UserType != "Patient" ? "active" : "")"
+                                    id="staff-tab" data-bs-toggle="pill" data-bs-target="#staffLogin" type="button" role="tab" aria-controls="staffLogin" aria-selected="@(Model?.UserType != "Patient" ? "true" : "false")">
+                                Staff Member
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link @(Model?.UserType == "Patient" ? "active" : "")"
+                                    id="patient-tab" data-bs-toggle="pill" data-bs-target="#patientLogin" type="button" role="tab" aria-controls="patientLogin" aria-selected="@(Model?.UserType == "Patient" ? "true" : "false")">
+                                Patient
+                            </button>
+                        </li>
+                    </ul>
 
-                <div class="tab-content">
-                    <div class="tab-pane fade @(Model?.UserType != "Patient" ? "show active" : "")" id="staffLogin" role="tabpanel" aria-labelledby="staff-tab">
-                        <form asp-controller="Account" asp-action="Login" method="post">
-                            <input type="hidden" name="UserType" value="Staff" />
+                    <div class="tab-content">
+                        <div class="tab-pane fade @(Model?.UserType != "Patient" ? "show active" : "")" id="staffLogin" role="tabpanel" aria-labelledby="staff-tab">
+                            <form asp-controller="Account" asp-action="Login" method="post">
+                                <input type="hidden" name="UserType" value="Staff" />
 
-                            <div class="mb-4">
-                                <label asp-for="Email" class="form-label-custom">Staff Email Address</label>
-                                <input asp-for="Email" id="staffEmail" class="form-control custom-input" placeholder="staffmember@@careplus.com" required
-                                       pattern="^[^@@]+@@careplus\.com$"
-                                       title="Only @@careplus.com email addresses are accepted" />
-                                <span asp-validation-for="Email" class="text-danger small"></span>
-                                <div id="emailDomainHint" class="text-danger small mt-1" style="display:none;">
-                                    <i class="bi bi-exclamation-circle-fill"></i> Email must end with <strong>@@careplus.com</strong>
+                                <div class="mb-3">
+                                    <label asp-for="Email" class="form-label-custom">Staff Email Address</label>
+                                    <input asp-for="Email" id="staffEmail" class="form-control custom-input" placeholder="staffmember@careplus.com" required
+                                           pattern="^[^]+@@careplus\.com$"
+                                           title="Only @@careplus.com email addresses are accepted" />
+                                    <span asp-validation-for="Email" class="text-danger small"></span>
+                                    <div id="emailDomainHint" class="text-danger small mt-1" style="display:none;">
+                                        <i class="bi bi-exclamation-circle-fill"></i> Email must end with <strong>@@careplus.com</strong>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div class="mb-3 position-relative">
-                                <label asp-for="Password" class="form-label-custom">Password</label>
-                                <input asp-for="Password" type="password" class="form-control custom-input" placeholder="••••••••" required />
-                                <i class="bi bi-eye-slash position-absolute toggle-password" style="cursor: pointer;"></i>
-                                <span asp-validation-for="Password" class="text-danger small"></span>
-                            </div>
-
-                            <div class="d-flex justify-content-between options-row">
-                                <div>
-                                    <input type="checkbox" id="rememberStaff" />
-                                    <label for="rememberStaff">Remember me</label>
+                                <div class="mb-3 position-relative">
+                                    <label asp-for="Password" class="form-label-custom">Password</label>
+                                    <input asp-for="Password" type="password" class="form-control custom-input" placeholder="••••••••" required />
+                                    <i class="bi bi-eye-slash position-absolute toggle-password" style="cursor: pointer;"></i>
+                                    <span asp-validation-for="Password" class="text-danger small"></span>
                                 </div>
-                                <a asp-controller="Account" asp-action="ForgotPassword" asp-route-userType="Staff">Forgot Password?</a>
-                            </div>
 
-                            <button type="submit" class="btn btn-custom w-100">Login</button>
-                        </form>
-                    </div>
-
-                    <div class="tab-pane fade @(Model?.UserType == "Patient" ? "show active" : "")" id="patientLogin" role="tabpanel" aria-labelledby="patient-tab">
-                        <form asp-controller="Account" asp-action="Login" method="post">
-                            <input type="hidden" name="UserType" value="Patient" />
-
-                            <div class="mb-4">
-                                <label asp-for="UserName" class="form-label-custom">Patient Username</label>
-                                <input asp-for="UserName" class="form-control custom-input" placeholder="username" required />
-                                <span asp-validation-for="UserName" class="text-danger small"></span>
-                            </div>
-
-                            <div class="mb-3 position-relative">
-                                <label asp-for="Password" class="form-label-custom">Password</label>
-                                <input asp-for="Password" type="password" class="form-control custom-input" placeholder="••••••••" required />
-                                <i class="bi bi-eye-slash position-absolute toggle-password" style="cursor: pointer;"></i>
-                                <span asp-validation-for="Password" class="text-danger small"></span>
-                            </div>
-
-                            <div class="d-flex justify-content-between options-row">
-                                <div>
-                                    <input type="checkbox" id="rememberPatient" />
-                                    <label for="rememberPatient">Remember me</label>
+                                <div class="d-flex justify-content-between options-row">
+                                    <div>
+                                        <input type="checkbox" id="rememberStaff" />
+                                        <label for="rememberStaff">Remember me</label>
+                                    </div>
+                                    <a asp-controller="Account" asp-action="ForgotPassword" asp-route-userType="Staff">Forgot Password?</a>
                                 </div>
-                                <a asp-controller="Account" asp-action="ForgotPassword" asp-route-userType="Patient">Forgot Password?</a>
+
+                                <button type="submit" class="btn btn-custom w-100">Login</button>
+                            </form>
+                        </div>
+
+                        <div class="tab-pane fade @(Model?.UserType == "Patient" ? "show active" : "")" id="patientLogin" role="tabpanel" aria-labelledby="patient-tab">
+                            <form asp-controller="Account" asp-action="Login" method="post">
+                                <input type="hidden" name="UserType" value="Patient" />
+
+                                <div class="mb-3">
+                                    <label asp-for="UserName" class="form-label-custom">Patient Username</label>
+                                    <input asp-for="UserName" class="form-control custom-input" placeholder="username" required />
+                                    <span asp-validation-for="UserName" class="text-danger small"></span>
+                                </div>
+
+                                <div class="mb-3 position-relative">
+                                    <label asp-for="Password" class="form-label-custom">Password</label>
+                                    <input asp-for="Password" type="password" class="form-control custom-input" placeholder="••••••••" required />
+                                    <i class="bi bi-eye-slash position-absolute toggle-password" style="cursor: pointer;"></i>
+                                    <span asp-validation-for="Password" class="text-danger small"></span>
+                                </div>
+
+                                <div class="d-flex justify-content-between options-row">
+                                    <div>
+                                        <input type="checkbox" id="rememberPatient" />
+                                        <label for="rememberPatient">Remember me</label>
+                                    </div>
+                                    <a asp-controller="Account" asp-action="ForgotPassword" asp-route-userType="Patient">Forgot Password?</a>
+                                </div>
+
+                                <button type="submit" class="btn btn-custom w-100">Login</button>
+                            </form>
+
+                            <div class="register-container">
+                                <p class="register-text">New patient without credentials?</p>
+                                <a asp-controller="Patients" asp-action="Create" class="btn-register-outline">
+                                    <i class="bi bi-person-plus-fill"></i> Create Account Here
+                                </a>
                             </div>
-
-                            <button type="submit" class="btn btn-custom w-100">Login</button>
-                        </form>
-
-                        <div class="register-container">
-                            <p class="register-text">New patient without credentials?</p>
-                            <a asp-controller="Patients" asp-action="Create" class="btn-register-outline">
-                                <i class="bi bi-person-plus-fill"></i> Create Account Here
-                            </a>
                         </div>
                     </div>
                 </div>
 
-                <div class="alert-custom mt-3">
-                    <i class="bi bi-info-circle-fill fs-5"></i>
+                <div class="alert-custom">
+                    <i class="bi bi-info-circle-fill fs-6"></i>
                     <div>
-                        <strong>Security Update:</strong> If this is your first login after the update, please contact the admin to reset your password.
+                        <strong>Security Update:</strong> Need first login help? Contact admin.
                     </div>
                 </div>
 
@@ -544,7 +568,6 @@
         togglePasswordIcons.forEach(function (icon) {
         icon.addEventListener('click', function () {
         const input = this.parentElement.querySelector('input');
-
         if (input.type === 'password') {
         input.type = 'text';
         this.classList.remove('bi-eye-slash');
@@ -557,7 +580,6 @@
         });
         });
 
-        // ✅ @@careplus.com Domain Validation - Real-time hint
         const staffEmailInput = document.getElementById('staffEmail');
         const emailDomainHint = document.getElementById('emailDomainHint');
 
@@ -573,7 +595,6 @@
         }
         });
 
-        // منع submit لو الإيميل غلط
         staffEmailInput.closest('form').addEventListener('submit', function (e) {
         const val = staffEmailInput.value.trim().toLowerCase();
         if (!val.endsWith('@@careplus.com')) {
