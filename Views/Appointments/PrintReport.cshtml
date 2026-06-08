@@ -1,9 +1,7 @@
 ﻿@model Hospital_Management_Project.Models.Appointment
 @{
     Layout = null;
-}
-
-<!DOCTYPE html>
+}<!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
     <meta charset="utf-8" />
@@ -148,20 +146,37 @@
             margin-bottom: 10px;
         }
 
-        /* إخفاء أي خلفيات للورقة أثناء الطباعة الفعلية */
+        /* إصلاحات التنسيق للطباعة الفعلية لحل مشكلة الصفحة الممسوحة */
         @@media print {
             @@page {
                 size: A4 portrait;
-                margin: 15mm;
+                margin: 12mm; /* تحديد هوامش مناسبة للورقة */
             }
             body { 
                 background: #fff !important; 
-                padding: 0;
+                color: #000 !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .profile-page {
+                max-width: 100% !important;
+                padding: 0 !important;
+                width: 100% !important;
             }
             .profile-card {
                 box-shadow: none !important;
                 border: none !important;
-                padding: 10px;
+                padding: 10px 0 !important; /* تقليل بادينج الكارت لمنع اختفاء الجدول */
+                width: 100% !important;
+            }
+            .report-table {
+                width: 100% !important;
+                page-break-inside: avoid; /* منع انقطاع الجدول */
+            }
+            .report-table th {
+                background-color: #f8fafc !important; /* إجبار الخلفية الملونة على الظهور */
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
         }
     </style>
@@ -232,9 +247,11 @@
     </div>
 
     <script>
-        window.onload = function() {
-            window.print();
-        }
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                window.print();
+            }, 600); // تأخير بسيط بمقدار 600 مللي ثانية لضمان استقرار الأبعاد والنصوص
+        });
     </script>
 </body>
 </html>

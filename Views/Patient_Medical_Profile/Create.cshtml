@@ -5,6 +5,8 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet" />
+
 <style>
     :root {
         --primary: #1A76D1;
@@ -16,6 +18,7 @@
         --danger: #e74c3c;
         --shadow: 0 4px 15px rgba(0,0,0,.07);
         --radius: 6px;
+        --radius-round: 30px; /* الحواف الدائرية المطابقة للصورة */
         --tr: all .3s ease
     }
 
@@ -154,9 +157,96 @@
             box-shadow: 0 0 0 3px rgba(26,118,209,.1)
         }
 
-    .mp-select {
-        cursor: pointer
+    /* ==========================================================================
+           تعديل ستايل Tom Select السحري ليصبح مطابقاً لشريط بحث الـ Index تماماً
+           ========================================================================== */
+
+    /* الحاوية الخارجية وعلامة البحث المخصصة */
+    .mp-search-wrapper {
+        position: relative;
+        width: 100%;
     }
+
+        /* إجبار التغليف الخاص بـ Tom Select على أخذ المظهر الدائري النظيف */
+        .mp-search-wrapper .ts-wrapper.single .ts-control {
+            border: 1px solid #dbe2ea !important;
+            border-radius: var(--radius-round) !important; /* حواف دائرية 30px */
+            height: 50px !important;
+            padding: 0 20px 0 45px !important; /* ترك مساحة للأيقونة على اليسار */
+            font-family: 'Poppins', sans-serif !important;
+            font-size: 14px !important;
+            box-shadow: none !important;
+            background-color: var(--white) !important;
+            display: flex !important;
+            align-items: center !important;
+            transition: var(--tr);
+        }
+
+        /* تأثير التركيز (Focus) على الحقل الدائري */
+        .mp-search-wrapper .ts-wrapper.single.focus .ts-control {
+            border-color: #b5c7dc !important;
+            box-shadow: 0 0 0 4px rgba(26, 118, 209, 0.05) !important;
+        }
+
+        /* تنسيق النص المكتوب داخل الحقل */
+        .mp-search-wrapper .ts-wrapper.single .ts-control input {
+            font-family: 'Poppins', sans-serif !important;
+            font-size: 14px !important;
+            color: var(--dark) !important;
+        }
+
+        .mp-search-wrapper .ts-wrapper.single .ts-control .item {
+            color: var(--dark) !important;
+        }
+
+        /* وضع أيقونة العدسة في نفس مكان الصورة الثابتة */
+        .mp-search-wrapper .custom-search-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #7c8ba1;
+            font-size: 15px;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        /* إلغاء سهم القائمة المنسدلة الافتراضي لكي يظهر كأنه حقل بحث عادي فقط */
+        .mp-search-wrapper .ts-wrapper.single .ts-control::after {
+            display: none !important;
+        }
+
+    /* تنسيق قائمة الاقتراحات المنسدلة الناتجة عن البحث */
+    .ts-dropdown {
+        border-radius: var(--radius) !important;
+        border: 1px solid #e0e0e0 !important;
+        box-shadow: var(--shadow) !important;
+        font-family: 'Poppins', sans-serif !important;
+        margin-top: 6px !important;
+        z-index: 1000 !important;
+    }
+
+        .ts-dropdown .option {
+            padding: 12px 16px !important;
+            font-size: 13.5px !important;
+            color: var(--dark) !important;
+        }
+
+            .ts-dropdown .option.active {
+                background-color: var(--primary) !important;
+                color: white !important;
+            }
+
+            .ts-dropdown .option:hover {
+                background-color: #f8fbff !important;
+            }
+
+            /* إخفاء خيار الـ Placeholder الفارغ تماماً من القائمة */
+            .ts-dropdown .option[data-value=""] {
+                display: none !important;
+            }
+
+    /* ========================================================================== */
 
     .mp-input-group {
         display: flex
@@ -332,21 +422,28 @@
         <i class="fas fa-chevron-right"></i>
         <span>Create</span>
     </div>
+
     <div class="mp-page-header">
         <h2><i class="fas fa-file-medical"></i> Create Medical Profile</h2>
         <p>Register baseline physiological metrics, vitals, and chronic diagnostic parameters</p>
     </div>
+
     <div class="mp-card">
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="mp-field-error" style="margin-bottom:18px;"></div>
+
             <div class="mp-form-grid">
+
                 <div class="mp-form-group full">
-                    <label class="mp-label"><i class="fas fa-user"></i> Select Patient</label>
-                    <select asp-for="PatientId" class="mp-select" asp-items="ViewBag.PatientId">
-                        <option value="">-- Select Patient --</option>
-                    </select>
+                    <div class="mp-search-wrapper">
+                        <i class="fas fa-search custom-search-icon"></i>
+                        <select asp-for="PatientId" id="patientSearchSelect" asp-items="ViewBag.PatientId" style="width: 100%;">
+                            <option value="" disabled selected hidden>Search by Patient Name...</option>
+                        </select>
+                    </div>
                     <span asp-validation-for="PatientId" class="mp-field-error"></span>
                 </div>
+
                 <div class="mp-form-group">
                     <label class="mp-label"><i class="fas fa-tint"></i> Blood Type</label>
                     <select asp-for="Blood_Type" class="mp-select">
@@ -362,6 +459,7 @@
                     </select>
                     <span asp-validation-for="Blood_Type" class="mp-field-error"></span>
                 </div>
+
                 <div class="mp-form-group">
                     <label class="mp-label"><i class="fas fa-weight"></i> Patient Weight</label>
                     <div class="mp-input-group">
@@ -370,6 +468,7 @@
                     </div>
                     <span asp-validation-for="Weight" class="mp-field-error"></span>
                 </div>
+
                 <div class="mp-form-group">
                     <label class="mp-label"><i class="fas fa-heartbeat"></i> Blood Pressure</label>
                     <div class="mp-switch-row">
@@ -381,6 +480,7 @@
                     </div>
                     <span asp-validation-for="Blood_Pressure" class="mp-field-error"></span>
                 </div>
+
                 <div class="mp-form-group">
                     <label class="mp-label"><i class="fas fa-pills"></i> Diabetes Status</label>
                     <div class="mp-switch-row">
@@ -391,18 +491,22 @@
                         <span class="mp-switch-label">Is Diabetic?</span>
                     </div>
                 </div>
+
                 <div class="mp-form-group full">
                     <label class="mp-label"><i class="fas fa-procedures"></i> Chronic Illnesses &amp; Medical Conditions</label>
                     <textarea asp-for="Chronic_Disease" class="mp-textarea" placeholder="List chronic conditions (e.g. Asthma, Hypertension) or write 'None'"></textarea>
                     <span asp-validation-for="Chronic_Disease" class="mp-field-error"></span>
                 </div>
+
                 <div class="mp-form-group full">
                     <label class="mp-label"><i class="fas fa-exclamation-triangle"></i> Environmental or Drug Allergies</label>
                     <textarea asp-for="Allergies" class="mp-textarea" placeholder="List known allergies (e.g. Penicillin, Peanuts) or write 'None'"></textarea>
                     <span asp-validation-for="Allergies" class="mp-field-error"></span>
                 </div>
             </div>
+
             <hr class="mp-divider" />
+
             <div class="mp-form-actions">
                 <button type="submit" class="mp-btn mp-btn-primary"><i class="fas fa-plus-circle"></i> Create Medical Profile</button>
                 <a asp-action="Index" class="mp-btn mp-btn-secondary"><i class="fas fa-arrow-left"></i> Back to List</a>
@@ -410,9 +514,35 @@
         </form>
     </div>
 </div>
+
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+        new TomSelect('#patientSearchSelect', {
+        create: false,
+        sortField: 'text',
+        searchField: ['text'],
+        placeholder: 'Search by Patient Name...',
+        allowEmptyOption: false,
+        closeAfterSelect: true,
+        maxOptions: 10,
+        hideSelected: false,
+        persist: false,
+        render: {
+        option: function(data, escape) {
+        if (data.value === '') {
+        return '';
+        }
+        return '<div>' + escape(data.text) + '</div>';
+        }
+        }
+        });
+        });
+    </script>
 }

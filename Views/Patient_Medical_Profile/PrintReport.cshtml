@@ -1,13 +1,16 @@
 ﻿@model Hospital_Management_Project.Models.Patient_Medical_Profile
 
 @{
-    ViewData["Title"] = "Patient Medical Profile";
+    ViewData["Title"] = "Confidential Patient Medical Record";
 }
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
 <style>
+    /* ===================================================
+           ✅ GLOBAL STYLES & Root Variables (Standard Web View)
+           =================================================== */
     :root {
         --primary: #1A76D1;
         --primary-dk: #1560ad;
@@ -24,6 +27,11 @@
         --tr: all 0.3s ease;
     }
 
+    /* Safety Box Model Reset */
+    * {
+        box-sizing: border-box;
+    }
+
     .profile-page {
         padding: 40px 30px;
         max-width: 950px;
@@ -31,7 +39,7 @@
         font-family: 'Poppins', sans-serif;
     }
 
-    /* Breadcrumb */
+    /* Breadcrumb Component */
     .profile-breadcrumb {
         display: flex;
         align-items: center;
@@ -56,7 +64,7 @@
             color: var(--muted);
         }
 
-    /* Page Header */
+    /* Page Header Component */
     .profile-header {
         background: var(--white);
         border-radius: var(--radius);
@@ -96,7 +104,7 @@
         gap: 12px;
     }
 
-    /* Card & Grid */
+    /* Main Record Card Layout */
     .profile-card {
         background: var(--white);
         border-radius: var(--radius);
@@ -105,6 +113,7 @@
         border: 1px solid var(--border);
     }
 
+    /* Flexible Grid System (Normal Web View) */
     .profile-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -112,6 +121,7 @@
         margin-bottom: 25px;
     }
 
+    /* Individual Data Groups */
     .info-group {
         background: var(--light-bg);
         padding: 18px 20px;
@@ -152,7 +162,7 @@
         grid-column: 1 / -1;
     }
 
-    /* Badges */
+    /* Status Badges */
     .mp-badge {
         display: inline-flex;
         align-items: center;
@@ -178,7 +188,7 @@
         color: var(--warning);
     }
 
-    /* Buttons */
+    /* UI Action Buttons */
     .btn-action {
         display: inline-flex;
         align-items: center;
@@ -214,7 +224,14 @@
             box-shadow: 0 4px 12px rgba(26, 118, 209, 0.2);
         }
 
-    /* Responsive */
+    /* Desktop View adjustments for the Full Name */
+    @@media print {
+        .full-width {
+            grid-column: 1 / -1;
+        }
+    }
+
+    /* Responsive adjustments */
     @@media (max-width: 768px) {
         .profile-page {
             padding: 20px 15px;
@@ -229,63 +246,114 @@
         }
     }
 
+    /* ===================================================
+           ✅ DEFINITIVE PROFESSIONAL PRINT STYLESHEET
+           =================================================== */
     @@media print {
         @@page {
             size: A4 portrait;
-            margin: 15mm;
+            margin: 15mm 15mm 15mm 15mm; /* Clean standard margins */
         }
-        html, body, main, .container, .wrapper, #main-content {
+        /* Box model reset specifically for printed canvas */
+        * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            box-sizing: border-box !important;
+        }
+        /* 🔒 1. ULTIMATE FIX: Reset master body containers to remove all clipping and layouts */
+        html, body, main, .container, .wrapper, [class*="container"], #main-content, .container-fluid {
             background: #fff !important;
             color: #000 !important;
-            height: auto !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
             overflow: visible !important;
+            display: block !important;
+            float: none !important;
             position: static !important;
             visibility: visible !important;
         }
-        .profile-breadcrumb,
-        .header-actions,
-        nav, sidebar, footer, .navbar {
+        /* 🔒 2. ULTIMATE HIDE: Explicitly target and destroy master layout elements */
+        footer, #footer, .footer, header, #header, .header, nav, .navbar, [class*="navbar"],
+        sidebar, #sidebar, .header-actions, .profile-breadcrumb, [class*="breadcrumb"],
+        .scrollToTop, #scrollUp, #fixed-buttons, .admin-sidebar, .sidebar {
             display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            height: 0 !important;
+            overflow: hidden !important;
         }
-
+        /* Center and format the report scope safely */
         .profile-page {
             padding: 0 !important;
-            margin: 0 !important;
+            margin: 0 auto !important;
             width: 100% !important;
             max-width: 100% !important;
+            display: block !important;
+            box-sizing: border-box !important;
         }
-
+        /* Clean up Printed Medical Header Layout */
         .profile-header {
             border: 1px solid #cbd5e1 !important;
             border-left: 6px solid #1A76D1 !important;
             box-shadow: none !important;
-            margin-bottom: 20px !important;
+            margin-bottom: 25px !important;
             padding: 20px !important;
+            background: #fff !important;
+            display: block !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
         }
 
         .profile-card {
             box-shadow: none !important;
             border: none !important;
             padding: 0 !important;
-        }
-        .profile-grid {
+            background: transparent !important;
             display: block !important;
+            width: 100% !important;
         }
-
+        /* 🛠️ Modern Safe Layout Transition: Avoid both Grid issues and excessive full-width scaling */
+        .profile-grid {
+            display: block !important; /* Force sequential block display */
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        /* 🔒 3. ULTIMATE INFO GROUP FIX: Lock each row at precisely 100% print width */
         .info-group {
             display: block !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 100% !important;
+            box-sizing: border-box !important;
             background: #f8fafc !important;
-            border: 1px solid #e2e8f0 !important;
+            border: 1px solid #cbd5e1 !important;
             border-left: 4px solid #1A76D1 !important;
-            margin-bottom: 12px !important;
-            padding: 12px 15px !important;
-            page-break-inside: avoid;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
+            margin: 0 0 10px 0 !important;
+            padding: 15px 20px !important;
+            page-break-inside: avoid !important;
+            float: none !important;
+            clear: both !important;
+        }
+        /* Text Adjustments for Printed Clarity */
+        .info-label {
+            color: #475569 !important;
+            margin-bottom: 6px !important;
+            display: flex !important;
+            align-items: center !important;
         }
 
-        .info-value, .info-label {
+        .info-value {
             color: #000 !important;
+            font-size: 16px !important;
+            word-wrap: break-word !important; /* Protects long strings from outward bleed */
+        }
+        /* Maintain badge visibility when printed */
+        .mp-badge {
+            border: 1px solid #cbd5e1 !important;
+            display: inline-flex !important;
         }
     }
 </style>
@@ -295,20 +363,20 @@
     <div class="profile-breadcrumb">
         <a asp-controller="Home" asp-action="Index"><i class="fas fa-home"></i> Home</a>
         <i class="fas fa-chevron-right"></i>
-        <span>Medical Profile Details</span>
+        <span>Confidential Health Profile</span>
     </div>
 
     <div class="profile-header">
         <div>
             <h2><i class="fas fa-file-medical-alt"></i> Patient Medical Record</h2>
-            <p>Confidential clinical health summary data and metrics</p>
+            <p>Confidential clinical summary and health metrics dashboard</p>
         </div>
         <div class="header-actions">
             <a asp-action="Index" class="btn-action btn-back">
-                <i class="fas fa-arrow-left"></i> Back to List
+                <i class="fas fa-arrow-left"></i> Back to Directory
             </a>
-            <button onclick="window.print()" class="btn-action btn-print">
-                <i class="fas fa-print"></i> Print Report
+            <button type="button" onclick="triggerProfilePrint()" class="btn-action btn-print">
+                <i class="fas fa-print"></i> Print Clinical Report
             </button>
         </div>
     </div>
@@ -319,7 +387,7 @@
             <div class="info-group full-width" style="border-left-color: var(--dark);">
                 <div class="info-label"><i class="fas fa-user"></i> Patient Name</div>
                 <div class="info-value" style="font-size: 18px; color: var(--dark);">
-                    @(Model.Patient != null ? $"{Model.Patient.FName} {Model.Patient.LName}" : "Unknown Patient")
+                    @(Model.Patient != null ? $"{Model.Patient.FName} {Model.Patient.LName}" : "System Identified Patient")
                 </div>
             </div>
 
@@ -331,15 +399,15 @@
             </div>
 
             <div class="info-group">
-                <div class="info-label"><i class="fas fa-heartbeat"></i> Blood Pressure</div>
+                <div class="info-label"><i class="fas fa-heartbeat"></i> Blood Pressure Metrics</div>
                 <div class="info-value">
                     @if (Model.Blood_Pressure)
                     {
-                        <span class="mp-badge mp-badge-abnormal"><i class="fas fa-arrow-up"></i> Abnormal</span>
+                        <span class="mp-badge mp-badge-abnormal"><i class="fas fa-arrow-up"></i> Confirmed Abnormal Range</span>
                     }
                     else
                     {
-                        <span class="mp-badge mp-badge-normal"><i class="fas fa-check"></i> Normal</span>
+                        <span class="mp-badge mp-badge-normal"><i class="fas fa-check"></i> Within Normal Range</span>
                     }
                 </div>
             </div>
@@ -352,30 +420,30 @@
             </div>
 
             <div class="info-group">
-                <div class="info-label"><i class="fas fa-pills"></i> Diabetes Status</div>
+                <div class="info-label"><i class="fas fa-pills"></i> Diabetes Diagnosis Status</div>
                 <div class="info-value">
                     @if (Model.Diabets)
                     {
-                        <span class="mp-badge mp-badge-diabetic"><i class="fas fa-exclamation-triangle"></i> Diabetic</span>
+                        <span class="mp-badge mp-badge-diabetic"><i class="fas fa-exclamation-triangle"></i> Diagnosed Diabetic Case</span>
                     }
                     else
                     {
-                        <span class="mp-badge mp-badge-normal"><i class="fas fa-shield-alt"></i> Normal</span>
+                        <span class="mp-badge mp-badge-normal"><i class="fas fa-shield-alt"></i> Non-Diabetic / Normal Status</span>
                     }
                 </div>
             </div>
 
             <div class="info-group full-width">
-                <div class="info-label"><i class="fas fa-procedures"></i> Chronic Diseases</div>
+                <div class="info-label"><i class="fas fa-procedures"></i> Active Chronic Diseases</div>
                 <div class="info-value" style="font-weight: 500;">
-                    @(string.IsNullOrEmpty(Model.Chronic_Disease) ? "None Reported" : Model.Chronic_Disease)
+                    @(string.IsNullOrEmpty(Model.Chronic_Disease) ? "None declared by physician" : Model.Chronic_Disease)
                 </div>
             </div>
 
             <div class="info-group full-width">
-                <div class="info-label"><i class="fas fa-exclamation-triangle"></i> Allergies</div>
+                <div class="info-label"><i class="fas fa-exclamation-triangle"></i> Identified Hypersensitivities / Allergies</div>
                 <div class="info-value" style="font-weight: 500;">
-                    @(string.IsNullOrEmpty(Model.Allergies) ? "None Reported" : Model.Allergies)
+                    @(string.IsNullOrEmpty(Model.Allergies) ? "No allergen reactions reported on system" : Model.Allergies)
                 </div>
             </div>
 
@@ -383,3 +451,12 @@
     </div>
 
 </div>
+
+<script>
+    function triggerProfilePrint() {
+        // Enforce native browser print execution threshold to ensure complete layout compilation
+        setTimeout(function() {
+            window.print();
+        }, 150);
+    }
+</script>

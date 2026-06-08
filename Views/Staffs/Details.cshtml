@@ -1,15 +1,15 @@
 ﻿@using System.Security.Claims
 @model Hospital_Management_Project.Models.Staff
 @{
-    ViewData["Title"] = "Staff Details";
+    ViewData["Title"] = "Staff Schedule & Bookings";
     bool isPatient = User.IsInRole("Patient");
 
-    // جلب المواعيد المتاحة (التي لم تحجز بعد)
+    // Fetch open appointments (unbooked slots) ordered chronologically
     var availableAppointments = Model.Appointments?
         .Where(a => a.PatientId == null || a.PatientId == 0)
         .OrderBy(a => a.Visit_Date) ?? Enumerable.Empty<Hospital_Management_Project.Models.Appointment>();
 
-    // جلب المواعيد المحجوزة (سواء للمريض الحالي أو لمرضى آخرين)
+    // Fetch booked appointments (reserved slots) ordered chronologically
     var bookedAppointments = Model.Appointments?
         .Where(a => a.PatientId > 0)
         .OrderBy(a => a.Visit_Date) ?? Enumerable.Empty<Hospital_Management_Project.Models.Appointment>();
@@ -54,7 +54,7 @@
         gap: 10px;
     }
 
-    /* تنسيق المواعيد المتاحة على شكل كروت مرنة */
+    /* Grid system setup for flexible slot cards */
     .available-slots-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -76,7 +76,7 @@
         gap: 4px;
     }
 
-        .slot-card:hover {
+        .slot-card:not(.disabled-card):hover {
             background: var(--primary-gradient);
             color: white !important;
             border-color: transparent;
@@ -84,17 +84,26 @@
             box-shadow: 0 8px 15px rgba(26, 118, 209, 0.2);
         }
 
-        .slot-card strong {
-            font-size: 14px;
-            font-weight: 700;
-        }
+    /* Special presentation layout states for past/expired booking targets */
+    .disabled-card {
+        background: #f1f5f9 !important;
+        border-color: #e2e8f0 !important;
+        color: #94a3b8 !important;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
 
-        .slot-card span {
-            font-size: 12px;
-            opacity: 0.8;
-        }
+    .slot-card strong {
+        font-size: 14px;
+        font-weight: 700;
+    }
 
-    /* تنسيق جدول المواعيد المحجوزة المميز */
+    .slot-card span {
+        font-size: 12px;
+        opacity: 0.8;
+    }
+
+    /* Data table layout definitions for busy sessions */
     .busy-table-wrap {
         overflow-x: auto;
         border-radius: 16px;
@@ -125,7 +134,7 @@
             vertical-align: middle;
         }
 
-    /* شارات المواعيد المحجوزة */
+    /* Informational visual status pills */
     .status-pill {
         padding: 6px 12px;
         border-radius: 50px;
@@ -143,12 +152,24 @@
     }
 
     .pill-busy {
+        background: #fffbeb;
+        color: var(--warning);
+        border: 1px solid #fef3c7;
+    }
+
+    .pill-expired {
         background: #f1f5f9;
-        color: var(--text-muted);
+        color: #64748b;
         border: 1px solid #cbd5e1;
     }
 
-    /* أزرار الإجراءات داخل الجدول */
+    .pill-completed {
+        background: var(--success-light);
+        color: var(--success);
+        border: 1px solid #a7f3d0;
+    }
+
+    /* Action control elements */
     .btn-appt-action {
         padding: 6px 12px;
         border-radius: 8px;
@@ -210,11 +231,24 @@
             <div class="available-slots-grid">
                 @foreach (var appointment in availableAppointments)
                 {
-                    <a asp-action="BookAppointment" asp-route-id="@appointment.AppointmentId" class="slot-card" title="Click to book this slot">
-                        <strong>@appointment.Visit_Date.ToString("dd MMM yyyy")</strong>
-                        <span><i class="bi bi-clock me-1"></i> @appointment.Visit_Date.ToString("hh:mm tt")</span>
-                        <span style="font-size: 11px; margin-top: 4px; color: var(--success); font-weight: 600;">Available <i class="bi bi-plus-circle"></i></span>
-                    </a>
+                    bool isSlotExpired = appointment.Visit_Date < DateTime.Now;
+
+                    @if (isSlotExpired)
+                    {
+                        <div class="slot-card disabled-card" title="This slot has expired">
+                            <strong>@appointment.Visit_Date.ToString("dd MMM yyyy")</strong>
+                            <span><i class="bi bi-clock me-1"></i> @appointment.Visit_Date.ToString("hh:mm tt")</span>
+                            <span style="font-size: 11px; margin-top: 4px; font-weight: 600;"><i class="bi bi-patch-exclamation"></i> Expired</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <a asp-action="BookAppointment" asp-route-id="@appointment.AppointmentId" class="slot-card" title="Click to book this slot">
+                            <strong>@appointment.Visit_Date.ToString("dd MMM yyyy")</strong>
+                            <span><i class="bi bi-clock me-1"></i> @appointment.Visit_Date.ToString("hh:mm tt")</span>
+                            <span style="font-size: 11px; margin-top: 4px; color: var(--success); font-weight: 600;">Available <i class="bi bi-plus-circle"></i></span>
+                        </a>
+                    }
                 }
             </div>
         }
@@ -246,18 +280,24 @@
                         @foreach (var appointment in bookedAppointments)
                         {
                             double hoursLeft = (appointment.Visit_Date - DateTime.Now).TotalHours;
-
+                            bool isTimePassed = appointment.Visit_Date < DateTime.Now;
                             bool isMine = isPatient && (ViewBag.CurrentPatientId != null && appointment.PatientId.ToString() == ViewBag.CurrentPatientId.ToString());
 
                             <tr style="@(isMine ? "background-color: rgba(26,118,209,0.03);" : "")">
-                                <td style="font-weight: 600; color: var(--text-main);">
+                                <td style="font-weight: 600; color: @(isTimePassed ? "var(--text-muted)" : "var(--text-main)");">
                                     @appointment.Visit_Date.ToString("dd MMMM yyyy")
                                 </td>
-                                <td style="color: var(--text-muted);">
+                                <td style="color: var(--text-muted); text-decoration: @(isTimePassed ? "line-through" : "none");">
                                     @appointment.Visit_Date.ToString("hh:mm tt")
                                 </td>
                                 <td>
-                                    @if (isMine)
+                                    @if (isTimePassed)
+                                    {
+                                        <span class="status-pill pill-completed">
+                                            <i class="bi bi-check-circle-fill"></i> Completed / Passed
+                                        </span>
+                                    }
+                                    else if (isMine)
                                     {
                                         <span class="status-pill pill-mine">
                                             <i class="bi bi-person-check-fill"></i> Reserved by You
@@ -271,7 +311,13 @@
                                     }
                                 </td>
                                 <td>
-                                    @if (isMine)
+                                    @if (isTimePassed)
+                                    {
+                                        <span class="text-muted" style="font-size: 12px; font-weight:500;">
+                                            <i class="bi bi-archive-fill"></i> Session Ended
+                                        </span>
+                                    }
+                                    else if (isMine)
                                     {
                                         if (hoursLeft > 12)
                                         {
@@ -292,7 +338,6 @@
                                     }
                                     else
                                     {
-
                                         <span style="font-size: 12px; color: var(--text-muted); font-weight: 500;">
                                             <i class="bi bi-slash-circle me-1"></i> Not Available
                                         </span>

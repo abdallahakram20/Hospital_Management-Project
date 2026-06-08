@@ -65,16 +65,14 @@ namespace Hospital_Management_Project.Controllers
             return View(patient_Medical_Profile);
         }
 
-        // ====================================================================
         // GET: Patient_Medical_Profile/PrintReport/5
         // Security: Same as Details, Patients can only print their own records
-        // ====================================================================
         public async Task<IActionResult> PrintReport(int? id)
         {
             if (id == null) return NotFound();
 
             var patient_Medical_Profile = await _context.PatientMedicalProfile
-                .Include(p => p.Patient) // Ensure Patient data is loaded if needed in the print view
+                .Include(p => p.Patient)
                 .FirstOrDefaultAsync(m => m.ProfileId == id);
 
             if (patient_Medical_Profile == null) return NotFound();
@@ -101,13 +99,13 @@ namespace Hospital_Management_Project.Controllers
 
             var patientsWithProfiles = _context.PatientMedicalProfile.Select(p => p.PatientId).ToList();
 
-            // ✅ التعديل الأول: فلترة المرضى عشان ميظهرش في القائمة غير اللي ميعاد كشفهم جه أو فات
+            // الفلترة: إظهار المرضى الذين حان أو فات موعد كشفهم
             var currentTime = DateTime.Now;
 
             var availablePatientsQuery = _context.Patient
                 .Where(p => !patientsWithProfiles.Contains(p.PatientId));
 
-            // 🌟 التعديل الجديد للدكتور: إظهار المرضى الخاصين بالدكتور الحالي فقط
+            // تصفية إضافية للدكتور: إظهار المرضى المسجلين لديه فقط في المواعيد
             if (string.Equals(userRole, "Doctor", StringComparison.OrdinalIgnoreCase))
             {
                 availablePatientsQuery = availablePatientsQuery.Where(p => _context.Appointment.Any(a => a.PatientId == p.PatientId && a.Visit_Date <= currentTime && a.Staff.Email == currentUserIdentifier));
@@ -117,7 +115,6 @@ namespace Hospital_Management_Project.Controllers
                 availablePatientsQuery = availablePatientsQuery.Where(p => _context.Appointment.Any(a => a.PatientId == p.PatientId && a.Visit_Date <= currentTime));
             }
 
-            // Refactored dropdown to concatenate full name cleanly
             var availablePatients = availablePatientsQuery
                 .Select(p => new { p.PatientId, FullName = p.FName + " " + p.LName })
                 .ToList();
@@ -143,11 +140,10 @@ namespace Hospital_Management_Project.Controllers
                 ModelState.AddModelError("PatientId", "This patient already has a medical profile.");
             }
 
-            // ✅ التعديل الثاني: التحقق في الباك-إند عشان نمنع أي محاولة إضافة يدوية قبل الميعاد
+            // التحقق في الخلفية لمنع التلاعب بالـ IDs وإضافة سجل قبل الميعاد المسموح
             var currentTime = DateTime.Now;
             bool hasValidAppointment = false;
 
-            // 🌟 التعديل الجديد للدكتور في الباك إند للحماية والأمان للتحقق من الموعد الطبيب نفسه
             if (string.Equals(userRole, "Doctor", StringComparison.OrdinalIgnoreCase))
             {
                 hasValidAppointment = await _context.Appointment
@@ -171,9 +167,9 @@ namespace Hospital_Management_Project.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            // إعادة بناء القائمة المنسدلة في حال فشل نموذج البيانات (Validation Error) لضمان بقاء البحث والـ Select2 يعملان دون أخطاء
             var patientsWithProfiles = _context.PatientMedicalProfile.Select(p => p.PatientId).ToList();
 
-            // ✅ تحديث قائمة المرضى في حالة وجود خطأ (Validation Error)
             var availablePatientsQuery = _context.Patient
                 .Where(p => !patientsWithProfiles.Contains(p.PatientId) || p.PatientId == patient_Medical_Profile.PatientId);
 
@@ -194,8 +190,7 @@ namespace Hospital_Management_Project.Controllers
             return View(patient_Medical_Profile);
         }
 
-        // GET: Patient_Medical_Profile/Edit
-        // Security Roles: Patients cannot edit their own medical profile data
+        // GET: Patient_Medical_Profile/Edit/5
         [Authorize(Roles = "Admin,Doctor,Staff")]
         public async Task<IActionResult> Edit(int? id)
         {
@@ -212,7 +207,7 @@ namespace Hospital_Management_Project.Controllers
             return View(patient_Medical_Profile);
         }
 
-        // POST: Patient_Medical_Profile/Edit
+        // POST: Patient_Medical_Profile/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin,Doctor,Staff")]
@@ -243,15 +238,13 @@ namespace Hospital_Management_Project.Controllers
             return View(patient_Medical_Profile);
         }
 
-        // GET: Patient_Medical_Profile/Delete
-        // Security: Block Patients from executing deletions, redirecting instantly to AccessDenied
+        // GET: Patient_Medical_Profile/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
 
             var userRole = User.FindFirstValue(ClaimTypes.Role);
 
-            // Strict check: If user role resolves to Patient, boot them out completely
             if (string.Equals(userRole, "Patient", StringComparison.OrdinalIgnoreCase))
             {
                 return RedirectToAction("AccessDenied", "Account");
@@ -265,7 +258,7 @@ namespace Hospital_Management_Project.Controllers
             return View(patient_Medical_Profile);
         }
 
-        // POST: Patient_Medical_Profile/Delete
+        // POST: Patient_Medical_Profile/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin,Doctor")]

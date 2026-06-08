@@ -151,7 +151,18 @@ namespace Hospital_Management_Project.Controllers
             else if (userRole == "Patient")
                 appointmentsQuery = appointmentsQuery.Where(a => a.Patient!.user_name == currentUserIdentifier);
 
-            return View(await appointmentsQuery.OrderByDescending(a => a.Visit_Date).ToListAsync());
+            var appointmentsList = await appointmentsQuery.OrderByDescending(a => a.Visit_Date).ToListAsync();
+
+            // ✅ تحديث حالة المواعيد ديناميكياً لتصبح Completed في الجدول إذا مر وقتها
+            foreach (var appointment in appointmentsList)
+            {
+                if (appointment.Status == AppointmentStatus.Booked && appointment.Visit_Date < DateTime.Now)
+                {
+                    appointment.Status = AppointmentStatus.Completed;
+                }
+            }
+
+            return View(appointmentsList);
         }
 
         // =======================================================
@@ -168,6 +179,12 @@ namespace Hospital_Management_Project.Controllers
 
             if (appointment == null) return NotFound();
 
+            // ✅ تحديث حالة الموعد لتصبح Completed في صفحة التفاصيل إذا مر وقته
+            if (appointment.Status == AppointmentStatus.Booked && appointment.Visit_Date < DateTime.Now)
+            {
+                appointment.Status = AppointmentStatus.Completed;
+            }
+
             return View(appointment);
         }
 
@@ -182,7 +199,7 @@ namespace Hospital_Management_Project.Controllers
             var staff = staffList.Select(s => {
                 var shift = GetDoctorShiftFromFile(s.StaffId);
 
-                // ✅ تحديد نوع الشيفت بناءً على وقت البداية
+                // ✅ Determine shift type based on start time
                 string shiftType = "Emergency";
                 if (shift.Start >= new TimeSpan(8, 0, 0) && shift.Start < new TimeSpan(16, 0, 0)) shiftType = "Morning";
                 else if (shift.Start >= new TimeSpan(16, 0, 0)) shiftType = "Evening";
@@ -203,7 +220,7 @@ namespace Hospital_Management_Project.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("AppointmentId,PatientId,StaffId,Visit_Date,Reason,Diagnosis,Medication,Common_tests,Treatment_Plan,Notes")] Appointment appointment)
         {
-            // ✅ 1. منع الحجز في تاريخ أو وقت مضى (Past Date/Time Validation)
+            // ✅ Prevent booking an appointment in the past
             if (appointment.Visit_Date < DateTime.Now)
             {
                 ModelState.AddModelError("Visit_Date", "You cannot book an appointment in the past. Please select a valid future date and time.");
@@ -221,15 +238,15 @@ namespace Hospital_Management_Project.Controllers
             {
                 var time = appointment.Visit_Date.TimeOfDay;
 
-                // ✅ التحقق إذا كان الوقت يقع في فترة الطوارئ (من 12:00 منتصف الليل إلى 07:59 صباحاً)
+                // ✅ Check if the time falls into the emergency period (From 12:00 AM to 07:59 AM)
                 bool isEmergency = time >= TimeSpan.Zero && time < new TimeSpan(8, 0, 0);
 
                 if (isEmergency)
                 {
-                    // تسجيل كحالة طوارئ وتخطي التحقق من مواعيد العيادات
+                    // Register as an emergency case and bypass regular shift checks
                     appointment.Reason = string.IsNullOrEmpty(appointment.Reason)
-                        ? "[حالة طوارئ - Emergency]"
-                        : $"[حالة طوارئ - Emergency] {appointment.Reason}";
+                        ? "[Emergency Case]"
+                        : $"[Emergency Case] {appointment.Reason}";
                 }
                 else
                 {
@@ -245,7 +262,7 @@ namespace Hospital_Management_Project.Controllers
                     }
                 }
 
-                // 2. Ensure no prior booking exists for the same slot (يطبق على الطوارئ والعيادات لمنع التعارض)
+                // 2. Ensure no prior booking exists for the same slot (Applies to both Emergency and regular slots to avoid conflict)
                 bool isAlreadyBooked = await _context.Appointment
                     .AnyAsync(a => a.StaffId == appointment.StaffId && a.Visit_Date == appointment.Visit_Date);
 
@@ -293,17 +310,17 @@ namespace Hospital_Management_Project.Controllers
             {
                 var time = appointment.Visit_Date.TimeOfDay;
 
-                // ✅ التحقق إذا كان الوقت يقع في فترة الطوارئ
+                // ✅ Check if the time falls into the emergency period
                 bool isEmergency = time >= TimeSpan.Zero && time < new TimeSpan(8, 0, 0);
 
                 if (isEmergency)
                 {
-                    // التأكد إن كلمة طوارئ مكتوبة لو تم التعديل
-                    if (string.IsNullOrEmpty(appointment.Reason) || (!appointment.Reason.Contains("[حالة طوارئ") && !appointment.Reason.Contains("[Emergency")))
+                    // Ensure the emergency tag is preserved during update
+                    if (string.IsNullOrEmpty(appointment.Reason) || (!appointment.Reason.Contains("[Emergency")))
                     {
                         appointment.Reason = string.IsNullOrEmpty(appointment.Reason)
-                            ? "[حالة طوارئ - Emergency]"
-                            : $"[حالة طوارئ - Emergency] {appointment.Reason}";
+                            ? "[Emergency Case]"
+                            : $"[Emergency Case] {appointment.Reason}";
                     }
                 }
                 else
@@ -354,6 +371,17 @@ namespace Hospital_Management_Project.Controllers
 
             if (appointment == null) return NotFound();
 
+            // ✅ Restrict patient from viewing delete page if less than 12 hours remain
+            if (User.IsInRole("Patient"))
+            {
+                var timeRemaining = appointment.Visit_Date - DateTime.Now;
+                if (timeRemaining.TotalHours < 12)
+                {
+                    TempData["Error"] = "There is less than 12 hours remaining before this appointment. You cannot cancel or delete it from your account. Please contact the hospital administration directly to request cancellation.";
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+
             return View(appointment);
         }
 
@@ -367,9 +395,51 @@ namespace Hospital_Management_Project.Controllers
             var appointment = await _context.Appointment.FindAsync(id);
             if (appointment != null)
             {
+                // ✅ Prevent direct POST requests if a patient tries to delete an appointment with less than 12 hours remaining
+                if (User.IsInRole("Patient"))
+                {
+                    var timeRemaining = appointment.Visit_Date - DateTime.Now;
+                    if (timeRemaining.TotalHours < 12)
+                    {
+                        TempData["Error"] = "There is less than 12 hours remaining before this appointment. You cannot cancel or delete it from your account. Please contact the hospital administration directly to request cancellation.";
+                        return RedirectToAction(nameof(Index));
+                    }
+                }
+
                 _context.Appointment.Remove(appointment);
                 await _context.SaveChangesAsync();
             }
+            return RedirectToAction(nameof(Index));
+        }
+
+        // =======================================================
+        // ✅ Appointment cancel action for patients
+        // =======================================================
+        public async Task<IActionResult> Cancel(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var appointment = await _context.Appointment.FindAsync(id);
+            if (appointment == null) return NotFound();
+
+            // ✅ Check if the logged-in user is a Patient and time left is less than 12 hours
+            if (User.IsInRole("Patient"))
+            {
+                var timeRemaining = appointment.Visit_Date - DateTime.Now;
+                if (timeRemaining.TotalHours < 12)
+                {
+                    TempData["Error"] = "There is less than 12 hours remaining before this appointment. You cannot cancel or delete it from your account. Please contact the hospital administration directly to request cancellation.";
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+
+            // Change appointment status to cancelled
+            appointment.Status = AppointmentStatus.Cancelled;
+
+            _context.Update(appointment);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Appointment cancelled successfully!";
             return RedirectToAction(nameof(Index));
         }
 
@@ -382,7 +452,7 @@ namespace Hospital_Management_Project.Controllers
             var sList = _context.Staff.Include(s => s.Department).Where(s => s.Position == "Doctor").ToList().Select(s => {
                 var shift = GetDoctorShiftFromFile(s.StaffId);
 
-                // ✅ تحديد نوع الشيفت بناءً على وقت البداية هنا أيضاً
+                // ✅ Determine shift type based on start time here as well
                 string shiftType = "Emergency";
                 if (shift.Start >= new TimeSpan(8, 0, 0) && shift.Start < new TimeSpan(16, 0, 0)) shiftType = "Morning";
                 else if (shift.Start >= new TimeSpan(16, 0, 0)) shiftType = "Evening";

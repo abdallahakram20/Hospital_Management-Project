@@ -5,10 +5,14 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
 <style>
     :root {
         --primary: #1A76D1;
         --primary-dk: #1560ad;
+        --primary-light: #e8f2fc;
+        --input-border: #dbe2ea; /* لون حدود متناسق ونظيف */
         --dark: #2C2D3F;
         --muted: #888;
         --light-bg: #f9f9f9;
@@ -18,6 +22,7 @@
         --success: #27ae60;
         --shadow: 0 4px 15px rgba(0,0,0,.07);
         --radius: 6px;
+        --radius-round: 30px; /* الحواف الدائرية المطابقة تماماً */
         --tr: all .3s ease;
     }
 
@@ -92,6 +97,50 @@
         .mp-page-header p {
             font-size: 13px;
         }
+
+    /* ==========================================================================
+           تعديل صندوق البحث ليمتد بعرض الجدول بالكامل ويأخذ المظهر الدائري
+           ========================================================================== */
+    .mp-search-box {
+        position: relative;
+        margin-bottom: 24px;
+        width: 100%; /* تمديد الصندوق بعرض الحاوية والجدول بالكامل */
+        max-width: 100%; /* إلغاء الحد الأقصى القديم */
+    }
+
+    .mp-search-input {
+        width: 100%;
+        height: 50px; /* نفس طول حقل الـ Create */
+        padding: 0 20px 0 45px; /* مسافة من اليسار للأيقونة */
+        font-family: 'Poppins', sans-serif;
+        font-size: 14px;
+        color: var(--dark);
+        background: var(--white);
+        border: 1px solid var(--input-border);
+        border-radius: var(--radius-round); /* حواف دائرية انسيابية 30px */
+        transition: var(--tr);
+    }
+
+        .mp-search-input:focus {
+            outline: none;
+            border-color: #b5c7dc;
+            box-shadow: 0 0 0 4px rgba(26,118,209,.05);
+        }
+
+        .mp-search-input::placeholder {
+            color: #a0aab5;
+        }
+
+    .mp-search-icon {
+        position: absolute;
+        left: 18px; /* ضبط موضع العدسة المماثل تماماً */
+        top: 50%;
+        transform: translateY(-50%);
+        color: #7c8ba1;
+        font-size: 15px;
+        pointer-events: none;
+    }
+    /* ========================================================================== */
 
     .mp-card {
         background: var(--white);
@@ -201,7 +250,6 @@
             font-size: 15px;
         }
 
-    /* التنسيق الأساسي لكل الأزرار وتفعيل الأنيميشن */
     .mp-btn {
         display: inline-flex;
         align-items: center;
@@ -285,6 +333,52 @@
             box-shadow: 0 4px 10px rgba(220, 38, 38, 0.2);
         }
 
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        margin-top: 30px;
+    }
+
+    .page-btn {
+        border: 1px solid #cbd5e1;
+        background: var(--white);
+        color: var(--dark);
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+
+        .page-btn:hover:not(:disabled) {
+            background: var(--primary-light);
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .page-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 4px 10px rgba(26, 118, 209, 0.3);
+        }
+
+        .page-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            background: #f8fafc;
+        }
+
+    .paginated-item {
+        display: none;
+    }
+
     @@media(max-width:768px) {
         .mp-page {
             padding: 20px 16px;
@@ -328,6 +422,14 @@
         }
         else
         {
+            @if (!User.IsInRole("Patient"))
+            {
+                <div class="mp-search-box">
+                    <i class="fas fa-search mp-search-icon"></i>
+                    <input type="text" id="tableSearchInput" class="mp-search-input" placeholder="Search by name, blood type, chronic disease..." />
+                </div>
+            }
+
             <div class="mp-table-wrap">
                 <table class="mp-table">
                     <thead>
@@ -342,14 +444,14 @@
                             <th style="text-align:center;"><i class="fas fa-cogs" style="margin-right:6px;"></i>Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="medicalTableBody">
                         @foreach (var item in Model)
                         {
-                            <tr>
-                                <td style="font-weight:700;">
+                            <tr class="paginated-item">
+                                <td style="font-weight:700;" class="searchable-name">
                                     @(item.Patient != null ? $"{item.Patient.FName} {item.Patient.LName}" : "Unknown Patient")
                                 </td>
-                                <td><span class="mp-badge mp-badge-blood"><i class="fas fa-tint"></i>@item.Blood_Type</span></td>
+                                <td class="searchable-blood"><span class="mp-badge mp-badge-blood"><i class="fas fa-tint"></i>@item.Blood_Type</span></td>
                                 <td>
                                     @if (item.Blood_Pressure)
                                     {
@@ -357,11 +459,10 @@
                                     }
                                     else
                                     {
-
                                         <span class="mp-badge mp-badge-normal"><i class="fas fa-check"></i> Normal</span>
                                     }
                                 </td>
-                                <td><span class="mp-truncate" title="@item.Chronic_Disease">@(string.IsNullOrEmpty(item.Chronic_Disease) ? "None" : item.Chronic_Disease)</span></td>
+                                <td class="searchable-disease"><span class="mp-truncate" title="@item.Chronic_Disease">@(string.IsNullOrEmpty(item.Chronic_Disease) ? "None" : item.Chronic_Disease)</span></td>
                                 <td><span class="mp-truncate" title="@item.Allergies">@(string.IsNullOrEmpty(item.Allergies) ? "None" : item.Allergies)</span></td>
                                 <td style="font-weight:600;">@item.Weight <span style="font-size:12px;color:var(--muted);">kg</span></td>
                                 <td>
@@ -371,7 +472,6 @@
                                     }
                                     else
                                     {
-
                                         <span class="mp-badge mp-badge-normal"><i class="fas fa-shield-alt"></i> Normal</span>
                                     }
                                 </td>
@@ -399,6 +499,8 @@
                     </tbody>
                 </table>
             </div>
+
+            <div id="paginationControls" class="pagination-container"></div>
         }
     </div>
 </div>
@@ -408,17 +510,94 @@
         (function () {
             if (window.history.pushState) {
                 window.history.pushState(null, null, window.location.href);
-
                 window.addEventListener('popstate', function () {
                     window.location.href = '@Url.Action("Index", "Home")';
                 });
             }
-
             window.addEventListener('pageshow', function (event) {
                 if (event.persisted || (typeof window.performance != "undefined" && window.performance.getEntriesByType("navigation")[0]?.type === "back_forward")) {
                     window.location.reload(true);
                 }
             });
         })();
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const itemsPerPage = 10;
+            const items = Array.from(document.querySelectorAll('.paginated-item'));
+            const paginationControls = document.getElementById('paginationControls');
+            const searchInput = document.getElementById('tableSearchInput');
+
+            let filteredItems = [...items];
+            let currentPage = 1;
+            let totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+
+            if (items.length === 0) return;
+
+            function displayPage(page) {
+                currentPage = page;
+                const start = (page - 1) * itemsPerPage;
+                const end = start + itemsPerPage;
+
+                items.forEach(item => item.style.display = 'none');
+
+                filteredItems.forEach((item, index) => {
+                    if (index >= start && index < end) {
+                        item.style.display = 'table-row';
+                    }
+                });
+
+                updatePaginationButtons();
+            }
+
+            function updatePaginationButtons() {
+                if (!paginationControls) return;
+                paginationControls.innerHTML = '';
+
+                if (totalPages <= 1) return;
+
+                const prevBtn = document.createElement('button');
+                prevBtn.className = 'page-btn';
+                prevBtn.innerHTML = '<i class="bi bi-chevron-left"></i>';
+                prevBtn.disabled = currentPage === 1;
+                prevBtn.onclick = () => displayPage(currentPage - 1);
+                paginationControls.appendChild(prevBtn);
+
+                for (let i = 1; i <= totalPages; i++) {
+                    const pageBtn = document.createElement('button');
+                    pageBtn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+                    pageBtn.innerText = i;
+                    pageBtn.onclick = () => displayPage(i);
+                    paginationControls.appendChild(pageBtn);
+                }
+
+                const nextBtn = document.createElement('button');
+                nextBtn.className = 'page-btn';
+                nextBtn.innerHTML = '<i class="bi bi-chevron-right"></i>';
+                nextBtn.disabled = currentPage === totalPages;
+                nextBtn.onclick = () => displayPage(currentPage + 1);
+                paginationControls.appendChild(nextBtn);
+            }
+
+            if (searchInput) {
+                searchInput.addEventListener('input', function (e) {
+                    const query = e.target.value.toLowerCase().trim();
+
+                    filteredItems = items.filter(item => {
+                        const name = item.querySelector('.searchable-name')?.textContent.toLowerCase() || '';
+                        const blood = item.querySelector('.searchable-blood')?.textContent.toLowerCase() || '';
+                        const disease = item.querySelector('.searchable-disease')?.textContent.toLowerCase() || '';
+
+                        return name.includes(query) || blood.includes(query) || disease.includes(query);
+                    });
+
+                    totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+                    displayPage(1);
+                });
+            }
+
+            displayPage(1);
+        });
     </script>
 }

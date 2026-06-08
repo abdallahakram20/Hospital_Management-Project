@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
 <style>
+    /* Base Variables & Theme Settings */
     :root {
         --primary: #1A76D1;
         --primary-dk: #1560ad;
@@ -21,6 +22,11 @@
         --tr: all 0.3s ease;
     }
 
+    /* Global Box Sizing Control */
+    * {
+        box-sizing: border-box;
+    }
+
     .profile-page {
         padding: 40px 30px;
         max-width: 900px;
@@ -28,7 +34,7 @@
         font-family: 'Poppins', sans-serif;
     }
 
-    /* Breadcrumb */
+    /* Breadcrumb Component */
     .profile-breadcrumb {
         display: flex;
         align-items: center;
@@ -37,23 +43,23 @@
         margin-bottom: 20px;
     }
 
-        .profile-breadcrumb a {
-            color: var(--primary);
-            text-decoration: none;
-            transition: var(--tr);
-        }
+    .profile-breadcrumb a {
+        color: var(--primary);
+        text-decoration: none;
+        transition: var(--tr);
+    }
 
-            .profile-breadcrumb a:hover {
-                text-decoration: underline;
-                color: var(--primary-dk);
-            }
+    .profile-breadcrumb a:hover {
+        text-decoration: underline;
+        color: var(--primary-dk);
+    }
 
-        .profile-breadcrumb i {
-            font-size: 10px;
-            color: var(--muted);
-        }
+    .profile-breadcrumb i {
+        font-size: 10px;
+        color: var(--muted);
+    }
 
-    /* Page Header */
+    /* Page Header Component */
     .profile-header {
         background: var(--white);
         border-radius: var(--radius);
@@ -68,32 +74,32 @@
         border-left: 4px solid var(--primary);
     }
 
-        .profile-header h2 {
-            font-size: 22px;
-            font-weight: 700;
-            color: var(--dark);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin: 0 0 4px 0;
-        }
+    .profile-header h2 {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--dark);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0 0 4px 0;
+    }
 
-            .profile-header h2 i {
-                color: var(--primary);
-            }
+    .profile-header h2 i {
+        color: var(--primary);
+    }
 
-        .profile-header p {
-            font-size: 13px;
-            color: var(--muted);
-            margin: 0;
-        }
+    .profile-header p {
+        font-size: 13px;
+        color: var(--muted);
+        margin: 0;
+    }
 
     .header-actions {
         display: flex;
         gap: 12px;
     }
 
-    /* Card & Grid */
+    /* Content Card & Grid Layout (Normal Screen View) */
     .profile-card {
         background: var(--white);
         border-radius: var(--radius);
@@ -109,6 +115,7 @@
         margin-bottom: 25px;
     }
 
+    /* Information Groups */
     .info-group {
         background: var(--light-bg);
         padding: 18px 20px;
@@ -117,10 +124,10 @@
         transition: var(--tr);
     }
 
-        .info-group:hover {
-            box-shadow: 0 4px 10px rgba(26, 118, 209, 0.1);
-            transform: translateY(-2px);
-        }
+    .info-group:hover {
+        box-shadow: 0 4px 10px rgba(26, 118, 209, 0.1);
+        transform: translateY(-2px);
+    }
 
     .info-label {
         font-size: 12px;
@@ -133,10 +140,10 @@
         gap: 8px;
     }
 
-        .info-label i {
-            color: var(--primary);
-            font-size: 14px;
-        }
+    .info-label i {
+        color: var(--primary);
+        font-size: 14px;
+    }
 
     .info-value {
         font-size: 16px;
@@ -149,7 +156,7 @@
         grid-column: 1 / -1;
     }
 
-    /* Buttons */
+    /* Action Buttons */
     .btn-action {
         display: inline-flex;
         align-items: center;
@@ -170,22 +177,22 @@
         color: #475569;
     }
 
-        .btn-back:hover {
-            background: #e2e8f0;
-            color: #1e293b;
-        }
+    .btn-back:hover {
+        background: #e2e8f0;
+        color: #1e293b;
+    }
 
     .btn-print {
         background: var(--primary);
         color: var(--white);
     }
 
-        .btn-print:hover {
-            background: var(--primary-dk);
-            box-shadow: 0 4px 12px rgba(26, 118, 209, 0.2);
-        }
+    .btn-print:hover {
+        background: var(--primary-dk);
+        box-shadow: 0 4px 12px rgba(26, 118, 209, 0.2);
+    }
 
-    /* Responsive */
+    /* Screen Responsiveness Modifications */
     @@media (max-width: 768px) {
         .profile-page {
             padding: 20px 15px;
@@ -200,38 +207,117 @@
         }
     }
 
-    /* Printing Adjustments */
+    /* ===================================================
+       ✅ DEFINITIVE PROFESSIONAL PRINT STYLESHEET
+       =================================================== */
     @@media print {
         @@page {
             size: A4 portrait;
-            margin: 20mm;
+            margin: 15mm 15mm 15mm 15mm; /* Balanced standard page padding */
         }
 
-        body {
+        /* Color rendering safety flags */
+        * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            box-sizing: border-box !important;
+        }
+
+        /* 🔒 1. ROOT RESET: Bypass system layout containers to prevent horizontal bleeding and right clipping */
+        html, body, main, .container, .wrapper, [class*="container"], #main-content, .container-fluid {
             background: #fff !important;
+            color: #000 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: visible !important;
+            display: block !important;
+            float: none !important;
+            position: static !important;
+            visibility: visible !important;
         }
 
-        .profile-breadcrumb,
-        .header-actions {
-            display: none !important; /* يخفي الأزرار والروابط عند الطباعة */
+        /* 🔒 2. COMPLETE HIDDEN: Force elimination of peripheral interface wrappers */
+        footer, #footer, .footer, header, #header, .header, nav, .navbar, [class*="navbar"], 
+        sidebar, #sidebar, .header-actions, .profile-breadcrumb, [class*="breadcrumb"],
+        .scrollToTop, #scrollUp, #fixed-buttons, .admin-sidebar, .sidebar {
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            height: 0 !important;
+            overflow: hidden !important;
         }
 
+        /* Recalibrate print area container scope */
+        .profile-page {
+            padding: 0 !important;
+            margin: 0 auto !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            display: block !important;
+            box-sizing: border-box !important;
+        }
+
+        /* Sanitize Header Element Properties */
         .profile-header {
-            border: 1px solid var(--border) !important;
-            border-left: 4px solid var(--primary) !important;
+            border: 1px solid #cbd5e1 !important;
+            border-left: 6px solid #1A76D1 !important;
             box-shadow: none !important;
+            margin-bottom: 25px !important;
+            padding: 20px !important;
+            background: #fff !important;
+            display: block !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
         }
 
         .profile-card {
             box-shadow: none !important;
-            border: 1px solid var(--border) !important;
+            border: none !important;
+            padding: 0 !important;
+            background: transparent !important;
+            display: block !important;
+            width: 100% !important;
         }
 
+        /* 🛠️ Deconstruct flexbox / grid into a single, cohesive vertical layout pipeline */
+        .profile-grid {
+            display: block !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+
+        /* 🔒 3. WIDTH LOCK: Force rows to remain strictly bound within 100% boundary limits */
         .info-group {
+            display: block !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 100% !important;
+            box-sizing: border-box !important;
             background: #f8fafc !important;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-            page-break-inside: avoid;
+            border: 1px solid #cbd5e1 !important;
+            border-left: 4px solid #1A76D1 !important;
+            margin: 0 0 10px 0 !important;
+            padding: 15px 20px !important;
+            page-break-inside: avoid !important;
+            float: none !important;
+            clear: both !important;
+        }
+
+        /* Text Customization for Print Optimization */
+        .info-label {
+            color: #475569 !important;
+            margin-bottom: 6px !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+
+        .info-value {
+            color: #000 !important;
+            font-size: 16px !important;
+            word-wrap: break-word !important;
         }
     }
 </style>
@@ -255,7 +341,7 @@
             <a asp-action="Index" class="btn-action btn-back">
                 <i class="fas fa-arrow-left"></i> Back to List
             </a>
-            <button onclick="window.print()" class="btn-action btn-print">
+            <button type="button" onclick="triggerProfilePrint()" class="btn-action btn-print">
                 <i class="fas fa-print"></i> Print Profile
             </button>
         </div>
@@ -291,5 +377,13 @@
 
         </div>
     </div>
-
 </div>
+
+<script>
+    function triggerProfilePrint() {
+        // Safe timeout execution frame ensures the layout engine calculates page boundaries properly
+        setTimeout(function() {
+            window.print();
+        }, 150);
+    }
+</script>
