@@ -1,4 +1,4 @@
-﻿using Hospital_Management_Project.Models;
+﻿﻿using Hospital_Management_Project.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -145,7 +145,14 @@ namespace Hospital_Management_Project.Controllers
                     Directory.CreateDirectory(uploadsFolder);
                     string uniqueFileName = Guid.NewGuid().ToString() + "_" + staff.ImageFile.FileName;
                     string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-                    using var fileStream = new FileStream(filePath, FileMode.Create);
+                    var baseFull = Path.GetFullPath(uploadsFolder);
+                    var fullPath = Path.GetFullPath(filePath);
+                    if (!fullPath.StartsWith(baseFull + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+                        && fullPath != baseFull)
+                    {
+                        throw new ArgumentException("Invalid file path");
+                    }
+                    using var fileStream = new FileStream(fullPath, FileMode.Create);
                     await staff.ImageFile.CopyToAsync(fileStream);
                     staff.ImagePath = uniqueFileName;
                 }
